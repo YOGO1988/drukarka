@@ -638,15 +638,898 @@
     </div>
 
     <script>
-    // Application will be implemented here
-    console.log('YO&GO LED Display System - Loading...');
+    'use strict';
 
-    // TODO: Implement full application logic
-    // - API integration (reuse from drukarka)
-    // - Canvas LED rendering
-    // - RFID WebUSB integration
-    // - LED controller communication
-    // - TAG management
+    // =====================================
+    // KONFIGURACJA
+    // =====================================
+    const config = {
+        api: {
+            clientId: '727dae7f',
+            userId: 'lukasz@yogoevents.pl',
+            userPass: 'f2b2f3082a9d2ae5091eb5920bee538dc01bb413',
+            baseUrl: 'https://api.chronotrack.com',
+            eventId: localStorage.getItem('led-event-id') || ''
+        },
+        led: {
+            width: 96,
+            height: 96,
+            pixelPitch: 4, // P4 = 4mm
+            connectionType: localStorage.getItem('led-connection-type') || 'none',
+            ip: localStorage.getItem('led-ip') || '',
+            port: localStorage.getItem('led-port') || '80'
+        },
+        display: {
+            showNetTime: localStorage.getItem('display-net-time') !== 'false',
+            showGunTime: localStorage.getItem('display-gun-time') === 'true',
+            showOverall: localStorage.getItem('display-overall') !== 'false',
+            showGender: localStorage.getItem('display-gender') !== 'false',
+            showAgeCategory: localStorage.getItem('display-age') !== 'false',
+            showCustomCategory: localStorage.getItem('display-custom') !== 'false',
+            showLogo: localStorage.getItem('display-logo') !== 'false',
+            duration: parseInt(localStorage.getItem('display-duration') || '10'),
+            logoData: localStorage.getItem('display-logo-data') || null
+        },
+        rfid: {
+            power: parseInt(localStorage.getItem('rfid-power') || '3'),
+            connected: false,
+            device: null
+        }
+    };
+
+    // Cache dla danych
+    const cache = {
+        athletes: {},
+        openResults: [],
+        customResults: {},
+        eventInfo: null,
+        tags: JSON.parse(localStorage.getItem('rfid-tags') || '{}')
+    };
+
+    // Stan aplikacji
+    const state = {
+        currentAthlete: null,
+        rfidConnected: false,
+        apiConnected: false,
+        ledConnected: false,
+        lastScannedTag: null
+    };
+
+    // =====================================
+    // FUNKCJE POMOCNICZE
+    // =====================================
+
+    function isSexBracket(bracketName) {
+        if (!bracketName) return false;
+        const sexBrackets = ['M', 'K', 'F', 'MALE', 'FEMALE', 'MĘŻCZYŹNI', 'KOBIETY'];
+        return sexBrackets.includes(bracketName.toUpperCase());
+    }
+
+    function isAgeBracket(bracketName) {
+        if (!bracketName) return false;
+        return /^[MKF][\d\-\+]+/.test(bracketName);
+    }
+
+    function selectBestCategory(athlete) {
+        if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
+            const brackets = athlete.bracket_positions;
+            let ageCategory = null;
+            let customCategory = null;
+            let sexCategory = null;
+
+            for (const [bracketName, position] of Object.entries(brackets)) {
+                if (!position || position <= 0) continue;
+
+                if (isAgeBracket(bracketName)) {
+                    if (!ageCategory) ageCategory = { name: bracketName, position: position };
+                } else if (isSexBracket(bracketName)) {
+                    if (!sexCategory) sexCategory = { name: bracketName, position: position };
+                } else {
+                    if (!customCategory) customCategory = { name: bracketName, position: position };
+                }
+            }
+
+            if (ageCategory) return ageCategory;
+            else if (customCategory) return customCategory;
+            else if (sexCategory) return sexCategory;
+        }
+        return null;
+    }
+
+    function formatTime(seconds) {
+        if (!seconds || seconds <= 0) return '-';
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function setStatus(elementId, message, type = '') {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.textContent = message;
+        element.className = 'status ' + type;
+        element.classList.remove('hidden');
+
+        if (type === 'success') {
+            setTimeout(() => element.classList.add('hidden'), 5000);
+        }
+    }
+
+    // =====================================
+    // API FUNCTIONS
+    // =====================================
+
+    function buildApiUrl(endpoint, params = {}) {
+        const authParams = {
+            format: 'json',
+            client_id: config.api.clientId,
+            user_id: config.api.userId,
+            user_pass: config.api.userPass,
+            ...params
+        };
+
+        const queryString = Object.entries(authParams)
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
+
+        return `${config.api.baseUrl}${endpoint}?${queryString}`;
+    }
+
+    async function makeApiRequest(endpoint, params = {}) {
+        try {
+            const url = buildApiUrl(endpoint, params);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Błąd API: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async function fetchAthleteByBib(bib) {
+        try {
+            const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, {
+                bib,
+                include_all_fields: '1'
+            });
+
+            if (response && response.event_results && response.event_results.length > 0) {
+                const athlete = response.event_results[0];
+
+                const mapped = {
+                    entry_bib: athlete.results_bib,
+                    athlete_first_name: athlete.results_first_name,
+                    athlete_last_name: athlete.results_last_name,
+                    athlete_sex: athlete.results_sex,
+                    entry_race_age: athlete.results_age,
+                    bracket_name: athlete.results_primary_bracket_name,
+                    race_distance: athlete.results_race_name,
+                    net_time: athlete.results_time,
+                    gun_time: athlete.results_gun_time,
+                    overall_place: athlete.results_rank,
+                    gender_place: athlete.results_gender_rank || athlete.results_sex_rank || '',
+                    division_place: athlete.results_bracket_rank || athlete.results_division_rank || '',
+                    formatted_net_time: formatTime(athlete.results_time),
+                    formatted_gun_time: formatTime(athlete.results_gun_time)
+                };
+
+                // Parse bracket_positions
+                if (athlete.bracket_positions) {
+                    if (typeof athlete.bracket_positions === 'string') {
+                        try {
+                            mapped.bracket_positions = JSON.parse(athlete.bracket_positions);
+                        } catch (e) {
+                            console.warn('Cannot parse bracket_positions:', e);
+                        }
+                    } else {
+                        mapped.bracket_positions = athlete.bracket_positions;
+                    }
+
+                    const bestCategory = selectBestCategory(mapped);
+                    if (bestCategory) {
+                        mapped.bracket_name = bestCategory.name;
+                        mapped.division_place = bestCategory.position;
+                    }
+                }
+
+                cache.athletes[mapped.entry_bib] = mapped;
+                return mapped;
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error fetching athlete:', error);
+            throw error;
+        }
+    }
+
+    async function fetchEventInfo() {
+        try {
+            const response = await makeApiRequest(`/api/event/${config.api.eventId}`);
+            if (response && response.event) {
+                cache.eventInfo = {
+                    event_name: response.event.event_name,
+                    event_date: response.event.event_start_time,
+                    location: response.event.location_city || ''
+                };
+                return cache.eventInfo;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching event info:', error);
+            return null;
+        }
+    }
+
+    // =====================================
+    // LED CANVAS RENDERING
+    // =====================================
+
+    function renderLEDDisplay(athlete) {
+        const canvas = document.getElementById('led-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Wyczyść canvas
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, config.led.width, config.led.height);
+
+        if (!athlete) {
+            // Pokaż welcome screen
+            ctx.fillStyle = '#FF8C00';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('YO&GO', 48, 40);
+            ctx.font = '6px Arial';
+            ctx.fillText('EVENTS', 48, 50);
+            ctx.fillText('Gotowy do pracy', 48, 65);
+            return;
+        }
+
+        // Przygotuj dane do wyświetlenia
+        const displayData = prepareDisplayData(athlete);
+
+        // Oblicz layout (dynamiczne rozmiary)
+        const layout = calculateLayout(displayData);
+
+        let y = 2; // Start position
+
+        // 1. NAZWA BIEGU (top)
+        if (cache.eventInfo && cache.eventInfo.event_name) {
+            ctx.fillStyle = '#FF8C00';
+            ctx.font = `bold ${layout.eventFontSize}px Arial`;
+            ctx.textAlign = 'center';
+            const eventText = truncateText(ctx, cache.eventInfo.event_name, config.led.width - 4);
+            ctx.fillText(eventText, 48, y + layout.eventFontSize);
+            y += layout.eventFontSize + 2;
+        }
+
+        // Linia separatora
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(2, y, config.led.width - 4, 1);
+        y += 3;
+
+        // 2. IMIĘ I NAZWISKO (największy tekst)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `bold ${layout.nameFontSize}px Arial`;
+        ctx.textAlign = 'center';
+
+        const fullName = `${athlete.athlete_first_name || ''} ${athlete.athlete_last_name || ''}`.trim();
+        const nameLines = wrapText(ctx, fullName, config.led.width - 4, layout.nameFontSize);
+
+        nameLines.forEach((line, index) => {
+            ctx.fillText(line, 48, y + layout.nameFontSize + (index * (layout.nameFontSize + 1)));
+        });
+        y += nameLines.length * (layout.nameFontSize + 1) + 2;
+
+        // 3. CZASY
+        if (config.display.showNetTime || config.display.showGunTime) {
+            const bothTimes = config.display.showNetTime && config.display.showGunTime;
+
+            if (bothTimes) {
+                // Oba czasy - label + wartość
+                ctx.font = `${layout.timeLabelSize}px Arial`;
+                ctx.fillStyle = '#AAAAAA';
+                ctx.textAlign = 'left';
+
+                if (config.display.showGunTime && athlete.formatted_gun_time && athlete.formatted_gun_time !== '-') {
+                    ctx.fillText('BRUTTO:', 4, y + layout.timeLabelSize);
+                    ctx.fillStyle = '#FFCC00';
+                    ctx.font = `bold ${layout.timeValueSize}px Arial`;
+                    ctx.textAlign = 'right';
+                    ctx.fillText(athlete.formatted_gun_time, config.led.width - 4, y + layout.timeLabelSize);
+                    y += layout.timeValueSize + 1;
+                }
+
+                if (config.display.showNetTime && athlete.formatted_net_time && athlete.formatted_net_time !== '-') {
+                    ctx.fillStyle = '#AAAAAA';
+                    ctx.font = `${layout.timeLabelSize}px Arial`;
+                    ctx.textAlign = 'left';
+                    ctx.fillText('NETTO:', 4, y + layout.timeLabelSize);
+                    ctx.fillStyle = '#00FF00';
+                    ctx.font = `bold ${layout.timeValueSize}px Arial`;
+                    ctx.textAlign = 'right';
+                    ctx.fillText(athlete.formatted_net_time, config.led.width - 4, y + layout.timeLabelSize);
+                    y += layout.timeValueSize + 2;
+                }
+            } else {
+                // Jeden czas - tylko "WYNIK:"
+                const time = config.display.showNetTime ? athlete.formatted_net_time : athlete.formatted_gun_time;
+                if (time && time !== '-') {
+                    ctx.font = `${layout.timeLabelSize}px Arial`;
+                    ctx.fillStyle = '#AAAAAA';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('WYNIK:', 4, y + layout.timeLabelSize);
+                    ctx.fillStyle = '#00FF00';
+                    ctx.font = `bold ${layout.timeValueSize}px Arial`;
+                    ctx.textAlign = 'right';
+                    ctx.fillText(time, config.led.width - 4, y + layout.timeLabelSize);
+                    y += layout.timeValueSize + 2;
+                }
+            }
+        }
+
+        // Separator
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(2, y, config.led.width - 4, 1);
+        y += 3;
+
+        // 4. MIEJSCA (kompaktowo, 2 kolumny jeśli się zmieszczą)
+        const places = [];
+
+        if (config.display.showOverall && athlete.overall_place) {
+            places.push({ label: 'OPEN:', value: athlete.overall_place });
+        }
+
+        if (config.display.showGender && athlete.gender_place) {
+            const genderLabel = athlete.athlete_sex === 'K' ? 'K:' : 'M:';
+            places.push({ label: genderLabel, value: athlete.gender_place });
+        }
+
+        if (config.display.showAgeCategory && displayData.ageCategory) {
+            places.push({ label: displayData.ageCategory.name + ':', value: displayData.ageCategory.position });
+        }
+
+        if (config.display.showCustomCategory && displayData.customCategory) {
+            const customLabel = truncateText(ctx, displayData.customCategory.name, 25) + ':';
+            places.push({ label: customLabel, value: displayData.customCategory.position });
+        }
+
+        // Renderuj miejsca (2 kolumny jeśli <= 4 miejsca, inaczej 1 kolumna)
+        const placeFont = layout.placeSize;
+        ctx.font = `${placeFont}px Arial`;
+
+        if (places.length <= 4 && places.length % 2 === 0) {
+            // 2 kolumny
+            const col1 = places.slice(0, places.length / 2);
+            const col2 = places.slice(places.length / 2);
+            const colWidth = config.led.width / 2;
+
+            col1.forEach((place, idx) => {
+                ctx.fillStyle = '#AAAAAA';
+                ctx.textAlign = 'left';
+                ctx.fillText(place.label, 2, y + placeFont + (idx * (placeFont + 1)));
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'right';
+                ctx.fillText(place.value.toString(), colWidth - 2, y + placeFont + (idx * (placeFont + 1)));
+            });
+
+            col2.forEach((place, idx) => {
+                ctx.fillStyle = '#AAAAAA';
+                ctx.textAlign = 'left';
+                ctx.fillText(place.label, colWidth + 2, y + placeFont + (idx * (placeFont + 1)));
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'right';
+                ctx.fillText(place.value.toString(), config.led.width - 2, y + placeFont + (idx * (placeFont + 1)));
+            });
+
+            y += col1.length * (placeFont + 1) + 2;
+        } else {
+            // 1 kolumna
+            places.forEach((place, idx) => {
+                ctx.fillStyle = '#AAAAAA';
+                ctx.textAlign = 'left';
+                ctx.fillText(place.label, 4, y + placeFont + (idx * (placeFont + 1)));
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'right';
+                ctx.fillText(place.value.toString(), config.led.width - 4, y + placeFont + (idx * (placeFont + 1)));
+            });
+
+            y += places.length * (placeFont + 1) + 2;
+        }
+
+        // 5. LOGO / FOOTER
+        const footerHeight = 8;
+        const footerY = config.led.height - footerHeight;
+
+        ctx.fillStyle = '#222222';
+        ctx.fillRect(0, footerY - 1, config.led.width, 1);
+
+        ctx.fillStyle = '#FF8C00';
+        ctx.font = 'bold 6px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('yogoevents.pl', 48, footerY + 5);
+    }
+
+    function prepareDisplayData(athlete) {
+        const data = {
+            ageCategory: null,
+            customCategory: null
+        };
+
+        if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
+            for (const [name, position] of Object.entries(athlete.bracket_positions)) {
+                if (!position || position <= 0) continue;
+
+                if (isAgeBracket(name)) {
+                    if (!data.ageCategory) data.ageCategory = { name, position };
+                } else if (!isSexBracket(name)) {
+                    if (!data.customCategory) data.customCategory = { name, position };
+                }
+            }
+        }
+
+        // Fallback jeśli nie ma bracket_positions
+        if (!data.ageCategory && !data.customCategory && athlete.bracket_name) {
+            if (isAgeBracket(athlete.bracket_name)) {
+                data.ageCategory = { name: athlete.bracket_name, position: athlete.division_place };
+            } else if (!isSexBracket(athlete.bracket_name)) {
+                data.customCategory = { name: athlete.bracket_name, position: athlete.division_place };
+            }
+        }
+
+        return data;
+    }
+
+    function calculateLayout(displayData) {
+        // Dynamiczne rozmiary czcionek w zależności od ilości danych
+        const dataCount =
+            (config.display.showNetTime ? 1 : 0) +
+            (config.display.showGunTime ? 1 : 0) +
+            (config.display.showOverall ? 1 : 0) +
+            (config.display.showGender ? 1 : 0) +
+            (config.display.showAgeCategory && displayData.ageCategory ? 1 : 0) +
+            (config.display.showCustomCategory && displayData.customCategory ? 1 : 0);
+
+        let nameFontSize = 10;
+        let timeLabelSize = 5;
+        let timeValueSize = 8;
+        let placeSize = 6;
+        let eventFontSize = 6;
+
+        // Jeśli dużo danych, zmniejsz czcionki
+        if (dataCount > 5) {
+            nameFontSize = 8;
+            timeValueSize = 7;
+            placeSize = 5;
+        }
+
+        return {
+            eventFontSize,
+            nameFontSize,
+            timeLabelSize,
+            timeValueSize,
+            placeSize
+        };
+    }
+
+    function truncateText(ctx, text, maxWidth) {
+        if (ctx.measureText(text).width <= maxWidth) return text;
+
+        let truncated = text;
+        while (ctx.measureText(truncated + '...').width > maxWidth && truncated.length > 0) {
+            truncated = truncated.slice(0, -1);
+        }
+        return truncated + '...';
+    }
+
+    function wrapText(ctx, text, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            if (ctx.measureText(testLine).width <= maxWidth) {
+                currentLine = testLine;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
+        });
+
+        if (currentLine) lines.push(currentLine);
+
+        // Max 2 linie dla nazwiska
+        return lines.slice(0, 2);
+    }
+
+    // =====================================
+    // RFID / TAG MANAGEMENT
+    // =====================================
+
+    async function connectRFID() {
+        try {
+            if (!navigator.usb) {
+                throw new Error('WebUSB nie jest wspierane w tej przeglądarce. Użyj Chrome/Edge.');
+            }
+
+            const device = await navigator.usb.requestDevice({ filters: [] });
+            await device.open();
+
+            if (device.configuration === null) await device.selectConfiguration(1);
+            await device.claimInterface(0);
+
+            config.rfid.device = device;
+            state.rfidConnected = true;
+
+            setStatus('rfid-connection-status', 'Czytnik RFID połączony!', 'success');
+            updateRFIDStatus(true);
+            return true;
+        } catch (error) {
+            console.error('RFID connection error:', error);
+            setStatus('rfid-connection-status', 'Błąd: ' + error.message, 'error');
+            return false;
+        }
+    }
+
+    function handleRFIDScan(tagId) {
+        console.log('RFID TAG scanned:', tagId);
+        state.lastScannedTag = tagId;
+
+        const lastTagInput = document.getElementById('last-scanned-tag');
+        if (lastTagInput) lastTagInput.value = tagId;
+
+        const indicator = document.getElementById('rfid-indicator');
+        if (indicator) {
+            indicator.classList.add('active');
+            setTimeout(() => indicator.classList.remove('active'), 1000);
+        }
+
+        const bib = cache.tags[tagId];
+        if (bib) {
+            console.log('TAG ' + tagId + ' -> BIB ' + bib);
+            document.getElementById('search-input').value = bib;
+            handleSearch();
+        }
+    }
+
+    function assignTag(tagId, bib) {
+        if (!tagId || !bib) {
+            setStatus('tag-assignment-status', 'Podaj TAG i numer startowy', 'error');
+            return false;
+        }
+
+        cache.tags[tagId] = parseInt(bib);
+        localStorage.setItem('rfid-tags', JSON.stringify(cache.tags));
+
+        setStatus('tag-assignment-status', 'TAG ' + tagId + ' przypisany do BIB ' + bib, 'success');
+        updateTagsTable();
+        document.getElementById('assign-bib').value = '';
+        return true;
+    }
+
+    function updateTagsTable() {
+        const tbody = document.getElementById('tags-table-body');
+        if (!tbody) return;
+
+        const tags = Object.entries(cache.tags);
+
+        if (tags.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center; color: #999;">Brak przypisanych TAG-ów</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = tags.map(([tag, bib]) => {
+            const athlete = cache.athletes[bib];
+            const athleteName = athlete ? (athlete.athlete_first_name || '') + ' ' + (athlete.athlete_last_name || '') : '-';
+
+            return '<tr><td style="padding: 8px; border-bottom: 1px solid #eee;">' + tag + '</td>' +
+                   '<td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>' + bib + '</strong></td>' +
+                   '<td style="padding: 8px; border-bottom: 1px solid #eee;">' + athleteName + '</td>' +
+                   '<td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">' +
+                   '<button onclick="removeTag(\'' + tag + '\')" style="padding: 4px 8px; font-size: 12px;">🗑️</button></td></tr>';
+        }).join('');
+    }
+
+    window.removeTag = function(tagId) {
+        if (confirm('Usunąć przypisanie TAG ' + tagId + '?')) {
+            delete cache.tags[tagId];
+            localStorage.setItem('rfid-tags', JSON.stringify(cache.tags));
+            updateTagsTable();
+        }
+    };
+
+    function exportTagsCSV() {
+        const csv = ['TAG,BIB,Imię,Nazwisko'];
+        Object.entries(cache.tags).forEach(([tag, bib]) => {
+            const athlete = cache.athletes[bib];
+            const firstName = athlete?.athlete_first_name || '';
+            const lastName = athlete?.athlete_last_name || '';
+            csv.push(tag + ',' + bib + ',' + firstName + ',' + lastName);
+        });
+
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'rfid_tags_' + Date.now() + '.csv';
+        a.click();
+    }
+
+    // =====================================
+    // LED CONTROLLER
+    // =====================================
+
+    async function sendToLED() {
+        if (config.led.connectionType === 'none') {
+            alert('Skonfiguruj połączenie z tablicą LED w zakładce Konfiguracja');
+            return;
+        }
+
+        const canvas = document.getElementById('led-canvas');
+
+        if (config.led.connectionType === 'ethernet') {
+            try {
+                const imageData = canvas.toDataURL('image/png');
+                const response = await fetch('http://' + config.led.ip + ':' + config.led.port + '/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                if (response.ok) {
+                    setStatus('search-status', 'Wysłano na tablicę LED!', 'success');
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            } catch (error) {
+                console.error('LED send error:', error);
+                setStatus('search-status', 'Błąd wysyłania: ' + error.message, 'error');
+            }
+        } else if (config.led.connectionType === 'hdmi') {
+            alert('Tryb HDMI: Otwórz przeglądarkę w trybie pełnoekranowym (F11) na ekranie HDMI');
+        }
+    }
+
+    function downloadImage() {
+        const canvas = document.getElementById('led-canvas');
+        const dataURL = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = 'led_display_' + Date.now() + '.png';
+        a.click();
+    }
+
+    // =====================================
+    // EVENT HANDLERS
+    // =====================================
+
+    async function handleSearch() {
+        const input = document.getElementById('search-input');
+        const bib = input.value.trim();
+
+        if (!bib) {
+            setStatus('search-status', 'Podaj numer startowy', 'error');
+            return;
+        }
+
+        if (!config.api.eventId) {
+            setStatus('search-status', 'Skonfiguruj ID wydarzenia w zakładce Konfiguracja', 'error');
+            return;
+        }
+
+        try {
+            setStatus('search-status', 'Wyszukiwanie...', 'loading');
+
+            const athlete = await fetchAthleteByBib(bib);
+
+            if (!athlete) {
+                setStatus('search-status', 'Nie znaleziono zawodnika #' + bib, 'error');
+                renderLEDDisplay(null);
+                state.currentAthlete = null;
+                return;
+            }
+
+            state.currentAthlete = athlete;
+            renderLEDDisplay(athlete);
+
+            setStatus('search-status', 'Znaleziono: ' + athlete.athlete_first_name + ' ' + athlete.athlete_last_name, 'success');
+
+        } catch (error) {
+            setStatus('search-status', 'Błąd: ' + error.message, 'error');
+        }
+    }
+
+    function handleClearDisplay() {
+        state.currentAthlete = null;
+        renderLEDDisplay(null);
+        document.getElementById('search-input').value = '';
+        setStatus('search-status', 'Wyczyszczono tablicę', 'success');
+    }
+
+    function saveConfiguration() {
+        config.api.eventId = document.getElementById('config-event-id').value;
+        localStorage.setItem('led-event-id', config.api.eventId);
+
+        config.led.connectionType = document.getElementById('led-connection-type').value;
+        config.led.ip = document.getElementById('led-ip').value;
+        config.led.port = document.getElementById('led-port').value;
+
+        localStorage.setItem('led-connection-type', config.led.connectionType);
+        localStorage.setItem('led-ip', config.led.ip);
+        localStorage.setItem('led-port', config.led.port);
+
+        config.display.showNetTime = document.getElementById('show-net-time').checked;
+        config.display.showGunTime = document.getElementById('show-gun-time').checked;
+        config.display.showOverall = document.getElementById('show-overall').checked;
+        config.display.showGender = document.getElementById('show-gender').checked;
+        config.display.showAgeCategory = document.getElementById('show-age-category').checked;
+        config.display.showCustomCategory = document.getElementById('show-custom-category').checked;
+        config.display.showLogo = document.getElementById('show-logo').checked;
+        config.display.duration = parseInt(document.getElementById('display-duration').value);
+
+        localStorage.setItem('display-net-time', config.display.showNetTime);
+        localStorage.setItem('display-gun-time', config.display.showGunTime);
+        localStorage.setItem('display-overall', config.display.showOverall);
+        localStorage.setItem('display-gender', config.display.showGender);
+        localStorage.setItem('display-age', config.display.showAgeCategory);
+        localStorage.setItem('display-custom', config.display.showCustomCategory);
+        localStorage.setItem('display-logo', config.display.showLogo);
+        localStorage.setItem('display-duration', config.display.duration);
+
+        setStatus('config-save-status', 'Konfiguracja zapisana!', 'success');
+
+        if (state.currentAthlete) {
+            renderLEDDisplay(state.currentAthlete);
+        }
+    }
+
+    function updateRFIDStatus(connected) {
+        const elements = [
+            { indicator: 'rfid-status', text: 'rfid-status-text' },
+            { indicator: 'rfid-config-status', text: 'rfid-config-text' }
+        ];
+
+        elements.forEach(el => {
+            const indicator = document.getElementById(el.indicator);
+            const text = document.getElementById(el.text);
+
+            if (connected) {
+                if (indicator) indicator.classList.add('connected');
+                if (text) text.textContent = 'Czytnik RFID: połączony';
+            } else {
+                if (indicator) indicator.classList.remove('connected');
+                if (text) text.textContent = 'Czytnik RFID: nie podłączony';
+            }
+        });
+    }
+
+    // =====================================
+    // INITIALIZATION
+    // =====================================
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('LED Display System - Initializing...');
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.screen;
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(target + '-screen').classList.add('active');
+            });
+        });
+
+        // Search
+        document.getElementById('search-btn').addEventListener('click', handleSearch);
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+        document.getElementById('clear-display-btn').addEventListener('click', handleClearDisplay);
+
+        // LED
+        document.getElementById('send-to-led-btn').addEventListener('click', sendToLED);
+        document.getElementById('download-image-btn').addEventListener('click', downloadImage);
+
+        const scaleSlider = document.getElementById('scale-slider');
+        const canvas = document.getElementById('led-canvas');
+        scaleSlider.addEventListener('input', (e) => {
+            const scale = parseInt(e.target.value);
+            canvas.style.width = (96 * scale) + 'px';
+            canvas.style.height = (96 * scale) + 'px';
+            document.getElementById('scale-value').textContent = scale + 'x';
+        });
+        canvas.style.width = '384px';
+        canvas.style.height = '384px';
+
+        // Config
+        document.getElementById('save-config-btn').addEventListener('click', saveConfiguration);
+        document.getElementById('config-event-id').value = config.api.eventId;
+        document.getElementById('led-connection-type').value = config.led.connectionType;
+        document.getElementById('led-ip').value = config.led.ip;
+        document.getElementById('led-port').value = config.led.port;
+        document.getElementById('show-net-time').checked = config.display.showNetTime;
+        document.getElementById('show-gun-time').checked = config.display.showGunTime;
+        document.getElementById('show-overall').checked = config.display.showOverall;
+        document.getElementById('show-gender').checked = config.display.showGender;
+        document.getElementById('show-age-category').checked = config.display.showAgeCategory;
+        document.getElementById('show-custom-category').checked = config.display.showCustomCategory;
+        document.getElementById('show-logo').checked = config.display.showLogo;
+        document.getElementById('display-duration').value = config.display.duration;
+
+        document.getElementById('led-connection-type').addEventListener('change', (e) => {
+            const ethernetConfig = document.getElementById('ethernet-config');
+            if (e.target.value === 'ethernet') {
+                ethernetConfig.classList.remove('hidden');
+            } else {
+                ethernetConfig.classList.add('hidden');
+            }
+        });
+
+        // RFID
+        document.getElementById('connect-rfid-btn').addEventListener('click', connectRFID);
+        document.getElementById('assign-tag-btn').addEventListener('click', () => {
+            const tag = state.lastScannedTag || document.getElementById('last-scanned-tag').value;
+            const bib = document.getElementById('assign-bib').value;
+            assignTag(tag, bib);
+        });
+
+        document.getElementById('rfid-power').addEventListener('input', (e) => {
+            config.rfid.power = parseInt(e.target.value);
+            localStorage.setItem('rfid-power', config.rfid.power);
+            document.getElementById('rfid-power-value').textContent = (config.rfid.power * 10) + '% (~' + (config.rfid.power * 5) + 'cm)';
+        });
+
+        document.getElementById('rfid-power-value').textContent = (config.rfid.power * 10) + '% (~' + (config.rfid.power * 5) + 'cm)';
+
+        document.getElementById('export-tags-btn').addEventListener('click', exportTagsCSV);
+        document.getElementById('clear-tags-btn').addEventListener('click', () => {
+            if (confirm('Usunąć wszystkie przypisania TAG-ów?')) {
+                cache.tags = {};
+                localStorage.setItem('rfid-tags', '{}');
+                updateTagsTable();
+            }
+        });
+
+        // Initial render
+        renderLEDDisplay(null);
+        updateTagsTable();
+
+        // Fetch event info
+        if (config.api.eventId) {
+            try {
+                await fetchEventInfo();
+                renderLEDDisplay(state.currentAthlete);
+                state.apiConnected = true;
+
+                const apiIndicator = document.getElementById('api-status-indicator');
+                const apiText = document.getElementById('api-status-text');
+                if (apiIndicator) apiIndicator.classList.add('connected');
+                if (apiText) apiText.textContent = 'API: połączono (' + (cache.eventInfo?.event_name || '') + ')';
+            } catch (error) {
+                console.warn('Event info fetch failed:', error);
+            }
+        }
+
+        console.log('LED Display System - Ready!');
+    });
     </script>
 </body>
 </html>
