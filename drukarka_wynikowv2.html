@@ -843,11 +843,13 @@
             openResults: [],       // Wyniki OPEN
             sexResults: { M: [], F: [] },  // Wyniki wg płci
             ageResults: {},        // Wyniki wg kategorii wiekowej
+            customResults: {},     // Wyniki kategorii dodatkowych (custom)
             eventInfo: null,       // Informacje o wydarzeniu
             lastUpdate: {          // Czas ostatniej aktualizacji
                 open: null,
                 sex: null,
-                age: null
+                age: null,
+                custom: null
             },
             // Przechowuje wyniki kategorii i płci, które zostały już pobrane
             // To zapobiegnie ich utracie podczas odświeżania
@@ -1305,7 +1307,7 @@
             if (!athlete || !athlete.bracket_name || !athlete.entry_bib) return;
 
             try {
-                // Sprawdź najpierw w cache
+                // Sprawdź najpierw w cache ageResults
                 if (cache.ageResults && cache.ageResults[athlete.bracket_name]) {
                     const matchingAthlete = cache.ageResults[athlete.bracket_name].find(
                         a => a.entry_bib === athlete.entry_bib
@@ -1313,7 +1315,20 @@
 
                     if (matchingAthlete && matchingAthlete.division_place) {
                         athlete.division_place = matchingAthlete.division_place;
-                        console.log(`Znaleziono miejsce w kategorii w cache: ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
+                        console.log(`Znaleziono miejsce w kategorii w cache (age): ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
+                        return;
+                    }
+                }
+
+                // Sprawdź w cache customResults
+                if (cache.customResults && cache.customResults[athlete.bracket_name]) {
+                    const matchingAthlete = cache.customResults[athlete.bracket_name].find(
+                        a => a.entry_bib === athlete.entry_bib
+                    );
+
+                    if (matchingAthlete && matchingAthlete.division_place) {
+                        athlete.division_place = matchingAthlete.division_place;
+                        console.log(`Znaleziono miejsce w kategorii w cache (custom): ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
                         return;
                     }
                 }
@@ -1841,25 +1856,130 @@
         }
         
         /**
+         * Odświeża wyniki kategorii dodatkowych (custom) - pobiera WSZYSTKIE wyniki
+         */
+        async function refreshCustomResults() {
+            try {
+                // Wykryj jakie kategorie custom są w wydarzeniu
+                // Używamy wyników OPEN jako źródła kategorii
+                const customCategories = new Set();
+
+                cache.openResults.forEach(athlete => {
+                    if (athlete.bracket_name) {
+                        // Sprawdź czy to kategoria custom (nie AGE, nie SEX)
+                        if (!isAgeBracket(athlete.bracket_name) && !isSexBracket(athlete.bracket_name)) {
+                            customCategories.add(athlete.bracket_name);
+                        }
+                    }
+                });
+
+                if (customCategories.size === 0) {
+                    console.log("Brak kategorii dodatkowych w wydarzeniu");
+                    return {};
+                }
+
+                console.log(`Znaleziono ${customCategories.size} kategorii dodatkowych:`, Array.from(customCategories));
+
+                const allCustomResults = {};
+
+                // Dla każdej kategorii custom, pobierz wyniki
+                for (const categoryName of customCategories) {
+                    const params = {
+                        size: 100,
+                        bracket_name: categoryName
+                    };
+
+                    console.log(`Pobieranie wyników dla kategorii: ${categoryName}`);
+
+                    // Pobierz wszystkie strony dla tej kategorii
+                    const categoryResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
+
+                    if (categoryResults.length > 0) {
+                        // Zmapuj do naszego standardowego formatu
+                        const mappedResults = categoryResults.map(result => {
+                            const mapped = {
+                                entry_bib: result.results_bib,
+                                athlete_first_name: result.results_first_name,
+                                athlete_last_name: result.results_last_name,
+                                athlete_sex: result.results_sex,
+                                entry_race_age: result.results_age,
+                                bracket_name: result.results_primary_bracket_name || categoryName,
+                                race_distance: result.results_race_name,
+                                net_time: result.results_time,
+                                gun_time: result.results_gun_time,
+                                overall_place: result.results_rank,
+                                division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
+                                pace: result.results_pace,
+                                // Sformatowane czasy
+                                formatted_net_time: formatTime(result.results_time),
+                                formatted_gun_time: formatTime(result.results_gun_time),
+                                formatted_pace: result.results_pace
+                            };
+
+                            return mapped;
+                        });
+
+                        allCustomResults[categoryName] = mappedResults;
+
+                        // Aktualizuj cache zawodników z miejscem w kategorii custom
+                        mappedResults.forEach(athlete => {
+                            if (athlete.entry_bib) {
+                                // Zapisz miejsce w kategorii do trwałego cache
+                                if (athlete.division_place) {
+                                    cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
+                                }
+
+                                if (cache.athletes[athlete.entry_bib]) {
+                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
+                                    cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                                } else {
+                                    // Dodaj nowego zawodnika do cache
+                                    cache.athletes[athlete.entry_bib] = athlete;
+                                }
+                            }
+                        });
+
+                        console.log(`Kategoria ${categoryName}: ${mappedResults.length} zawodników`);
+                    }
+                }
+
+                cache.customResults = allCustomResults;
+                cache.lastUpdate.custom = new Date();
+
+                console.log(`Zaktualizowano kategorie dodatkowe, liczba kategorii: ${Object.keys(allCustomResults).length}`);
+                updateCacheInfo();
+
+                return allCustomResults;
+
+            } catch (error) {
+                console.error(`Błąd odświeżania wyników kategorii dodatkowych: ${error.message}`);
+                return {};
+            }
+        }
+
+        /**
          * Odświeża wszystkie dane
          */
         async function refreshAllData() {
             try {
                 // Pokaż status ładowania
                 setStatus('cache-status', 'Odświeżanie danych...', 'loading');
-                
+
                 // Najpierw pobierz informacje o wydarzeniu
                 await fetchEventInfo();
-                
-                // Pobierz wszystkie typy wyników równolegle
+
+                // KROK 1: Pobierz wyniki OPEN (zawierają informacje o kategoriach)
+                await refreshOpenResults();
+
+                // KROK 2: Pobierz pozostałe typy wyników równolegle (znamy już kategorie)
                 await Promise.all([
-                    refreshOpenResults(),
                     refreshSexResults(),
-                    refreshAgeResults()
+                    refreshAgeResults(),
+                    refreshCustomResults()  // NOWE: pobierz kategorie dodatkowe
                 ]);
-                
+
                 updateCacheInfo();
-                
+
                 setStatus('cache-status', 'Dane odświeżone pomyślnie', 'success');
                 
                 // Ukryj status po 3 sekundach
@@ -1881,13 +2001,18 @@
         function setupRefreshTimers() {
             // Wyczyść istniejące timery
             clearRefreshTimers();
-            
+
             // Ustaw nowe timery
-            refreshTimers.open = setInterval(refreshOpenResults, config.refreshIntervals.open);
+            refreshTimers.open = setInterval(async () => {
+                await refreshOpenResults();
+                // Po odświeżeniu OPEN, odśwież custom (może pojawiły się nowe kategorie)
+                await refreshCustomResults();
+            }, config.refreshIntervals.open);
+
             refreshTimers.sex = setInterval(refreshSexResults, config.refreshIntervals.sex);
             refreshTimers.age = setInterval(refreshAgeResults, config.refreshIntervals.age);
         }
-        
+
         /**
          * Czyści wszystkie timery odświeżania
          */
@@ -1895,7 +2020,7 @@
             if (refreshTimers.open) clearInterval(refreshTimers.open);
             if (refreshTimers.sex) clearInterval(refreshTimers.sex);
             if (refreshTimers.age) clearInterval(refreshTimers.age);
-            
+
             refreshTimers.open = null;
             refreshTimers.sex = null;
             refreshTimers.age = null;
@@ -1909,10 +2034,12 @@
             cache.openResults = [];
             cache.sexResults = { M: [], F: [] };
             cache.ageResults = {};
+            cache.customResults = {};
             cache.lastUpdate = {
                 open: null,
                 sex: null,
-                age: null
+                age: null,
+                custom: null
             };
             
             updateCacheInfo();
