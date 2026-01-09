@@ -58,25 +58,23 @@
         .mode-toggle:hover { background: rgba(255,255,255,0.3); }
 
         .screen {
-            display: none;
-            padding: 30px;
+            display: none !important;
             flex: 1;
             overflow-y: auto;
         }
-        .screen.active { display: flex; }
 
         /* DISPLAY SCREEN - Simple for athletes */
         #display-screen {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
             padding: 0;
             background: #000;
         }
 
         #display-screen.active {
+            display: flex !important;
             flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
         }
         
         .search-panel {
@@ -167,19 +165,21 @@
         }
         
         /* ADMIN SCREEN */
-        /* ADMIN SCREEN */
         #admin-screen {
             background: #f5f5f5;
+            padding: 30px;
         }
 
         #admin-screen.active {
-            display: block;
+            display: block !important;
         }
 
         .admin-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
         
         .panel {
@@ -881,6 +881,10 @@
                         mappedResults.forEach(athlete => {
                             if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
                                 cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
+                                // Update bracket_positions if available
+                                if (athlete.bracket_positions) {
+                                    cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                                }
                             }
                         });
                     }
@@ -910,6 +914,10 @@
                     mappedResults.forEach(athlete => {
                         if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
                             cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                            // Update bracket_positions if available
+                            if (athlete.bracket_positions) {
+                                cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                            }
                         }
 
                         if (athlete.bracket_name) {
@@ -986,6 +994,10 @@
                         mappedResults.forEach(athlete => {
                             if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
                                 cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                                // Update bracket_positions if available
+                                if (athlete.bracket_positions) {
+                                    cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                                }
                             }
                         });
 
@@ -1090,6 +1102,16 @@
                     fetchTags(),
                     fetchCustomQuestions()
                 ]);
+
+                // Update cached athletes with clubs
+                if (cache.clubs) {
+                    Object.keys(cache.athletes).forEach(bib => {
+                        if (cache.clubs[bib]) {
+                            cache.athletes[bib].club = cache.clubs[bib];
+                        }
+                    });
+                    console.log('Updated cached athletes with clubs');
+                }
 
                 updateIndicator('api-indicator', 'api-status', true, `API: ${cache.eventInfo.event_name}`);
                 return true;
