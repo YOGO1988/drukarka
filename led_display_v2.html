@@ -167,6 +167,15 @@
         }
         
         /* ADMIN SCREEN */
+        /* ADMIN SCREEN */
+        #admin-screen {
+            background: #f5f5f5;
+        }
+
+        #admin-screen.active {
+            display: block;
+        }
+
         .admin-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1139,6 +1148,12 @@
                 return;
             }
 
+            console.log('Rendering athlete:', athlete);
+            console.log('Gender place:', athlete.gender_place);
+            console.log('Division place:', athlete.division_place);
+            console.log('Bracket positions:', athlete.bracket_positions);
+            console.log('Club:', athlete.club);
+
             const canvas = ui.ledCanvas;
             const ctx = canvas.getContext('2d');
 
@@ -1232,19 +1247,42 @@
                 y += lineHeight;
             }
 
-            // Category place - show AGE or CUSTOM, not both
-            if (athlete.bracket_name && athlete.division_place) {
+            // Category places - show ALL available (AGE, CUSTOM from bracket_positions)
+            if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
+                // Show all category places from bracket_positions
+                for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
+                    if (!position || position <= 0) continue;
+
+                    const isAge = isAgeBracket(bracketName);
+                    const isSex = isSexBracket(bracketName);
+
+                    // Skip SEX brackets (already shown as K/M above)
+                    if (isSex) continue;
+
+                    // Show AGE categories if enabled
+                    if (isAge && config.display.showAge) {
+                        ctx.fillText(`${bracketName}: ${position}`, 120, y);
+                        y += lineHeight;
+                    }
+                    // Show CUSTOM categories if enabled
+                    else if (!isAge && !isSex && config.display.showCustom) {
+                        ctx.fillText(`${bracketName}: ${position}`, 120, y);
+                        y += lineHeight;
+                    }
+                }
+            } else if (athlete.bracket_name && athlete.division_place) {
+                // Fallback if no bracket_positions - show primary bracket
                 const isAge = isAgeBracket(athlete.bracket_name);
                 const isSex = isSexBracket(athlete.bracket_name);
 
-                if (isAge && config.display.showAge) {
-                    // Show age category
-                    ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
-                    y += lineHeight;
-                } else if (!isAge && !isSex && config.display.showCustom) {
-                    // Show custom category
-                    ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
-                    y += lineHeight;
+                if (!isSex) {
+                    if (isAge && config.display.showAge) {
+                        ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
+                        y += lineHeight;
+                    } else if (!isAge && config.display.showCustom) {
+                        ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
+                        y += lineHeight;
+                    }
                 }
             }
 
