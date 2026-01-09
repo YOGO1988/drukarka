@@ -1318,17 +1318,12 @@
                         <span>${name || 'Brak danych'}</span>
                     </div>
 
-                    ${bestCategory ? `
+                    ${(bestCategory || athlete.bracket_name) ? `
                     <div class="receipt-line">
                         <span>Kategoria:</span>
-                        <span>${bestCategory.name}</span>
+                        <span>${bestCategory ? bestCategory.name : athlete.bracket_name}</span>
                     </div>
-                    ` : (athlete.bracket_name ? `
-                    <div class="receipt-line">
-                        <span>Kategoria:</span>
-                        <span>${athlete.bracket_name}</span>
-                    </div>
-                    ` : '')}
+                    ` : ''}
 
                     <div class="receipt-separator"></div>
 
@@ -1362,17 +1357,12 @@
                     </div>
                     ` : ''}
 
-                    ${bestCategory ? `
+                    ${(bestCategory || athlete.division_place) ? `
                     <div class="receipt-line">
                         <span>Miejsce w kategorii:</span>
-                        <span>${bestCategory.position} (${bestCategory.name})</span>
+                        <span>${bestCategory ? bestCategory.position : athlete.division_place}</span>
                     </div>
-                    ` : (athlete.division_place ? `
-                    <div class="receipt-line">
-                        <span>Miejsce w kategorii:</span>
-                        <span>${athlete.division_place}</span>
-                    </div>
-                    ` : '')}
+                    ` : ''}
 
                     ${config.customMessages.custom ? `
                     <div class="receipt-separator"></div>
@@ -1548,7 +1538,7 @@
 
                     // Miejsce w kategorii - użyj wybranej kategorii
                     if (bestCategory) {
-                        printData += formatLine('Miejsce w kat.:', bestCategory.position.toString() + ' (' + convertPolishChars(bestCategory.name) + ')');
+                        printData += formatLine('Miejsce w kat.:', bestCategory.position.toString());
                     } else if (selectedAthlete.division_place) {
                         printData += formatLine('Miejsce w kat.:', selectedAthlete.division_place.toString());
                     }
