@@ -1271,9 +1271,16 @@
                             mappedAthlete.gender_place = savedGenderPlace;
                         }
 
-                        // Sprawdź czy mamy miejsce w kategorii - pobierz z API jeśli brak
-                        if (!mappedAthlete.division_place && mappedAthlete.bracket_name) {
+                        // Sprawdź czy mamy miejsce w kategorii - pobierz z API jeśli brak lub puste
+                        // Sprawdź czy division_place jest puste, null, undefined lub pusty string
+                        const hasDivisionPlace = mappedAthlete.division_place &&
+                                                 mappedAthlete.division_place !== '' &&
+                                                 mappedAthlete.division_place !== '-' &&
+                                                 mappedAthlete.division_place !== '0';
+
+                        if (!hasDivisionPlace && mappedAthlete.bracket_name) {
                             // Próbuj pobrać dane o kategorii z API
+                            console.log(`Brak miejsca w kategorii dla ${mappedAthlete.entry_bib} (${mappedAthlete.bracket_name}), pobieranie z API...`);
                             await getAthleteAgeGroupResult(mappedAthlete);
                         }
                         
