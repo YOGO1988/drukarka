@@ -1334,26 +1334,21 @@
                 }
 
                 // Wykryj typ kategorii i użyj odpowiedniego parametru bracket
-                let bracketType = 'age'; // domyślnie
+                let bracketType;
                 if (isAgeBracket(athlete.bracket_name)) {
                     bracketType = 'age';
                 } else if (isSexBracket(athlete.bracket_name)) {
                     bracketType = 'sex';
                 } else {
-                    // Dla kategorii dodatkowych (custom) użyj bezpośrednio bracket_name
-                    bracketType = null; // użyjemy bracket_name jako parametr
+                    // Dla kategorii dodatkowych (custom) użyj nazwy kategorii jako bracket
+                    bracketType = athlete.bracket_name;
                 }
 
                 // Jeśli nie ma w cache, spróbuj pobrać bezpośrednio z API
                 const params = {
-                    bracket_name: athlete.bracket_name,
+                    bracket: bracketType,  // POPRAWIONE: zawsze użyj 'bracket' jako parametru
                     bib: athlete.entry_bib
                 };
-
-                // Dodaj bracket tylko jeśli to AGE lub SEX
-                if (bracketType) {
-                    params.bracket = bracketType;
-                }
 
                 console.log(`Pobieranie miejsca w kategorii dla zawodnika ${athlete.entry_bib} z kategorii ${athlete.bracket_name} (typ: ${bracketType || 'custom'})`);
                 const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, params);
@@ -1886,7 +1881,8 @@
                 for (const categoryName of customCategories) {
                     const params = {
                         size: 100,
-                        bracket_name: categoryName
+                        bracket: categoryName,
+                        include_all_fields: '1'  // Pobierz wszystkie pola włącznie z bracket_positions
                     };
 
                     console.log(`Pobieranie wyników dla kategorii: ${categoryName}`);
@@ -1915,6 +1911,23 @@
                                 formatted_gun_time: formatTime(result.results_gun_time),
                                 formatted_pace: result.results_pace
                             };
+
+                            // Parsuj bracket_positions jeśli dostępne (include_all_fields=1)
+                            if (result.bracket_positions) {
+                                try {
+                                    const positions = typeof result.bracket_positions === 'string'
+                                        ? JSON.parse(result.bracket_positions)
+                                        : result.bracket_positions;
+
+                                    // Znajdź miejsce w aktualnej kategorii
+                                    if (positions[categoryName]) {
+                                        mapped.division_place = positions[categoryName];
+                                        console.log(`Bracket positions dla ${result.results_bib}: miejsce w ${categoryName} = ${positions[categoryName]}`);
+                                    }
+                                } catch (e) {
+                                    console.warn(`Nie można sparsować bracket_positions dla ${result.results_bib}:`, e);
+                                }
+                            }
 
                             return mapped;
                         });
