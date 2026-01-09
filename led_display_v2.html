@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YO&GO LED Display System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #FF8C00, #FF7000);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 { font-size: 24px; }
+        
+        .mode-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .mode-toggle:hover { background: rgba(255,255,255,0.3); }
+        
+        .screen { display: none; padding: 30px; }
+        .screen.active { display: block; }
+        
+        /* DISPLAY SCREEN - Simple for athletes */
+        #display-screen {
+            display: flex;
+            gap: 30px;
+            align-items: stretch;
+        }
+        
+        .search-panel {
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .search-box {
+            background: #f8f8f8;
+            padding: 30px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        
+        .search-box h2 {
+            color: #FF8C00;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        #search-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        #search-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        #search-btn:hover { background: #FF7000; }
+        
+        .status-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status-box.error {
+            background: #ffe7e7;
+            border-color: #f44336;
+        }
+        
+        .status-box.success {
+            background: #e7ffe7;
+            border-color: #4CAF50;
+        }
+        
+        .led-preview {
+            flex: 1;
+            background: #000;
+            padding: 30px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #led-canvas {
+            border: 2px solid #333;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: #000;
+        }
+        
+        .led-info {
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        
+        /* ADMIN SCREEN */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .panel {
+            background: #f8f8f8;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .panel h2 {
+            color: #FF8C00;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #FF8C00;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        button {
+            background: #FF8C00;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        button:hover { background: #FF7000; }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #5a6268; }
+        
+        .hidden { display: none !important; }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.connected { background: #28a745; animation: pulse 2s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .btn-full {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖥️ YO&GO LED Display System</h1>
+            <button class="mode-toggle" id="mode-toggle">🔧 Tryb Administratora</button>
+        </header>
+
+        <!-- DISPLAY SCREEN (for athletes) -->
+        <div class="screen active" id="display-screen">
+            <div class="search-panel">
+                <div class="search-box">
+                    <h2>Wprowadź numer startowy</h2>
+                    <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
+                    <button id="search-btn" class="btn-full">WYŚWIETL</button>
+                    <div id="search-status" class="status-box"></div>
+                </div>
+                
+                <div class="search-box">
+                    <h2>📊 Status systemu</h2>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="api-indicator"></span>
+                        <span id="api-status">API: nie połączono</span>
+                    </div>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="rfid-indicator"></span>
+                        <span id="rfid-status">RFID: nie aktywny</span>
+                    </div>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="led-indicator"></span>
+                        <span id="led-status">LED: gotowy</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="led-preview">
+                <canvas id="led-canvas" width="240" height="240"></canvas>
+                <div class="led-info">Tablica LED 240×240 px (96×96 cm, P4)</div>
+            </div>
+        </div>
+
+        <!-- ADMIN SCREEN -->
+        <div class="screen" id="admin-screen">
+            <div class="admin-grid">
+                <!-- API Config -->
+                <div class="panel">
+                    <h2>⚙️ Konfiguracja API</h2>
+                    <div class="form-group">
+                        <label>ID Wydarzenia:</label>
+                        <input type="text" id="event-id" placeholder="np. 87968">
+                    </div>
+                    <button id="save-api-btn" class="btn-full">Zapisz i połącz</button>
+                    <button id="refresh-cache-btn" class="btn-full secondary">🔄 Odśwież dane z API</button>
+                    <div id="api-save-status" class="status-box"></div>
+                </div>
+
+                <!-- Display Config -->
+                <div class="panel">
+                    <h2>🎨 Wyświetlanie</h2>
+                    <label style="font-weight: bold; margin-bottom: 10px; display: block;">Czasy:</label>
+                    <div class="checkbox-grid">
+                        <div><input type="checkbox" id="show-net-time" checked><label for="show-net-time">Czas netto</label></div>
+                        <div><input type="checkbox" id="show-gun-time"><label for="show-gun-time">Czas brutto</label></div>
+                    </div>
+                    
+                    <label style="font-weight: bold; margin: 15px 0 10px 0; display: block;">Miejsca:</label>
+                    <div class="checkbox-grid">
+                        <div><input type="checkbox" id="show-overall" checked><label for="show-overall">OPEN</label></div>
+                        <div><input type="checkbox" id="show-gender" checked><label for="show-gender">K/M</label></div>
+                        <div><input type="checkbox" id="show-age" checked><label for="show-age">Kategoria wiekowa</label></div>
+                        <div><input type="checkbox" id="show-custom" checked><label for="show-custom">Kategoria dodatkowa</label></div>
+                    </div>
+                    
+                    <button id="save-display-btn" class="btn-full">Zapisz ustawienia</button>
+                </div>
+
+                <!-- RFID Config -->
+                <div class="panel">
+                    <h2>📡 RFID Czytnik</h2>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="admin-rfid-indicator"></span>
+                        <span id="admin-rfid-status">Czytnik: nie podłączony</span>
+                    </div>
+                    <button id="connect-rfid-btn" class="btn-full">🔌 Połącz czytnik USB</button>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Zasięg czytnika:</label>
+                        <input type="range" id="rfid-power" min="1" max="10" value="3">
+                        <span id="rfid-power-label">~15cm</span>
+                    </div>
+                </div>
+
+                <!-- LED Connection -->
+                <div class="panel">
+                    <h2>🖥️ Połączenie z tablicą LED</h2>
+                    <div class="form-group">
+                        <label>Typ połączenia:</label>
+                        <select id="led-connection-type">
+                            <option value="none">Brak (tylko podgląd)</option>
+                            <option value="hdmi">HDMI (F11 fullscreen)</option>
+                            <option value="ethernet">Ethernet / HTTP</option>
+                        </select>
+                    </div>
+                    
+                    <div id="ethernet-config" class="hidden">
+                        <div class="form-group">
+                            <label>Adres IP tablicy:</label>
+                            <input type="text" id="led-ip" placeholder="192.168.1.100">
+                        </div>
+                        <div class="form-group">
+                            <label>Port:</label>
+                            <input type="number" id="led-port" value="80">
+                        </div>
+                    </div>
+                    
+                    <button id="save-led-btn" class="btn-full">Zapisz połączenie</button>
+                    <button id="test-led-btn" class="btn-full secondary">Test połączenia</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /**
+     * YO&GO Events LED Display System
+     * System do wyświetlania wyników na tablicy LED 240x240 px (96x96 cm, P4)
+     * Wersja 2.0
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // =====================================
+        // CONFIGURATION
+        // =====================================
+        const config = {
+            api: {
+                clientId: '727dae7f',
+                userId: 'lukasz@yogoevents.pl',
+                userPass: 'f2b2f3082a9d2ae5091eb5920bee538dc01bb413',
+                baseUrl: 'https://api.chronotrack.com',
+                eventId: localStorage.getItem('led-event-id') || ''
+            },
+            display: {
+                showNetTime: localStorage.getItem('led-show-net-time') !== 'false',
+                showGunTime: localStorage.getItem('led-show-gun-time') === 'true',
+                showOverall: localStorage.getItem('led-show-overall') !== 'false',
+                showGender: localStorage.getItem('led-show-gender') !== 'false',
+                showAge: localStorage.getItem('led-show-age') !== 'false',
+                showCustom: localStorage.getItem('led-show-custom') !== 'false'
+            },
+            led: {
+                connectionType: localStorage.getItem('led-connection-type') || 'none',
+                ip: localStorage.getItem('led-ip') || '192.168.1.100',
+                port: localStorage.getItem('led-port') || '80'
+            },
+            rfid: {
+                connected: false,
+                device: null,
+                power: parseInt(localStorage.getItem('led-rfid-power') || '3')
+            },
+            refreshInterval: 90000  // 90 seconds
+        };
+
+        // =====================================
+        // DATA CACHE
+        // =====================================
+        const cache = {
+            athletes: {},          // Zawodnicy po BIB
+            tags: {},              // TAG -> BIB mapping
+            openResults: [],       // Wyniki OPEN
+            sexResults: { M: [], F: [] },
+            ageResults: {},
+            customResults: {},
+            eventInfo: null,
+            lastUpdate: {
+                open: null,
+                sex: null,
+                age: null,
+                custom: null
+            }
+        };
+
+        // =====================================
+        // UI ELEMENTS
+        // =====================================
+        const ui = {
+            // Mode toggle
+            modeToggle: document.getElementById('mode-toggle'),
+            displayScreen: document.getElementById('display-screen'),
+            adminScreen: document.getElementById('admin-screen'),
+
+            // Display screen
+            searchInput: document.getElementById('search-input'),
+            searchBtn: document.getElementById('search-btn'),
+            searchStatus: document.getElementById('search-status'),
+            ledCanvas: document.getElementById('led-canvas'),
+
+            // Status indicators
+            apiIndicator: document.getElementById('api-indicator'),
+            apiStatus: document.getElementById('api-status'),
+            rfidIndicator: document.getElementById('rfid-indicator'),
+            rfidStatus: document.getElementById('rfid-status'),
+            ledIndicator: document.getElementById('led-indicator'),
+            ledStatus: document.getElementById('led-status'),
+
+            // Admin screen - API Config
+            eventIdInput: document.getElementById('event-id'),
+            saveApiBtn: document.getElementById('save-api-btn'),
+            refreshCacheBtn: document.getElementById('refresh-cache-btn'),
+            apiSaveStatus: document.getElementById('api-save-status'),
+
+            // Admin screen - Display Config
+            showNetTime: document.getElementById('show-net-time'),
+            showGunTime: document.getElementById('show-gun-time'),
+            showOverall: document.getElementById('show-overall'),
+            showGender: document.getElementById('show-gender'),
+            showAge: document.getElementById('show-age'),
+            showCustom: document.getElementById('show-custom'),
+            saveDisplayBtn: document.getElementById('save-display-btn'),
+
+            // Admin screen - RFID
+            connectRfidBtn: document.getElementById('connect-rfid-btn'),
+            rfidPower: document.getElementById('rfid-power'),
+            rfidPowerLabel: document.getElementById('rfid-power-label'),
+            adminRfidIndicator: document.getElementById('admin-rfid-indicator'),
+            adminRfidStatus: document.getElementById('admin-rfid-status'),
+
+            // Admin screen - LED Connection
+            ledConnectionType: document.getElementById('led-connection-type'),
+            ethernetConfig: document.getElementById('ethernet-config'),
+            ledIp: document.getElementById('led-ip'),
+            ledPort: document.getElementById('led-port'),
+            saveLedBtn: document.getElementById('save-led-btn'),
+            testLedBtn: document.getElementById('test-led-btn')
+        };
+
+        let currentMode = 'display';  // 'display' or 'admin'
+        let refreshTimer = null;
+        let selectedAthlete = null;
+
+        // =====================================
+        // UTILITY FUNCTIONS
+        // =====================================
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            element.textContent = message;
+            element.className = 'status-box ' + type;
+            element.style.display = message ? 'block' : 'none';
+
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function updateIndicator(indicatorId, statusId, connected, message) {
+            const indicator = document.getElementById(indicatorId);
+            const status = document.getElementById(statusId);
+
+            if (indicator) {
+                indicator.className = 'status-indicator' + (connected ? ' connected' : '');
+            }
+            if (status) {
+                status.textContent = message;
+            }
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return '-';
+
+            if (timeString.includes(':')) {
+                const timeParts = timeString.split(':');
+                let hours = parseInt(timeParts[0]);
+                let minutes = parseInt(timeParts[1]);
+                let secondsPart = timeParts[2] ? timeParts[2].split('.') : ['0'];
+                let seconds = parseInt(secondsPart[0]);
+                let milliseconds = secondsPart[1] ? parseInt(secondsPart[1]) : 0;
+
+                if (milliseconds > 0) seconds++;
+                if (seconds >= 60) { minutes++; seconds -= 60; }
+                if (minutes >= 60) { hours++; minutes -= 60; }
+
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+            return timeString;
+        }
+
+        function formatEventDate(timestamp) {
+            if (!timestamp) return '-';
+            try {
+                const date = new Date(parseInt(timestamp) * 1000);
+                return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+            } catch (error) {
+                return timestamp;
+            }
+        }
+
+        // =====================================
+        // CATEGORY SELECTION FUNCTIONS
+        // =====================================
+
+        function isSexBracket(bracketName) {
+            if (!bracketName) return false;
+            const sexBrackets = ['M', 'K', 'F', 'MALE', 'FEMALE', 'MĘŻCZYŹNI', 'KOBIETY'];
+            return sexBrackets.includes(bracketName.toUpperCase());
+        }
+
+        function isAgeBracket(bracketName) {
+            if (!bracketName) return false;
+            return /^[MKF][\d\-\+]+/.test(bracketName);
+        }
+
+        function selectBestCategory(athlete) {
+            if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
+                const brackets = athlete.bracket_positions;
+                let ageCategory = null;
+                let customCategory = null;
+                let sexCategory = null;
+
+                for (const [bracketName, position] of Object.entries(brackets)) {
+                    if (!position || position <= 0) continue;
+
+                    if (isAgeBracket(bracketName)) {
+                        if (!ageCategory) ageCategory = { name: bracketName, position: position };
+                    } else if (isSexBracket(bracketName)) {
+                        if (!sexCategory) sexCategory = { name: bracketName, position: position };
+                    } else {
+                        if (!customCategory) customCategory = { name: bracketName, position: position };
+                    }
+                }
+
+                if (ageCategory) return ageCategory;
+                else if (customCategory) return customCategory;
+                else if (sexCategory) return sexCategory;
+            }
+            return null;
+        }
+
+        // =====================================
+        // API FUNCTIONS
+        // =====================================
+
+        function buildApiUrl(endpoint, params = {}) {
+            const authParams = {
+                format: 'json',
+                client_id: config.api.clientId,
+                user_id: config.api.userId,
+                user_pass: config.api.userPass,
+                ...params
+            };
+
+            const queryString = Object.entries(authParams)
+                .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                .join('&');
+
+            return `${config.api.baseUrl}${endpoint}?${queryString}`;
+        }
+
+        async function makeApiRequest(endpoint, params = {}) {
+            try {
+                const url = buildApiUrl(endpoint, params);
+                console.log(`API Request: ${url}`);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`API Request Error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function fetchEventInfo() {
+            try {
+                const response = await makeApiRequest(`/api/event/${config.api.eventId}`);
+                if (response && response.event) {
+                    const eventData = response.event;
+                    cache.eventInfo = {
+                        event_id: eventData.event_id,
+                        event_name: eventData.event_name,
+                        event_date: formatEventDate(eventData.event_start_time),
+                        location_city: eventData.location_city || '',
+                        location_country: eventData.location_country || ''
+                    };
+                    return cache.eventInfo;
+                }
+                throw new Error('Invalid event data');
+            } catch (error) {
+                console.error(`Fetch Event Info Error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function fetchAllResultPages(endpoint, params, maxPages = 10) {
+            let page = 1;
+            let allResults = [];
+            let hasMorePages = true;
+
+            while (hasMorePages && page <= maxPages) {
+                try {
+                    const pageParams = { ...params, page };
+                    const response = await makeApiRequest(endpoint, pageParams);
+
+                    if (response && response.event_results && response.event_results.length > 0) {
+                        allResults = allResults.concat(response.event_results);
+
+                        if (response.page_count && response.page) {
+                            hasMorePages = parseInt(response.page) < parseInt(response.page_count);
+                        } else if (response.event_results.length < params.size) {
+                            hasMorePages = false;
+                        }
+                        page++;
+                    } else {
+                        hasMorePages = false;
+                    }
+                } catch (error) {
+                    console.error(`Page ${page} error: ${error.message}`);
+                    hasMorePages = false;
+                }
+            }
+
+            return allResults;
+        }
+
+        function mapAthleteData(result) {
+            const mapped = {
+                entry_bib: result.results_bib,
+                athlete_first_name: result.results_first_name,
+                athlete_last_name: result.results_last_name,
+                athlete_sex: result.results_sex,
+                entry_race_age: result.results_age,
+                bracket_name: result.results_primary_bracket_name,
+                race_distance: result.results_race_name,
+                net_time: result.results_time,
+                gun_time: result.results_gun_time,
+                overall_place: result.results_rank,
+                gender_place: result.results_gender_rank || result.results_sex_rank || '',
+                division_place: result.results_bracket_rank || result.results_division_rank || result.results_rank_in_bracket || '',
+                pace: result.results_pace,
+                formatted_net_time: formatTime(result.results_time),
+                formatted_gun_time: formatTime(result.results_gun_time)
+            };
+
+            // Parse bracket_positions
+            if (result.bracket_positions) {
+                if (typeof result.bracket_positions === 'string') {
+                    try {
+                        mapped.bracket_positions = JSON.parse(result.bracket_positions);
+                    } catch (e) {
+                        mapped.bracket_positions = result.bracket_positions;
+                    }
+                } else {
+                    mapped.bracket_positions = result.bracket_positions;
+                }
+
+                const bestCategory = selectBestCategory(mapped);
+                if (bestCategory) {
+                    mapped.bracket_name = bestCategory.name;
+                    mapped.division_place = bestCategory.position;
+                }
+            }
+
+            return mapped;
+        }
+
+        async function refreshOpenResults() {
+            try {
+                const params = { size: 100 };
+                console.log("Fetching OPEN results...");
+
+                const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
+
+                if (allResults.length > 0) {
+                    const mappedResults = allResults.map(mapAthleteData);
+                    cache.openResults = mappedResults;
+                    cache.lastUpdate.open = new Date();
+
+                    mappedResults.forEach(athlete => {
+                        if (athlete.entry_bib) {
+                            cache.athletes[athlete.entry_bib] = athlete;
+                        }
+                    });
+
+                    console.log(`OPEN results updated: ${mappedResults.length} athletes`);
+                    return mappedResults;
+                }
+                return [];
+            } catch (error) {
+                console.error(`Refresh OPEN error: ${error.message}`);
+                return [];
+            }
+        }
+
+        async function refreshSexResults() {
+            try {
+                const sexTypes = ['M', 'F'];
+                const results = { M: [], F: [] };
+
+                for (const sexType of sexTypes) {
+                    const params = { size: 100, bracket: 'sex', sex: sexType };
+                    console.log(`Fetching ${sexType} results...`);
+
+                    const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
+
+                    if (genderResults.length > 0) {
+                        const mappedResults = genderResults.map(mapAthleteData);
+                        results[sexType] = mappedResults;
+
+                        mappedResults.forEach(athlete => {
+                            if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
+                                cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
+                            }
+                        });
+                    }
+                }
+
+                cache.sexResults = results;
+                cache.lastUpdate.sex = new Date();
+                console.log(`SEX results updated: M=${results.M.length}, F=${results.F.length}`);
+                return results;
+            } catch (error) {
+                console.error(`Refresh SEX error: ${error.message}`);
+                return { M: [], F: [] };
+            }
+        }
+
+        async function refreshAgeResults() {
+            try {
+                const params = { size: 100, bracket: 'age' };
+                console.log("Fetching AGE results...");
+
+                const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
+
+                if (allResults.length > 0) {
+                    const ageCategories = {};
+                    const mappedResults = allResults.map(mapAthleteData);
+
+                    mappedResults.forEach(athlete => {
+                        if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
+                            cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                        }
+
+                        if (athlete.bracket_name) {
+                            if (!ageCategories[athlete.bracket_name]) {
+                                ageCategories[athlete.bracket_name] = [];
+                            }
+                            ageCategories[athlete.bracket_name].push(athlete);
+                        }
+                    });
+
+                    cache.ageResults = ageCategories;
+                    cache.lastUpdate.age = new Date();
+                    console.log(`AGE results updated: ${Object.keys(ageCategories).length} categories`);
+                    return ageCategories;
+                }
+                return {};
+            } catch (error) {
+                console.error(`Refresh AGE error: ${error.message}`);
+                return {};
+            }
+        }
+
+        async function refreshCustomResults() {
+            try {
+                const customCategories = new Set();
+
+                cache.openResults.forEach(athlete => {
+                    if (athlete.bracket_name && !isAgeBracket(athlete.bracket_name) && !isSexBracket(athlete.bracket_name)) {
+                        customCategories.add(athlete.bracket_name);
+                    }
+                });
+
+                if (customCategories.size === 0) {
+                    console.log("No custom categories found");
+                    return {};
+                }
+
+                console.log(`Found ${customCategories.size} custom categories:`, Array.from(customCategories));
+                const allCustomResults = {};
+
+                for (const categoryName of customCategories) {
+                    const params = {
+                        size: 100,
+                        bracket: categoryName,
+                        include_all_fields: '1'
+                    };
+
+                    console.log(`Fetching ${categoryName} results...`);
+                    const categoryResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
+
+                    if (categoryResults.length > 0) {
+                        const mappedResults = categoryResults.map(result => {
+                            const mapped = mapAthleteData(result);
+
+                            if (result.bracket_positions) {
+                                try {
+                                    const positions = typeof result.bracket_positions === 'string'
+                                        ? JSON.parse(result.bracket_positions)
+                                        : result.bracket_positions;
+
+                                    if (positions[categoryName]) {
+                                        mapped.division_place = positions[categoryName];
+                                    }
+                                } catch (e) {
+                                    console.warn(`Cannot parse bracket_positions for ${result.results_bib}:`, e);
+                                }
+                            }
+
+                            return mapped;
+                        });
+
+                        allCustomResults[categoryName] = mappedResults;
+
+                        mappedResults.forEach(athlete => {
+                            if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
+                                cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                            }
+                        });
+
+                        console.log(`Category ${categoryName}: ${mappedResults.length} athletes`);
+                    }
+                }
+
+                cache.customResults = allCustomResults;
+                cache.lastUpdate.custom = new Date();
+                console.log(`CUSTOM results updated: ${Object.keys(allCustomResults).length} categories`);
+                return allCustomResults;
+            } catch (error) {
+                console.error(`Refresh CUSTOM error: ${error.message}`);
+                return {};
+            }
+        }
+
+        async function fetchTags() {
+            try {
+                // Fetch tags from API (entrants endpoint)
+                const params = { size: 100 };
+                console.log("Fetching TAGs from API...");
+
+                const response = await makeApiRequest(`/api/event/${config.api.eventId}/entrants`, params);
+
+                if (response && response.event_entrants && response.event_entrants.length > 0) {
+                    const tagMapping = {};
+
+                    response.event_entrants.forEach(entrant => {
+                        if (entrant.entry_bib && entrant.entry_rfid_tag) {
+                            tagMapping[entrant.entry_rfid_tag] = entrant.entry_bib;
+                        }
+                    });
+
+                    cache.tags = tagMapping;
+                    console.log(`Loaded ${Object.keys(tagMapping).length} TAG mappings`);
+                    return tagMapping;
+                }
+                return {};
+            } catch (error) {
+                console.error(`Fetch TAGs error: ${error.message}`);
+                return {};
+            }
+        }
+
+        async function refreshAllData() {
+            try {
+                updateIndicator('api-indicator', 'api-status', false, 'API: Odświeżanie...');
+
+                await fetchEventInfo();
+                await refreshOpenResults();
+
+                await Promise.all([
+                    refreshSexResults(),
+                    refreshAgeResults(),
+                    refreshCustomResults(),
+                    fetchTags()
+                ]);
+
+                updateIndicator('api-indicator', 'api-status', true, `API: ${cache.eventInfo.event_name}`);
+                return true;
+            } catch (error) {
+                console.error(`Refresh all data error: ${error.message}`);
+                updateIndicator('api-indicator', 'api-status', false, 'API: Błąd połączenia');
+                return false;
+            }
+        }
+
+        function setupRefreshTimer() {
+            if (refreshTimer) clearInterval(refreshTimer);
+
+            refreshTimer = setInterval(async () => {
+                await refreshOpenResults();
+                await refreshCustomResults();
+            }, config.refreshInterval);
+        }
+
+        async function findAthleteByBib(bib) {
+            // Check cache first
+            if (cache.athletes[bib]) {
+                console.log(`Found athlete in cache: ${bib}`);
+                return cache.athletes[bib];
+            }
+
+            // Fetch from API
+            try {
+                const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, { bib });
+
+                if (response && response.event_results && response.event_results.length > 0) {
+                    const athlete = response.event_results.find(result =>
+                        result.results_bib === bib || String(result.results_bib) === String(bib)
+                    );
+
+                    if (athlete) {
+                        const mappedAthlete = mapAthleteData(athlete);
+                        cache.athletes[mappedAthlete.entry_bib] = mappedAthlete;
+                        return mappedAthlete;
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error(`Find athlete error: ${error.message}`);
+                return null;
+            }
+        }
+
+        // =====================================
+        // LED DISPLAY RENDERING
+        // =====================================
+
+        function renderLEDDisplay(athlete) {
+            if (!athlete) {
+                clearLEDDisplay();
+                return;
+            }
+
+            const canvas = ui.ledCanvas;
+            const ctx = canvas.getContext('2d');
+
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 240, 240);
+
+            // Set default text style
+            ctx.fillStyle = '#FFD700';  // Gold color
+            ctx.textAlign = 'center';
+
+            let y = 20;
+            const lineHeight = 25;
+
+            // Name
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText(`${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 120, y);
+            y += lineHeight + 5;
+
+            // BIB
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#FFF';
+            ctx.fillText(`#${athlete.entry_bib}`, 120, y);
+            y += lineHeight;
+
+            // Distance
+            if (athlete.race_distance) {
+                ctx.fillText(athlete.race_distance, 120, y);
+                y += lineHeight + 5;
+            }
+
+            // Times
+            ctx.fillStyle = '#00FF00';  // Green for times
+            ctx.font = 'bold 18px Arial';
+
+            if (config.display.showNetTime && athlete.formatted_net_time) {
+                ctx.fillText(`NETTO: ${athlete.formatted_net_time}`, 120, y);
+                y += lineHeight;
+            }
+
+            if (config.display.showGunTime && athlete.formatted_gun_time) {
+                ctx.fillText(`BRUTTO: ${athlete.formatted_gun_time}`, 120, y);
+                y += lineHeight + 5;
+            }
+
+            // Places
+            ctx.fillStyle = '#FF8C00';  // Orange for places
+            ctx.font = 'bold 16px Arial';
+
+            if (config.display.showOverall && athlete.overall_place) {
+                ctx.fillText(`OPEN: ${athlete.overall_place}`, 120, y);
+                y += lineHeight;
+            }
+
+            if (config.display.showGender && athlete.gender_place) {
+                const genderLabel = athlete.athlete_sex === 'M' ? 'MĘŻCZYŹNI' : 'KOBIETY';
+                ctx.fillText(`${genderLabel}: ${athlete.gender_place}`, 120, y);
+                y += lineHeight;
+            }
+
+            if (config.display.showAge && athlete.division_place && athlete.bracket_name) {
+                ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
+                y += lineHeight;
+            }
+
+            if (config.display.showCustom && athlete.division_place && athlete.bracket_name) {
+                // Show custom category if it's not age/sex
+                if (!isAgeBracket(athlete.bracket_name) && !isSexBracket(athlete.bracket_name)) {
+                    ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
+                    y += lineHeight;
+                }
+            }
+
+            // Footer
+            y = 220;
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#888';
+            ctx.fillText('YO&GO Events', 120, y);
+
+            selectedAthlete = athlete;
+
+            // Send to LED if configured
+            sendToLED();
+        }
+
+        function clearLEDDisplay() {
+            const canvas = ui.ledCanvas;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 240, 240);
+
+            ctx.fillStyle = '#888';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Oczekiwanie na dane...', 120, 120);
+
+            selectedAthlete = null;
+        }
+
+        function sendToLED() {
+            if (!selectedAthlete) return;
+
+            const connectionType = config.led.connectionType;
+
+            if (connectionType === 'none') {
+                // Only preview, no actual sending
+                updateIndicator('led-indicator', 'led-status', true, 'LED: Tylko podgląd');
+                return;
+            }
+
+            if (connectionType === 'hdmi') {
+                // HDMI mode - canvas is already displayed, user should press F11 for fullscreen
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI (naciśnij F11)');
+                return;
+            }
+
+            if (connectionType === 'ethernet') {
+                // Send to LED via Ethernet/HTTP
+                sendToLEDViaEthernet();
+            }
+        }
+
+        async function sendToLEDViaEthernet() {
+            try {
+                const canvas = ui.ledCanvas;
+                const imageData = canvas.toDataURL('image/png');
+
+                // Send image to LED controller
+                const response = await fetch(`http://${config.led.ip}:${config.led.port}/display`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                if (response.ok) {
+                    updateIndicator('led-indicator', 'led-status', true, 'LED: Wysłano przez Ethernet');
+                } else {
+                    throw new Error('HTTP Error: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Send to LED error:', error);
+                updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd wysyłania');
+            }
+        }
+
+        // =====================================
+        // RFID FUNCTIONS
+        // =====================================
+
+        async function connectRFID() {
+            try {
+                if (!navigator.usb) {
+                    throw new Error('Web USB API nie jest obsługiwane w tej przeglądarce');
+                }
+
+                const device = await navigator.usb.requestDevice({
+                    filters: [
+                        { vendorId: 0xffff },  // Common RFID reader vendor ID
+                        { vendorId: 0x08ff }   // Another common one
+                    ]
+                });
+
+                console.log("RFID device detected:", device);
+
+                await device.open();
+                if (device.configuration === null) {
+                    await device.selectConfiguration(1);
+                }
+                await device.claimInterface(0);
+
+                config.rfid.device = device;
+                config.rfid.connected = true;
+
+                updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Połączony');
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Czytnik: Połączony');
+
+                // Start reading RFID tags
+                startRFIDReading();
+
+                return true;
+            } catch (error) {
+                console.error('RFID connection error:', error);
+                updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Błąd połączenia');
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', false, 'Czytnik: Błąd');
+                return false;
+            }
+        }
+
+        function startRFIDReading() {
+            if (!config.rfid.device || !config.rfid.connected) return;
+
+            // Read RFID tags continuously
+            const readLoop = async () => {
+                try {
+                    const result = await config.rfid.device.transferIn(1, 64);
+
+                    if (result.data && result.data.byteLength > 0) {
+                        const decoder = new TextDecoder();
+                        const tagId = decoder.decode(result.data).trim();
+
+                        if (tagId) {
+                            console.log(`RFID tag read: ${tagId}`);
+                            handleRFIDTag(tagId);
+                        }
+                    }
+
+                    if (config.rfid.connected) {
+                        setTimeout(readLoop, 100);
+                    }
+                } catch (error) {
+                    console.error('RFID read error:', error);
+                    config.rfid.connected = false;
+                    updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Rozłączony');
+                }
+            };
+
+            readLoop();
+        }
+
+        async function handleRFIDTag(tagId) {
+            // Find BIB for this TAG
+            const bib = cache.tags[tagId];
+
+            if (bib) {
+                console.log(`TAG ${tagId} -> BIB ${bib}`);
+                ui.searchInput.value = bib;
+                await searchAndDisplay(bib);
+            } else {
+                console.log(`TAG ${tagId} not found in cache`);
+                showStatus('search-status', `TAG ${tagId} nie znaleziony`, 'error');
+            }
+        }
+
+        // =====================================
+        // SEARCH AND DISPLAY
+        // =====================================
+
+        async function searchAndDisplay(bib) {
+            if (!bib) {
+                showStatus('search-status', 'Wprowadź numer startowy', 'error');
+                return;
+            }
+
+            showStatus('search-status', 'Szukam...', '');
+
+            try {
+                const athlete = await findAthleteByBib(bib);
+
+                if (athlete) {
+                    showStatus('search-status', `Znaleziono: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
+                    renderLEDDisplay(athlete);
+                } else {
+                    showStatus('search-status', 'Nie znaleziono zawodnika', 'error');
+                    clearLEDDisplay();
+                }
+            } catch (error) {
+                showStatus('search-status', `Błąd: ${error.message}`, 'error');
+                clearLEDDisplay();
+            }
+        }
+
+        // =====================================
+        // MODE TOGGLE
+        // =====================================
+
+        function toggleMode() {
+            if (currentMode === 'display') {
+                currentMode = 'admin';
+                ui.displayScreen.classList.remove('active');
+                ui.adminScreen.classList.add('active');
+                ui.modeToggle.textContent = '👁️ Tryb Wyświetlania';
+            } else {
+                currentMode = 'display';
+                ui.adminScreen.classList.remove('active');
+                ui.displayScreen.classList.add('active');
+                ui.modeToggle.textContent = '🔧 Tryb Administratora';
+
+                // Focus search input when returning to display mode
+                ui.searchInput.focus();
+            }
+        }
+
+        // =====================================
+        // CONFIGURATION SAVE/LOAD
+        // =====================================
+
+        function saveApiConfig() {
+            const eventId = ui.eventIdInput.value.trim();
+
+            if (!eventId) {
+                showStatus('api-save-status', 'Wprowadź ID wydarzenia', 'error');
+                return;
+            }
+
+            config.api.eventId = eventId;
+            localStorage.setItem('led-event-id', eventId);
+
+            showStatus('api-save-status', 'Zapisano. Łączę z API...', 'success');
+
+            // Connect to API and refresh data
+            initializeApi();
+        }
+
+        function saveDisplayConfig() {
+            config.display.showNetTime = ui.showNetTime.checked;
+            config.display.showGunTime = ui.showGunTime.checked;
+            config.display.showOverall = ui.showOverall.checked;
+            config.display.showGender = ui.showGender.checked;
+            config.display.showAge = ui.showAge.checked;
+            config.display.showCustom = ui.showCustom.checked;
+
+            localStorage.setItem('led-show-net-time', config.display.showNetTime);
+            localStorage.setItem('led-show-gun-time', config.display.showGunTime);
+            localStorage.setItem('led-show-overall', config.display.showOverall);
+            localStorage.setItem('led-show-gender', config.display.showGender);
+            localStorage.setItem('led-show-age', config.display.showAge);
+            localStorage.setItem('led-show-custom', config.display.showCustom);
+
+            alert('Ustawienia wyświetlania zapisane');
+
+            // Re-render current athlete if any
+            if (selectedAthlete) {
+                renderLEDDisplay(selectedAthlete);
+            }
+        }
+
+        function saveLedConfig() {
+            config.led.connectionType = ui.ledConnectionType.value;
+            config.led.ip = ui.ledIp.value;
+            config.led.port = ui.ledPort.value;
+
+            localStorage.setItem('led-connection-type', config.led.connectionType);
+            localStorage.setItem('led-ip', config.led.ip);
+            localStorage.setItem('led-port', config.led.port);
+
+            alert('Konfiguracja LED zapisana');
+
+            // Update status
+            if (config.led.connectionType === 'none') {
+                updateIndicator('led-indicator', 'led-status', true, 'LED: Tylko podgląd');
+            } else if (config.led.connectionType === 'hdmi') {
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI');
+            } else if (config.led.connectionType === 'ethernet') {
+                updateIndicator('led-indicator', 'led-status', false, 'LED: Ethernet (niepołączony)');
+            }
+        }
+
+        function testLedConnection() {
+            if (config.led.connectionType === 'ethernet') {
+                // Test connection to LED controller
+                fetch(`http://${config.led.ip}:${config.led.port}/ping`)
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Połączenie z tablicą LED działa!');
+                            updateIndicator('led-indicator', 'led-status', true, 'LED: Ethernet połączony');
+                        } else {
+                            throw new Error('Connection failed');
+                        }
+                    })
+                    .catch(error => {
+                        alert('Nie można połączyć się z tablicą LED. Sprawdź adres IP i port.');
+                        updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd połączenia');
+                    });
+            } else {
+                alert('Test połączenia dostępny tylko dla trybu Ethernet');
+            }
+        }
+
+        function loadConfig() {
+            // Load saved config
+            if (config.api.eventId) {
+                ui.eventIdInput.value = config.api.eventId;
+            }
+
+            ui.showNetTime.checked = config.display.showNetTime;
+            ui.showGunTime.checked = config.display.showGunTime;
+            ui.showOverall.checked = config.display.showOverall;
+            ui.showGender.checked = config.display.showGender;
+            ui.showAge.checked = config.display.showAge;
+            ui.showCustom.checked = config.display.showCustom;
+
+            ui.ledConnectionType.value = config.led.connectionType;
+            ui.ledIp.value = config.led.ip;
+            ui.ledPort.value = config.led.port;
+            ui.rfidPower.value = config.rfid.power;
+
+            updateRfidPowerLabel();
+            updateLedConnectionUI();
+        }
+
+        function updateLedConnectionUI() {
+            if (ui.ledConnectionType.value === 'ethernet') {
+                ui.ethernetConfig.classList.remove('hidden');
+            } else {
+                ui.ethernetConfig.classList.add('hidden');
+            }
+        }
+
+        function updateRfidPowerLabel() {
+            const power = ui.rfidPower.value;
+            const distance = Math.round(power * 5);  // Rough estimation: power 3 = ~15cm
+            ui.rfidPowerLabel.textContent = `~${distance}cm`;
+        }
+
+        // =====================================
+        // API INITIALIZATION
+        // =====================================
+
+        async function initializeApi() {
+            try {
+                if (config.api.eventId) {
+                    updateIndicator('api-indicator', 'api-status', false, 'API: Łączenie...');
+
+                    const success = await refreshAllData();
+
+                    if (success) {
+                        setupRefreshTimer();
+                        return true;
+                    } else {
+                        updateIndicator('api-indicator', 'api-status', false, 'API: Błąd połączenia');
+                        return false;
+                    }
+                } else {
+                    updateIndicator('api-indicator', 'api-status', false, 'API: Brak konfiguracji');
+                    return false;
+                }
+            } catch (error) {
+                updateIndicator('api-indicator', 'api-status', false, 'API: Błąd');
+                return false;
+            }
+        }
+
+        // =====================================
+        // EVENT LISTENERS
+        // =====================================
+
+        ui.modeToggle.addEventListener('click', toggleMode);
+
+        ui.searchBtn.addEventListener('click', () => {
+            const bib = ui.searchInput.value.trim();
+            searchAndDisplay(bib);
+        });
+
+        ui.searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const bib = ui.searchInput.value.trim();
+                searchAndDisplay(bib);
+            }
+        });
+
+        ui.saveApiBtn.addEventListener('click', saveApiConfig);
+        ui.refreshCacheBtn.addEventListener('click', refreshAllData);
+        ui.saveDisplayBtn.addEventListener('click', saveDisplayConfig);
+        ui.saveLedBtn.addEventListener('click', saveLedConfig);
+        ui.testLedBtn.addEventListener('click', testLedConnection);
+        ui.connectRfidBtn.addEventListener('click', connectRFID);
+
+        ui.ledConnectionType.addEventListener('change', updateLedConnectionUI);
+        ui.rfidPower.addEventListener('input', updateRfidPowerLabel);
+
+        // =====================================
+        // INITIALIZATION
+        // =====================================
+
+        console.log('LED Display System v2 - Initializing...');
+
+        loadConfig();
+        clearLEDDisplay();
+
+        // Initialize API if configured
+        if (config.api.eventId) {
+            initializeApi();
+        } else {
+            updateIndicator('api-indicator', 'api-status', false, 'API: Skonfiguruj ID wydarzenia');
+        }
+
+        updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Nie podłączony');
+        updateIndicator('led-indicator', 'led-status', true, 'LED: Gotowy');
+
+        // Focus search input
+        ui.searchInput.focus();
+
+        console.log('LED Display System v2 - Ready!');
+    });
+    </script>
+</body>
+</html>
