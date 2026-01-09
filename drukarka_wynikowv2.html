@@ -1257,23 +1257,23 @@
                                 console.log(`Wybrano kategorię: ${bestCategory.name}, pozycja: ${bestCategory.position}`);
                             }
                         }
-                        
+
                         // Sprawdź czy mamy zapisane dane o kategorii i płci
                         const savedDivisionPlace = cache.persistentData.divisionPlaces[mappedAthlete.entry_bib];
                         const savedGenderPlace = cache.persistentData.genderPlaces[mappedAthlete.entry_bib];
-                        
+
                         // Przywróć dane o kategorii i płci, jeśli zostały zapisane
                         if (savedDivisionPlace && !mappedAthlete.division_place) {
                             mappedAthlete.division_place = savedDivisionPlace;
                         }
-                        
+
                         if (savedGenderPlace && !mappedAthlete.gender_place) {
                             mappedAthlete.gender_place = savedGenderPlace;
                         }
-                        
-                        // Sprawdź czy mamy miejsce w kategorii
-                        if (!mappedAthlete.division_place && athlete.bracket_name) {
-                            // Próbuj pobrać dane o kategorii
+
+                        // Sprawdź czy mamy miejsce w kategorii - pobierz z API jeśli brak
+                        if (!mappedAthlete.division_place && mappedAthlete.bracket_name) {
+                            // Próbuj pobrać dane o kategorii z API
                             await getAthleteAgeGroupResult(mappedAthlete);
                         }
                         
@@ -1292,33 +1292,48 @@
         }
         
         /**
-         * Próbuje pobrać dane o miejscu zawodnika w kategorii wiekowej
+         * Próbuje pobrać dane o miejscu zawodnika w kategorii (wiekowej, dodatkowej, płci)
          */
         async function getAthleteAgeGroupResult(athlete) {
             if (!athlete || !athlete.bracket_name || !athlete.entry_bib) return;
-            
+
             try {
                 // Sprawdź najpierw w cache
                 if (cache.ageResults && cache.ageResults[athlete.bracket_name]) {
                     const matchingAthlete = cache.ageResults[athlete.bracket_name].find(
                         a => a.entry_bib === athlete.entry_bib
                     );
-                    
+
                     if (matchingAthlete && matchingAthlete.division_place) {
                         athlete.division_place = matchingAthlete.division_place;
                         console.log(`Znaleziono miejsce w kategorii w cache: ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
                         return;
                     }
                 }
-                
+
+                // Wykryj typ kategorii i użyj odpowiedniego parametru bracket
+                let bracketType = 'age'; // domyślnie
+                if (isAgeBracket(athlete.bracket_name)) {
+                    bracketType = 'age';
+                } else if (isSexBracket(athlete.bracket_name)) {
+                    bracketType = 'sex';
+                } else {
+                    // Dla kategorii dodatkowych (custom) użyj bezpośrednio bracket_name
+                    bracketType = null; // użyjemy bracket_name jako parametr
+                }
+
                 // Jeśli nie ma w cache, spróbuj pobrać bezpośrednio z API
                 const params = {
-                    bracket: 'age',
                     bracket_name: athlete.bracket_name,
                     bib: athlete.entry_bib
                 };
-                
-                console.log(`Pobieranie miejsca w kategorii dla zawodnika ${athlete.entry_bib} z kategorii ${athlete.bracket_name}`);
+
+                // Dodaj bracket tylko jeśli to AGE lub SEX
+                if (bracketType) {
+                    params.bracket = bracketType;
+                }
+
+                console.log(`Pobieranie miejsca w kategorii dla zawodnika ${athlete.entry_bib} z kategorii ${athlete.bracket_name} (typ: ${bracketType || 'custom'})`);
                 const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, params);
                 
                 if (response && response.event_results && response.event_results.length > 0) {
