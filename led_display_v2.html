@@ -833,18 +833,24 @@
                 if (typeof result.bracket_positions === 'string') {
                     try {
                         mapped.bracket_positions = JSON.parse(result.bracket_positions);
+                        console.log(`[BRACKET_POS] BIB ${result.results_bib}: parsed bracket_positions:`, mapped.bracket_positions);
                     } catch (e) {
+                        console.warn(`[BRACKET_POS] BIB ${result.results_bib}: Failed to parse bracket_positions`, e);
                         mapped.bracket_positions = result.bracket_positions;
                     }
                 } else {
                     mapped.bracket_positions = result.bracket_positions;
+                    console.log(`[BRACKET_POS] BIB ${result.results_bib}: bracket_positions already object:`, mapped.bracket_positions);
                 }
 
                 const bestCategory = selectBestCategory(mapped);
                 if (bestCategory) {
                     mapped.bracket_name = bestCategory.name;
                     mapped.division_place = bestCategory.position;
+                    console.log(`[BEST_CAT] BIB ${result.results_bib}: Selected ${bestCategory.name} with position ${bestCategory.position}`);
                 }
+            } else {
+                console.log(`[BRACKET_POS] BIB ${result.results_bib}: NO bracket_positions in API response`);
             }
 
             // Add club from cache if available
@@ -869,7 +875,22 @@
 
                     mappedResults.forEach(athlete => {
                         if (athlete.entry_bib) {
-                            cache.athletes[athlete.entry_bib] = athlete;
+                            if (cache.athletes[athlete.entry_bib]) {
+                                // Merge new OPEN data with existing data, preserving places from persistentData
+                                const existing = cache.athletes[athlete.entry_bib];
+                                cache.athletes[athlete.entry_bib] = {
+                                    ...existing,  // Keep existing data (gender_place, division_place, bracket_positions)
+                                    ...athlete,   // Update with new OPEN data (overall_place, times, etc.)
+                                    // Restore gender_place and division_place from persistentData if they exist
+                                    gender_place: cache.persistentData.genderPlaces[athlete.entry_bib] || existing.gender_place || athlete.gender_place,
+                                    division_place: cache.persistentData.divisionPlaces[athlete.entry_bib] || existing.division_place || athlete.division_place,
+                                    // Keep bracket_positions if it exists in existing data
+                                    bracket_positions: existing.bracket_positions || athlete.bracket_positions
+                                };
+                            } else {
+                                // First time seeing this athlete
+                                cache.athletes[athlete.entry_bib] = athlete;
+                            }
                         }
                     });
 
