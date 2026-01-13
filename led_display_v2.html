@@ -911,6 +911,10 @@
                                 if (cache.athletes[athlete.entry_bib]) {
                                     // Zachowaj istniejące dane, ale zaktualizuj miejsce w płci
                                     cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
+                                    // Zapisz bracket_positions jeśli dostępne
+                                    if (athlete.bracket_positions) {
+                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                                    }
                                 } else {
                                     // Dodaj nowego zawodnika do cache
                                     cache.athletes[athlete.entry_bib] = athlete;
@@ -952,6 +956,10 @@
                             if (cache.athletes[athlete.entry_bib]) {
                                 // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
                                 cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                                // Zapisz bracket_positions jeśli dostępne
+                                if (athlete.bracket_positions) {
+                                    cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                                }
                             } else {
                                 // Dodaj nowego zawodnika do cache
                                 cache.athletes[athlete.entry_bib] = athlete;
@@ -1040,6 +1048,10 @@
                                 if (cache.athletes[athlete.entry_bib]) {
                                     // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
                                     cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                                    // Zapisz bracket_positions jeśli dostępne
+                                    if (athlete.bracket_positions) {
+                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
+                                    }
                                 } else {
                                     // Dodaj nowego zawodnika do cache
                                     cache.athletes[athlete.entry_bib] = athlete;
@@ -1291,6 +1303,7 @@
             console.log('Gender place:', athlete.gender_place);
             console.log('Division place:', athlete.division_place);
             console.log('Bracket positions:', athlete.bracket_positions);
+            console.log('Bracket name:', athlete.bracket_name);
             console.log('Club:', athlete.club);
 
             const canvas = ui.ledCanvas;
@@ -1302,58 +1315,52 @@
 
             ctx.textAlign = 'center';
 
-            let y = 15;
-            const lineHeight = 20;
+            let y = 12;
+            const lineHeight = 16;  // Zmniejszone z 20 na 16
 
-            // Name
-            ctx.font = 'bold 20px Arial';
-            ctx.fillStyle = '#FFD700';  // Gold
-            ctx.fillText(`${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 120, y);
-            y += lineHeight + 3;
-
-            // BIB
-            ctx.font = '14px Arial';
-            ctx.fillStyle = '#FFF';
-            ctx.fillText(`#${athlete.entry_bib}`, 120, y);
-            y += lineHeight;
-
-            // Club (if configured and available)
-            if (config.display.showClub && athlete.club) {
-                ctx.font = '12px Arial';
-                ctx.fillStyle = '#AAA';
-                ctx.fillText(athlete.club, 120, y);
-                y += lineHeight - 2;
-            }
-
-            // Event name
+            // 1. Event name (nazwa biegu)
             if (cache.eventInfo && cache.eventInfo.event_name) {
-                ctx.font = 'bold 16px Arial';
+                ctx.font = 'bold 14px Arial';
                 ctx.fillStyle = '#FFD700';
                 ctx.fillText(cache.eventInfo.event_name, 120, y);
                 y += lineHeight;
             }
 
-            // Race distance
-            if (athlete.race_distance) {
-                ctx.font = '14px Arial';
-                ctx.fillStyle = '#FFF';
-                ctx.fillText(athlete.race_distance, 120, y);
-                y += lineHeight;
-            }
-
-            // Location (if configured and available)
+            // 2. Location (miejscowość) - if configured
             if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) {
-                ctx.font = '12px Arial';
+                ctx.font = '11px Arial';
                 ctx.fillStyle = '#888';
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
+                y += lineHeight - 2;
+            }
+
+            // 3. Imię nazwisko
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText(`${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 120, y);
+            y += lineHeight + 2;
+
+            // 4. Club (klub)
+            if (config.display.showClub && athlete.club) {
+                ctx.font = '11px Arial';
+                ctx.fillStyle = '#AAA';
+                ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
             }
 
-            y += 3; // Extra spacing before times
+            // 5. Race distance (optional, małą czcionką)
+            if (athlete.race_distance) {
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#666';
+                ctx.fillText(athlete.race_distance, 120, y);
+                y += lineHeight - 2;
+            }
 
-            // Times logic: WYNIK vs NETTO/BRUTTO
-            ctx.fillStyle = '#00FF00';  // Green for times
-            ctx.font = 'bold 17px Arial';
+            y += 2; // Extra spacing before times
+
+            // 6. Czasy - WYNIK (brutto) i NETTO
+            ctx.fillStyle = '#00FF00';
+            ctx.font = 'bold 15px Arial';
 
             const showBothTimes = config.display.showNetTime && config.display.showGunTime;
 
@@ -1377,26 +1384,30 @@
                 y += lineHeight;
             }
 
-            y += 3; // Extra spacing before places
+            y += 2; // Extra spacing before places
 
-            // Places
-            ctx.fillStyle = '#FF8C00';  // Orange
-            ctx.font = 'bold 15px Arial';
+            // 7. Miejsca w kategoriach
+            ctx.fillStyle = '#FF8C00';
+            ctx.font = 'bold 13px Arial';  // Zmniejszone z 15 na 13
 
+            // OPEN place
             if (config.display.showOverall && athlete.overall_place) {
                 ctx.fillText(`OPEN: ${athlete.overall_place}`, 120, y);
-                y += lineHeight;
+                y += lineHeight - 1;
             }
 
+            // K/M place
             if (config.display.showGender && athlete.gender_place) {
                 const genderLabel = athlete.athlete_sex === 'M' ? 'MĘŻCZYŹNI' : 'KOBIETY';
                 ctx.fillText(`${genderLabel}: ${athlete.gender_place}`, 120, y);
-                y += lineHeight;
+                y += lineHeight - 1;
             }
 
-            // Category places - show ALL available (AGE, CUSTOM from bracket_positions)
+            // AGE and CUSTOM categories - from bracket_positions OR bracket_name
+            const categoriesToShow = [];
+
+            // Jeśli mamy bracket_positions, użyj ich
             if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
-                // Show all category places from bracket_positions
                 for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
                     if (!position || position <= 0) continue;
 
@@ -1408,34 +1419,35 @@
 
                     // Show AGE categories if enabled
                     if (isAge && config.display.showAge) {
-                        ctx.fillText(`${bracketName}: ${position}`, 120, y);
-                        y += lineHeight;
+                        categoriesToShow.push({ name: bracketName, place: position });
                     }
                     // Show CUSTOM categories if enabled
                     else if (!isAge && !isSex && config.display.showCustom) {
-                        ctx.fillText(`${bracketName}: ${position}`, 120, y);
-                        y += lineHeight;
+                        categoriesToShow.push({ name: bracketName, place: position });
                     }
                 }
-            } else if (athlete.bracket_name && athlete.division_place) {
-                // Fallback if no bracket_positions - show primary bracket
+            }
+            // Fallback: użyj bracket_name i division_place
+            else if (athlete.bracket_name && athlete.division_place) {
                 const isAge = isAgeBracket(athlete.bracket_name);
                 const isSex = isSexBracket(athlete.bracket_name);
 
                 if (!isSex) {
-                    if (isAge && config.display.showAge) {
-                        ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
-                        y += lineHeight;
-                    } else if (!isAge && config.display.showCustom) {
-                        ctx.fillText(`${athlete.bracket_name}: ${athlete.division_place}`, 120, y);
-                        y += lineHeight;
+                    if ((isAge && config.display.showAge) || (!isAge && config.display.showCustom)) {
+                        categoriesToShow.push({ name: athlete.bracket_name, place: athlete.division_place });
                     }
                 }
             }
 
+            // Wyświetl kategorie (max 4-5 żeby się zmieściło)
+            categoriesToShow.slice(0, 5).forEach(cat => {
+                ctx.fillText(`${cat.name}: ${cat.place}`, 120, y);
+                y += lineHeight - 1;
+            });
+
             // Footer
             y = 228;
-            ctx.font = '11px Arial';
+            ctx.font = '10px Arial';
             ctx.fillStyle = '#666';
             ctx.fillText('YO&GO Events', 120, y);
 
