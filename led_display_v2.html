@@ -793,7 +793,7 @@
             return allResults;
         }
 
-        function mapAthleteData(result, debugBib = null) {
+        function mapAthleteData(result) {
             const mapped = {
                 entry_bib: result.results_bib,
                 athlete_first_name: result.results_first_name,
@@ -806,51 +806,30 @@
                 gun_time: result.results_gun_time,
                 overall_place: result.results_rank,
                 gender_place: result.results_rank_in_bracket || result.results_rank || '',
-                division_place: result.results_bracket_rank || result.results_division_rank || result.results_rank_in_bracket || '',
+                division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank || '',
                 pace: result.results_pace,
                 formatted_net_time: formatTime(result.results_time),
                 formatted_gun_time: formatTime(result.results_gun_time)
             };
 
-            if (debugBib && result.results_bib == debugBib) {
-                console.log(`[DEBUG BIB ${debugBib}] Raw API data:`, {
-                    results_rank: result.results_rank,
-                    results_rank_in_bracket: result.results_rank_in_bracket,
-                    results_gender_rank: result.results_gender_rank,
-                    results_sex_rank: result.results_sex_rank,
-                    results_bracket_rank: result.results_bracket_rank,
-                    results_division_rank: result.results_division_rank,
-                    bracket_positions: result.bracket_positions
-                });
-                console.log(`[DEBUG BIB ${debugBib}] Mapped data:`, {
-                    gender_place: mapped.gender_place,
-                    division_place: mapped.division_place
-                });
-            }
-
-            // Parse bracket_positions
+            // Parsuj bracket_positions jeśli istnieje
             if (result.bracket_positions) {
                 if (typeof result.bracket_positions === 'string') {
                     try {
                         mapped.bracket_positions = JSON.parse(result.bracket_positions);
-                        console.log(`[BRACKET_POS] BIB ${result.results_bib}: parsed bracket_positions:`, mapped.bracket_positions);
                     } catch (e) {
-                        console.warn(`[BRACKET_POS] BIB ${result.results_bib}: Failed to parse bracket_positions`, e);
                         mapped.bracket_positions = result.bracket_positions;
                     }
                 } else {
                     mapped.bracket_positions = result.bracket_positions;
-                    console.log(`[BRACKET_POS] BIB ${result.results_bib}: bracket_positions already object:`, mapped.bracket_positions);
                 }
 
+                // Wybierz najlepszą kategorię według priorytetu
                 const bestCategory = selectBestCategory(mapped);
                 if (bestCategory) {
                     mapped.bracket_name = bestCategory.name;
                     mapped.division_place = bestCategory.position;
-                    console.log(`[BEST_CAT] BIB ${result.results_bib}: Selected ${bestCategory.name} with position ${bestCategory.position}`);
                 }
-            } else {
-                console.log(`[BRACKET_POS] BIB ${result.results_bib}: NO bracket_positions in API response`);
             }
 
             // Add club from cache if available
@@ -863,7 +842,7 @@
 
         async function refreshOpenResults() {
             try {
-                const params = { size: 100, include_all_fields: '1' };
+                const params = { size: 100 };  // BEZ include_all_fields!
                 console.log("Fetching OPEN results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
@@ -873,24 +852,28 @@
                     cache.openResults = mappedResults;
                     cache.lastUpdate.open = new Date();
 
+                    // Aktualizuj cache zawodników
                     mappedResults.forEach(athlete => {
                         if (athlete.entry_bib) {
-                            if (cache.athletes[athlete.entry_bib]) {
-                                // Merge new OPEN data with existing data, preserving places from persistentData
-                                const existing = cache.athletes[athlete.entry_bib];
-                                cache.athletes[athlete.entry_bib] = {
-                                    ...existing,  // Keep existing data (gender_place, division_place, bracket_positions)
-                                    ...athlete,   // Update with new OPEN data (overall_place, times, etc.)
-                                    // Restore gender_place and division_place from persistentData if they exist
-                                    gender_place: cache.persistentData.genderPlaces[athlete.entry_bib] || existing.gender_place || athlete.gender_place,
-                                    division_place: cache.persistentData.divisionPlaces[athlete.entry_bib] || existing.division_place || athlete.division_place,
-                                    // Keep bracket_positions if it exists in existing data
-                                    bracket_positions: existing.bracket_positions || athlete.bracket_positions
-                                };
-                            } else {
-                                // First time seeing this athlete
-                                cache.athletes[athlete.entry_bib] = athlete;
+                            // Sprawdź czy mamy zapisane dane o kategorii i płci
+                            const savedDivisionPlace = cache.persistentData.divisionPlaces[athlete.entry_bib];
+                            const savedGenderPlace = cache.persistentData.genderPlaces[athlete.entry_bib];
+
+                            const athleteData = {
+                                ...cache.athletes[athlete.entry_bib],
+                                ...athlete
+                            };
+
+                            // Przywróć dane o kategorii i płci, jeśli zostały zapisane
+                            if (savedDivisionPlace) {
+                                athleteData.division_place = savedDivisionPlace;
                             }
+
+                            if (savedGenderPlace) {
+                                athleteData.gender_place = savedGenderPlace;
+                            }
+
+                            cache.athletes[athlete.entry_bib] = athleteData;
                         }
                     });
 
@@ -910,36 +893,30 @@
                 const results = { M: [], F: [] };
 
                 for (const sexType of sexTypes) {
-                    const params = { size: 100, bracket: 'sex', sex: sexType, include_all_fields: '1' };
+                    const params = { size: 100, bracket: 'sex', sex: sexType };  // BEZ include_all_fields!
                     console.log(`Fetching ${sexType} results...`);
 
                     const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                     if (genderResults.length > 0) {
-                        const mappedResults = genderResults.map(r => mapAthleteData(r, '500'));
+                        const mappedResults = genderResults.map(mapAthleteData);
                         results[sexType] = mappedResults;
 
-                        let updatedCount = 0;
+                        // Aktualizuj cache zawodników z poprawionym miejscem w płci
                         mappedResults.forEach(athlete => {
                             if (athlete.entry_bib) {
                                 // Zapisz miejsce w płci do trwałego cache
                                 cache.persistentData.genderPlaces[athlete.entry_bib] = athlete.gender_place;
 
                                 if (cache.athletes[athlete.entry_bib]) {
-                                    console.log(`[SEX UPDATE] Updating BIB ${athlete.entry_bib}: gender_place=${athlete.gender_place}`);
                                     // Zachowaj istniejące dane, ale zaktualizuj miejsce w płci
                                     cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
-                                    // Update bracket_positions if available
-                                    if (athlete.bracket_positions) {
-                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                    }
-                                    updatedCount++;
                                 } else {
-                                    console.warn(`[SEX UPDATE] BIB ${athlete.entry_bib} NOT in cache.athletes!`);
+                                    // Dodaj nowego zawodnika do cache
+                                    cache.athletes[athlete.entry_bib] = athlete;
                                 }
                             }
                         });
-                        console.log(`[SEX UPDATE] Updated ${updatedCount}/${mappedResults.length} athletes in cache`);
                     }
                 }
 
@@ -955,7 +932,7 @@
 
         async function refreshAgeResults() {
             try {
-                const params = { size: 100, bracket: 'age', include_all_fields: '1' };
+                const params = { size: 100, bracket: 'age' };  // BEZ include_all_fields!
                 console.log("Fetching AGE results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
@@ -964,7 +941,7 @@
                     const ageCategories = {};
                     const mappedResults = allResults.map(mapAthleteData);
 
-                    let updatedCount = 0;
+                    // Grupuj według kategorii wiekowej
                     mappedResults.forEach(athlete => {
                         if (athlete.entry_bib) {
                             // Zapisz miejsce w kategorii do trwałego cache
@@ -973,13 +950,11 @@
                             }
 
                             if (cache.athletes[athlete.entry_bib]) {
-                                console.log(`[AGE UPDATE] Updating BIB ${athlete.entry_bib}: division_place=${athlete.division_place}`);
+                                // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
                                 cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                                // Update bracket_positions if available
-                                if (athlete.bracket_positions) {
-                                    cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                }
-                                updatedCount++;
+                            } else {
+                                // Dodaj nowego zawodnika do cache
+                                cache.athletes[athlete.entry_bib] = athlete;
                             }
                         }
 
@@ -990,7 +965,6 @@
                             ageCategories[athlete.bracket_name].push(athlete);
                         }
                     });
-                    console.log(`[AGE] Updated ${updatedCount} athletes with age category places`);
 
                     cache.ageResults = ageCategories;
                     cache.lastUpdate.age = new Date();
@@ -1055,7 +1029,7 @@
 
                         allCustomResults[categoryName] = mappedResults;
 
-                        let updatedCount = 0;
+                        // Aktualizuj cache zawodników z miejscem w kategorii custom
                         mappedResults.forEach(athlete => {
                             if (athlete.entry_bib) {
                                 // Zapisz miejsce w kategorii customowej do trwałego cache
@@ -1064,18 +1038,16 @@
                                 }
 
                                 if (cache.athletes[athlete.entry_bib]) {
-                                    console.log(`[CUSTOM UPDATE] Updating BIB ${athlete.entry_bib} in ${categoryName}: division_place=${athlete.division_place}`);
+                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
                                     cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                                    // Update bracket_positions if available
-                                    if (athlete.bracket_positions) {
-                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                    }
-                                    updatedCount++;
+                                } else {
+                                    // Dodaj nowego zawodnika do cache
+                                    cache.athletes[athlete.entry_bib] = athlete;
                                 }
                             }
                         });
 
-                        console.log(`Category ${categoryName}: ${mappedResults.length} athletes, ${updatedCount} updated in cache`);
+                        console.log(`Category ${categoryName}: ${mappedResults.length} athletes`);
                     }
                 }
 
