@@ -789,7 +789,7 @@
             return allResults;
         }
 
-        function mapAthleteData(result) {
+        function mapAthleteData(result, debugBib = null) {
             const mapped = {
                 entry_bib: result.results_bib,
                 athlete_first_name: result.results_first_name,
@@ -807,6 +807,20 @@
                 formatted_net_time: formatTime(result.results_time),
                 formatted_gun_time: formatTime(result.results_gun_time)
             };
+
+            if (debugBib && result.results_bib == debugBib) {
+                console.log(`[DEBUG BIB ${debugBib}] Raw API data:`, {
+                    results_gender_rank: result.results_gender_rank,
+                    results_sex_rank: result.results_sex_rank,
+                    results_bracket_rank: result.results_bracket_rank,
+                    results_division_rank: result.results_division_rank,
+                    bracket_positions: result.bracket_positions
+                });
+                console.log(`[DEBUG BIB ${debugBib}] Mapped data:`, {
+                    gender_place: mapped.gender_place,
+                    division_place: mapped.division_place
+                });
+            }
 
             // Parse bracket_positions
             if (result.bracket_positions) {
@@ -875,18 +889,24 @@
                     const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                     if (genderResults.length > 0) {
-                        const mappedResults = genderResults.map(mapAthleteData);
+                        const mappedResults = genderResults.map(r => mapAthleteData(r, '500'));
                         results[sexType] = mappedResults;
 
+                        let updatedCount = 0;
                         mappedResults.forEach(athlete => {
                             if (athlete.entry_bib && cache.athletes[athlete.entry_bib]) {
+                                console.log(`[SEX UPDATE] Updating BIB ${athlete.entry_bib}: gender_place=${athlete.gender_place}`);
                                 cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
                                 // Update bracket_positions if available
                                 if (athlete.bracket_positions) {
                                     cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
                                 }
+                                updatedCount++;
+                            } else if (athlete.entry_bib) {
+                                console.warn(`[SEX UPDATE] BIB ${athlete.entry_bib} NOT in cache.athletes!`);
                             }
                         });
+                        console.log(`[SEX UPDATE] Updated ${updatedCount}/${mappedResults.length} athletes in cache`);
                     }
                 }
 
@@ -1208,12 +1228,20 @@
                 y += lineHeight - 2;
             }
 
+            // Event name
+            if (cache.eventInfo && cache.eventInfo.event_name) {
+                ctx.font = 'bold 16px Arial';
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(cache.eventInfo.event_name, 120, y);
+                y += lineHeight;
+            }
+
             // Race distance
             if (athlete.race_distance) {
                 ctx.font = '14px Arial';
                 ctx.fillStyle = '#FFF';
                 ctx.fillText(athlete.race_distance, 120, y);
-                y += lineHeight + 3;
+                y += lineHeight;
             }
 
             // Location (if configured and available)
