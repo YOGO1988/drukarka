@@ -851,7 +851,7 @@
 
         async function refreshOpenResults() {
             try {
-                const params = { size: 100 };
+                const params = { size: 100, include_all_fields: '1' };
                 console.log("Fetching OPEN results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
@@ -883,7 +883,7 @@
                 const results = { M: [], F: [] };
 
                 for (const sexType of sexTypes) {
-                    const params = { size: 100, bracket: 'sex', sex: sexType };
+                    const params = { size: 100, bracket: 'sex', sex: sexType, include_all_fields: '1' };
                     console.log(`Fetching ${sexType} results...`);
 
                     const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
@@ -922,7 +922,7 @@
 
         async function refreshAgeResults() {
             try {
-                const params = { size: 100, bracket: 'age' };
+                const params = { size: 100, bracket: 'age', include_all_fields: '1' };
                 console.log("Fetching AGE results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
