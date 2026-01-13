@@ -1063,73 +1063,144 @@
 
         async function fetchTags() {
             try {
-                // Fetch tags from API (entrants endpoint)
-                const params = { size: 100 };
-                console.log("Fetching TAGs from API...");
+                console.log("Fetching RFID tags from entries API...");
 
-                const response = await makeApiRequest(`/api/event/${config.api.eventId}/entrants`, params);
+                const tagMapping = {};
+                let page = 1;
+                let hasMorePages = true;
 
-                if (response && response.event_entrants && response.event_entrants.length > 0) {
-                    const tagMapping = {};
+                while (hasMorePages) {
+                    const params = {
+                        page: page,
+                        size: 50,
+                        include_test_entries: 'true',
+                        elide_json: 'false'
+                    };
 
-                    response.event_entrants.forEach(entrant => {
-                        if (entrant.entry_bib && entrant.entry_rfid_tag) {
-                            tagMapping[entrant.entry_rfid_tag] = entrant.entry_bib;
+                    const response = await makeApiRequest(`/api/event/${config.api.eventId}/entry`, params);
+
+                    if (response && (response.event_entry || response.entries)) {
+                        const entries = response.event_entry || response.entries || [];
+
+                        if (entries.length > 0) {
+                            entries.forEach(entry => {
+                                const bib = entry.entry_bib;
+                                const tag = entry.entry_rfid_tag || entry.rfid_tag;
+
+                                if (bib && tag) {
+                                    tagMapping[tag] = bib;
+                                }
+                            });
+
+                            // Check pagination
+                            if (response.page && response.page_count) {
+                                hasMorePages = parseInt(response.page) < parseInt(response.page_count);
+                            } else if (entries.length >= 50) {
+                                hasMorePages = true;
+                            } else {
+                                hasMorePages = false;
+                            }
+
+                            page++;
+                        } else {
+                            hasMorePages = false;
                         }
-                    });
-
-                    cache.tags = tagMapping;
-                    console.log(`Loaded ${Object.keys(tagMapping).length} TAG mappings`);
-                    return tagMapping;
+                    } else {
+                        hasMorePages = false;
+                    }
                 }
-                return {};
+
+                cache.tags = tagMapping;
+                console.log(`Loaded ${Object.keys(tagMapping).length} RFID tag mappings`);
+                return tagMapping;
             } catch (error) {
-                console.error(`Fetch TAGs error: ${error.message}`);
+                console.error(`Fetch RFID tags error: ${error.message}`);
                 return {};
             }
         }
 
         async function fetchCustomQuestions() {
             try {
-                // Fetch custom questions/answers from API
-                const params = { size: 100 };
-                console.log("Fetching custom questions from API...");
+                console.log("Fetching club data from entries API...");
 
-                const response = await makeApiRequest(`/api/event/${config.api.eventId}/entrants`, params);
+                const allEntries = {};
+                let page = 1;
+                let hasMorePages = true;
 
-                if (response && response.event_entrants && response.event_entrants.length > 0) {
-                    const clubMapping = {};
+                while (hasMorePages) {
+                    const params = {
+                        page: page,
+                        size: 50,
+                        include_test_entries: 'true',
+                        elide_json: 'false',
+                        contact_details: 'true',
+                        include_all_fields: 'true',
+                        need_athlete_birthdate: 'true'
+                    };
 
-                    response.event_entrants.forEach(entrant => {
-                        if (entrant.entry_bib && entrant.entry_custom_questions) {
-                            try {
-                                // Parse custom questions if string
-                                const questions = typeof entrant.entry_custom_questions === 'string'
-                                    ? JSON.parse(entrant.entry_custom_questions)
-                                    : entrant.entry_custom_questions;
+                    console.log(`Fetching entries page ${page}...`);
+                    const response = await makeApiRequest(`/api/event/${config.api.eventId}/entry`, params);
 
-                                // Find club question (filter out "Tak" answers)
-                                for (const [question, answer] of Object.entries(questions)) {
-                                    // Skip "Tak" answers (these are checkboxes, not club names)
-                                    if (answer && answer.toString().trim() !== '' && answer.toString().toUpperCase() !== 'TAK') {
-                                        // Assume this is the club name
-                                        clubMapping[entrant.entry_bib] = answer.toString().trim();
-                                        break;  // Take first non-"Tak" answer as club
+                    if (response && (response.event_entry || response.entries)) {
+                        const entries = response.event_entry || response.entries || [];
+
+                        if (entries.length > 0) {
+                            console.log(`Page ${page}: found ${entries.length} entries`);
+
+                            entries.forEach(entry => {
+                                const bib = entry.entry_bib;
+                                if (!bib) return;
+
+                                // Extract club from various possible fields (ignore "Tak" responses)
+                                let club = '';
+
+                                // 1. Check direct club field
+                                if (entry.club && entry.club !== 'Tak') {
+                                    club = entry.club;
+                                }
+                                // 2. Check athlete_club field
+                                else if (entry.athlete_club && entry.athlete_club !== 'Tak') {
+                                    club = entry.athlete_club;
+                                }
+                                // 3. Check custom_element fields
+                                else {
+                                    for (const [key, value] of Object.entries(entry)) {
+                                        if (key.startsWith('custom_element') && value && value !== 'Tak') {
+                                            club = value;
+                                            break;  // Take first non-"Tak" custom field
+                                        }
                                     }
                                 }
-                            } catch (e) {
-                                // Ignore parsing errors
-                            }
-                        }
-                    });
 
-                    cache.clubs = clubMapping;
-                    console.log(`Loaded ${Object.keys(clubMapping).length} club mappings`);
-                    return clubMapping;
+                                if (club) {
+                                    allEntries[bib] = club.toString().trim();
+                                }
+                            });
+
+                            // Check pagination
+                            if (response.page && response.page_count) {
+                                hasMorePages = parseInt(response.page) < parseInt(response.page_count);
+                            } else if (entries.length >= 50) {
+                                hasMorePages = true;
+                            } else {
+                                hasMorePages = false;
+                            }
+
+                            page++;
+                        } else {
+                            hasMorePages = false;
+                        }
+                    } else {
+                        console.log('No entries on this page');
+                        hasMorePages = false;
+                    }
                 }
-                return {};
+
+                cache.clubs = allEntries;
+                console.log(`Loaded ${Object.keys(allEntries).length} club mappings`);
+                return allEntries;
             } catch (error) {
-                console.error(`Fetch custom questions error: ${error.message}`);
+                console.error(`Fetch club data error: ${error.message}`);
                 return {};
             }
         }
