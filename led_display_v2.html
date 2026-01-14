@@ -1295,6 +1295,27 @@
         // LED DISPLAY RENDERING
         // =====================================
 
+        // Helper function to wrap text on canvas
+        function wrapText(ctx, text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const testLine = currentLine + ' ' + words[i];
+                const metrics = ctx.measureText(testLine);
+
+                if (metrics.width > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
         function renderLEDDisplay(athlete) {
             if (!athlete) {
                 clearLEDDisplay();
@@ -1337,12 +1358,12 @@
                 }
             }
 
-            // Policz ile linijek będzie na ekranie
+            // Policz ile linijek będzie na ekranie (initial estimate)
             let lineCount = 0;
-            lineCount++; // Event name
+            lineCount++; // Event name (may wrap)
             if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) lineCount++;
             if (config.display.showDistance && athlete.race_distance) lineCount++;
-            lineCount++; // Imię nazwisko
+            lineCount++; // Imię nazwisko (may wrap)
             if (config.display.showClub && athlete.club) lineCount++;
             lineCount += (config.display.showNetTime && config.display.showGunTime) ? 2 : 1; // Czasy
             if (config.display.showOverall && athlete.overall_place) lineCount++;
@@ -1352,28 +1373,73 @@
 
             // Dynamiczny lineHeight w zależności od ilości linii
             const availableHeight = 228; // Canvas height minus footer space
-            let lineHeight = Math.max(12, Math.floor(availableHeight / lineCount));
-            if (lineHeight > 18) lineHeight = 18; // Max line height
+            let lineHeight = Math.max(16, Math.floor(availableHeight / lineCount));
+            if (lineHeight > 30) lineHeight = 30; // Increased max line height for better space usage
 
-            // Dynamiczne czcionki
+            // Dynamiczne czcionki - increased caps to fill more space
             const fontSize = {
-                event: Math.min(16, lineHeight),
-                location: Math.min(11, lineHeight - 2),
-                distance: Math.min(11, lineHeight - 2),
-                name: Math.min(20, lineHeight + 2),
-                club: Math.min(12, lineHeight - 2),
-                time: Math.min(16, lineHeight),
-                category: Math.min(14, lineHeight)
+                event: Math.min(22, Math.floor(lineHeight * 0.9)),
+                location: Math.min(14, Math.floor(lineHeight * 0.7)),
+                distance: Math.min(14, Math.floor(lineHeight * 0.7)),
+                name: Math.min(26, Math.floor(lineHeight * 1.0)),
+                club: Math.min(15, Math.floor(lineHeight * 0.75)),
+                time: Math.min(22, Math.floor(lineHeight * 0.9)),
+                category: Math.min(20, Math.floor(lineHeight * 0.85))
             };
+
+            // Check if text wrapping is needed and recalculate lineCount
+            let eventNameLines = 1;
+            let athleteNameLines = 1;
+            const maxTextWidth = 230; // Canvas width minus margins
+
+            if (cache.eventInfo && cache.eventInfo.event_name) {
+                ctx.font = `bold ${fontSize.event}px Arial`;
+                const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
+                eventNameLines = lines.length;
+            }
+
+            const athleteName = `${athlete.athlete_first_name} ${athlete.athlete_last_name}`;
+            ctx.font = `bold ${fontSize.name}px Arial`;
+            const nameLines = wrapText(ctx, athleteName, maxTextWidth);
+            athleteNameLines = nameLines.length;
+
+            // Recalculate lineCount with actual wrapped lines
+            lineCount = 0;
+            lineCount += eventNameLines;
+            if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) lineCount++;
+            if (config.display.showDistance && athlete.race_distance) lineCount++;
+            lineCount += athleteNameLines;
+            if (config.display.showClub && athlete.club) lineCount++;
+            lineCount += (config.display.showNetTime && config.display.showGunTime) ? 2 : 1;
+            if (config.display.showOverall && athlete.overall_place) lineCount++;
+            if (config.display.showGender && athlete.gender_place) lineCount++;
+            lineCount += Math.min(categoriesToShow.length, 5);
+            lineCount++; // Footer
+
+            // Recalculate lineHeight with actual line count
+            lineHeight = Math.max(16, Math.floor(availableHeight / lineCount));
+            if (lineHeight > 30) lineHeight = 30;
+
+            // Recalculate font sizes with updated lineHeight
+            fontSize.event = Math.min(22, Math.floor(lineHeight * 0.9));
+            fontSize.location = Math.min(14, Math.floor(lineHeight * 0.7));
+            fontSize.distance = Math.min(14, Math.floor(lineHeight * 0.7));
+            fontSize.name = Math.min(26, Math.floor(lineHeight * 1.0));
+            fontSize.club = Math.min(15, Math.floor(lineHeight * 0.75));
+            fontSize.time = Math.min(22, Math.floor(lineHeight * 0.9));
+            fontSize.category = Math.min(20, Math.floor(lineHeight * 0.85));
 
             let y = 12;
 
-            // 1. Event name (nazwa biegu)
+            // 1. Event name (nazwa biegu) - with wrapping
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 ctx.fillStyle = '#FFD700';
-                ctx.fillText(cache.eventInfo.event_name, 120, y);
-                y += lineHeight;
+                const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
+                lines.forEach(line => {
+                    ctx.fillText(line, 120, y);
+                    y += lineHeight;
+                });
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1392,11 +1458,14 @@
                 y += lineHeight;
             }
 
-            // 4. Imię nazwisko
+            // 4. Imię nazwisko - with wrapping
             ctx.font = `bold ${fontSize.name}px Arial`;
             ctx.fillStyle = '#FFD700';
-            ctx.fillText(`${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 120, y);
-            y += lineHeight;
+            const nameLines = wrapText(ctx, athleteName, maxTextWidth);
+            nameLines.forEach(line => {
+                ctx.fillText(line, 120, y);
+                y += lineHeight;
+            });
 
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
@@ -1716,6 +1785,29 @@
             if (!eventId) {
                 showStatus('api-save-status', 'Wprowadź ID wydarzenia', 'error');
                 return;
+            }
+
+            // Check if eventId has changed - if so, clear all cached data
+            if (config.api.eventId && config.api.eventId !== eventId) {
+                console.log('EventId changed from', config.api.eventId, 'to', eventId, '- clearing cache');
+
+                // Clear all cached data
+                cache.athletes = {};
+                cache.openResults = [];
+                cache.sexResults = { M: [], F: [] };
+                cache.ageResults = {};
+                cache.customResults = {};
+                cache.clubs = {};
+                cache.tags = {};
+                cache.eventInfo = null;
+                persistentData.genderPlaces = {};
+                persistentData.divisionPlaces = {};
+
+                // Clear selected athlete
+                selectedAthlete = null;
+                clearLEDDisplay();
+
+                showStatus('api-save-status', 'Zmieniono wydarzenie - czyszczenie cache...', 'success');
             }
 
             config.api.eventId = eventId;
