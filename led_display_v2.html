@@ -156,6 +156,8 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             background: #000;
+            transform: scale(1.5);
+            transform-origin: center;
         }
         
         .led-info {
@@ -400,6 +402,10 @@
                         <div><input type="checkbox" id="show-custom" checked><label for="show-custom">Kategoria dodatkowa</label></div>
                     </div>
 
+                    <label style="font-weight: bold; margin: 15px 0 5px 0; display: block;">Dodatkowy tekst (nad YO&GO Events):</label>
+                    <input type="text" id="custom-footer-text" placeholder="np. www.yoandgo.pl lub Sponsor: XYZ" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <p style="font-size: 11px; color: #888; margin: 3px 0 10px 0;">Zostaw puste aby wyświetlić tylko YO&GO Events</p>
+
                     <button id="save-display-btn" class="btn-full">Zapisz ustawienia</button>
                 </div>
 
@@ -489,7 +495,8 @@
                 showOverall: localStorage.getItem('led-show-overall') !== 'false',
                 showGender: localStorage.getItem('led-show-gender') !== 'false',
                 showAge: localStorage.getItem('led-show-age') !== 'false',
-                showCustom: localStorage.getItem('led-show-custom') !== 'false'
+                showCustom: localStorage.getItem('led-show-custom') !== 'false',
+                customFooterText: localStorage.getItem('led-custom-footer-text') || ''
             },
             led: {
                 connectionType: localStorage.getItem('led-connection-type') || 'none',
@@ -567,6 +574,7 @@
             showGender: document.getElementById('show-gender'),
             showAge: document.getElementById('show-age'),
             showCustom: document.getElementById('show-custom'),
+            customFooterText: document.getElementById('custom-footer-text'),
             saveDisplayBtn: document.getElementById('save-display-btn'),
 
             // Admin screen - RFID
@@ -1358,40 +1366,21 @@
                 }
             }
 
-            // Policz ile linijek będzie na ekranie (initial estimate)
-            let lineCount = 0;
-            lineCount++; // Event name (may wrap)
-            if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) lineCount++;
-            if (config.display.showDistance && athlete.race_distance) lineCount++;
-            lineCount++; // Imię nazwisko (may wrap)
-            if (config.display.showClub && athlete.club) lineCount++;
-            lineCount += (config.display.showNetTime && config.display.showGunTime) ? 2 : 1; // Czasy
-            if (config.display.showOverall && athlete.overall_place) lineCount++;
-            if (config.display.showGender && athlete.gender_place) lineCount++;
-            lineCount += Math.min(categoriesToShow.length, 5);
-            lineCount++; // Footer
-
-            // Dynamiczny lineHeight w zależności od ilości linii
-            const availableHeight = 228; // Canvas height minus footer space
-            let lineHeight = Math.max(16, Math.floor(availableHeight / lineCount));
-            if (lineHeight > 30) lineHeight = 30; // Increased max line height for better space usage
-
-            // Dynamiczne czcionki - increased caps to fill more space
+            // Ustal większe stałe rozmiary czcionek
             const fontSize = {
-                event: Math.min(22, Math.floor(lineHeight * 0.9)),
-                location: Math.min(14, Math.floor(lineHeight * 0.7)),
-                distance: Math.min(14, Math.floor(lineHeight * 0.7)),
-                name: Math.min(26, Math.floor(lineHeight * 1.0)),
-                club: Math.min(15, Math.floor(lineHeight * 0.75)),
-                time: Math.min(22, Math.floor(lineHeight * 0.9)),
-                category: Math.min(20, Math.floor(lineHeight * 0.85))
+                event: 20,
+                location: 12,
+                distance: 12,
+                name: 24,
+                club: 14,
+                time: 20,
+                category: 18
             };
 
-            // Check if text wrapping is needed and recalculate lineCount
-            let eventNameLines = 1;
-            let athleteNameLines = 1;
             const maxTextWidth = 230; // Canvas width minus margins
 
+            // Sprawdź wrapping z tymi rozmiarami
+            let eventNameLines = 1;
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
@@ -1401,10 +1390,10 @@
             const athleteName = `${athlete.athlete_first_name} ${athlete.athlete_last_name}`;
             ctx.font = `bold ${fontSize.name}px Arial`;
             const nameLines = wrapText(ctx, athleteName, maxTextWidth);
-            athleteNameLines = nameLines.length;
+            const athleteNameLines = nameLines.length;
 
-            // Recalculate lineCount with actual wrapped lines
-            lineCount = 0;
+            // Policz rzeczywistą liczbę linii Z wrappingiem
+            let lineCount = 0;
             lineCount += eventNameLines;
             if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) lineCount++;
             if (config.display.showDistance && athlete.race_distance) lineCount++;
@@ -1416,18 +1405,25 @@
             lineCount += Math.min(categoriesToShow.length, 5);
             lineCount++; // Footer
 
-            // Recalculate lineHeight with actual line count
-            lineHeight = Math.max(16, Math.floor(availableHeight / lineCount));
-            if (lineHeight > 30) lineHeight = 30;
+            // Oblicz lineHeight aby wszystko się zmieściło (nie kurcz czcionek!)
+            const availableHeight = 228;
+            let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // Recalculate font sizes with updated lineHeight
-            fontSize.event = Math.min(22, Math.floor(lineHeight * 0.9));
-            fontSize.location = Math.min(14, Math.floor(lineHeight * 0.7));
-            fontSize.distance = Math.min(14, Math.floor(lineHeight * 0.7));
-            fontSize.name = Math.min(26, Math.floor(lineHeight * 1.0));
-            fontSize.club = Math.min(15, Math.floor(lineHeight * 0.75));
-            fontSize.time = Math.min(22, Math.floor(lineHeight * 0.9));
-            fontSize.category = Math.min(20, Math.floor(lineHeight * 0.85));
+            // Jeśli lineHeight wychodzi za mały, dopiero wtedy proporcjonalnie zmniejsz czcionki
+            if (lineHeight < 16) {
+                const scale = lineHeight / 16;
+                fontSize.event = Math.floor(fontSize.event * scale);
+                fontSize.location = Math.floor(fontSize.location * scale);
+                fontSize.distance = Math.floor(fontSize.distance * scale);
+                fontSize.name = Math.floor(fontSize.name * scale);
+                fontSize.club = Math.floor(fontSize.club * scale);
+                fontSize.time = Math.floor(fontSize.time * scale);
+                fontSize.category = Math.floor(fontSize.category * scale);
+                lineHeight = 16;
+            }
+
+            // Cap at reasonable maximum
+            if (lineHeight > 28) lineHeight = 28;
 
             let y = 12;
 
@@ -1527,10 +1523,19 @@
             });
 
             // Footer
-            y = 228;
             ctx.font = '10px Arial';
-            ctx.fillStyle = '#666';
-            ctx.fillText('YO&GO Events', 120, y);
+            ctx.fillStyle = '#FF8C00'; // Pomarańczowy
+
+            // Opcjonalny tekst nad YO&GO Events (np. sponsor lub adres strony)
+            if (config.display.customFooterText && config.display.customFooterText.trim()) {
+                y = 220;
+                ctx.fillText(config.display.customFooterText, 120, y);
+                y = 232;
+                ctx.fillText('YO&GO Events', 120, y);
+            } else {
+                y = 228;
+                ctx.fillText('YO&GO Events', 120, y);
+            }
 
             selectedAthlete = athlete;
 
@@ -1767,7 +1772,7 @@
             currentMode = 'display';
             ui.adminScreen.classList.remove('active');
             ui.displayScreen.classList.add('active');
-            ui.modeToggle.textContent = '⚙️ Admin';
+            ui.modeToggle.textContent = '⚙️';
 
             // Add display-mode class for fullscreen black background
             document.body.classList.add('display-mode');
@@ -1831,6 +1836,7 @@
             config.display.showGender = ui.showGender.checked;
             config.display.showAge = ui.showAge.checked;
             config.display.showCustom = ui.showCustom.checked;
+            config.display.customFooterText = ui.customFooterText.value.trim();
 
             localStorage.setItem('led-show-location', config.display.showLocation);
             localStorage.setItem('led-show-distance', config.display.showDistance);
@@ -1841,6 +1847,7 @@
             localStorage.setItem('led-show-gender', config.display.showGender);
             localStorage.setItem('led-show-age', config.display.showAge);
             localStorage.setItem('led-show-custom', config.display.showCustom);
+            localStorage.setItem('led-custom-footer-text', config.display.customFooterText);
 
             alert('Ustawienia wyświetlania zapisane');
 
@@ -1907,6 +1914,7 @@
             ui.showGender.checked = config.display.showGender;
             ui.showAge.checked = config.display.showAge;
             ui.showCustom.checked = config.display.showCustom;
+            ui.customFooterText.value = config.display.customFooterText || '';
 
             ui.ledConnectionType.value = config.led.connectionType;
             ui.ledIp.value = config.led.ip;
