@@ -154,10 +154,8 @@
         #led-canvas {
             border: 2px solid #333;
             background: #000;
-            transform: scale(1.5);
+            transform: scale(2);
             transform-origin: center;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
         }
 
         .display-status {
@@ -172,6 +170,15 @@
             border-radius: 5px;
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+
+        .unofficial-notice {
+            color: #FF8C00;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 15px;
+            text-align: center;
+            font-style: italic;
         }
         
         .led-info {
@@ -375,6 +382,7 @@
             <div class="led-preview">
                 <div class="display-status" id="display-status"></div>
                 <canvas id="led-canvas" width="240" height="240"></canvas>
+                <div class="unofficial-notice">Wyniki nieoficjalne</div>
             </div>
         </div>
 
@@ -1277,13 +1285,29 @@
             }
         }
 
+        let fullRefreshCounter = 0;
         function setupRefreshTimer() {
             if (refreshTimer) clearInterval(refreshTimer);
 
+            // Co 30 sekund odświeżaj wyniki
             refreshTimer = setInterval(async () => {
+                console.log('Auto-refresh: Updating results...');
                 await refreshOpenResults();
+                await refreshSexResults('M');
+                await refreshSexResults('F');
+                await refreshAgeResults();
                 await refreshCustomResults();
-            }, config.refreshInterval);
+
+                fullRefreshCounter++;
+
+                // Co 10 razy (10 x 30s = 5 minut) pełny refresh z klubami
+                if (fullRefreshCounter >= 10) {
+                    console.log('Full refresh: Reloading all data including clubs...');
+                    await fetchCustomQuestions(); // Odśwież kluby
+                    await fetchEventInfo(); // Odśwież info o evencie
+                    fullRefreshCounter = 0;
+                }
+            }, 30000); // 30 seconds
         }
 
         async function findAthleteByBib(bib) {
@@ -1384,28 +1408,40 @@
 
             // Ustal większe stałe rozmiary czcionek
             const fontSize = {
-                event: 20,
-                location: 12,
-                distance: 12,
-                name: 24,
-                club: 14,
-                time: 20,
-                category: 18
+                event: 18,
+                location: 11,
+                distance: 11,
+                name: 22,
+                club: 13,
+                time: 18,
+                category: 16
             };
 
             const maxTextWidth = 230; // Canvas width minus margins
 
-            // Sprawdź wrapping z tymi rozmiarami
+            // Sprawdź wrapping z tymi rozmiarami - zmniejsz czcionkę gdy za długa
             let eventNameLines = 1;
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
-                const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
+                let lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
+                // Jeśli nazwa zajmuje > 3 linie, zmniejsz czcionkę
+                while (lines.length > 3 && fontSize.event > 12) {
+                    fontSize.event -= 1;
+                    ctx.font = `bold ${fontSize.event}px Arial`;
+                    lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
+                }
                 eventNameLines = lines.length;
             }
 
             const athleteName = `${athlete.athlete_first_name} ${athlete.athlete_last_name}`;
             ctx.font = `bold ${fontSize.name}px Arial`;
-            const nameLines = wrapText(ctx, athleteName, maxTextWidth);
+            let nameLines = wrapText(ctx, athleteName, maxTextWidth);
+            // Jeśli nazwisko zajmuje > 2 linie, zmniejsz czcionkę
+            while (nameLines.length > 2 && fontSize.name > 16) {
+                fontSize.name -= 1;
+                ctx.font = `bold ${fontSize.name}px Arial`;
+                nameLines = wrapText(ctx, athleteName, maxTextWidth);
+            }
             const athleteNameLines = nameLines.length;
 
             // Policz rzeczywistą liczbę linii Z wrappingiem
@@ -1582,14 +1618,17 @@
 
         function sendToLED() {
             if (!selectedAthlete) {
-                ui.displayStatus.textContent = '';
+                if (ui.displayStatus) ui.displayStatus.textContent = '';
                 return;
             }
 
             const connectionType = config.led.connectionType;
 
-            // Pokaż napis "Wyświetlono"
-            ui.displayStatus.textContent = 'Wyświetlono';
+            // Pokaż napis "Wyświetlono" zawsze gdy wyświetlamy zawodnika
+            if (ui.displayStatus) {
+                ui.displayStatus.textContent = 'WYŚWIETLONO';
+                ui.displayStatus.style.display = 'block';
+            }
 
             if (connectionType === 'none') {
                 // Only preview, no actual sending
