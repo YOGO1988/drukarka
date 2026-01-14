@@ -153,11 +153,18 @@
         
         #led-canvas {
             border: 2px solid #333;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
             background: #000;
             transform: scale(1.5);
             transform-origin: center;
+        }
+
+        .display-status {
+            color: #00FF00;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+            min-height: 20px;
         }
         
         .led-info {
@@ -359,6 +366,7 @@
             </div>
             
             <div class="led-preview">
+                <div class="display-status" id="display-status"></div>
                 <canvas id="led-canvas" width="240" height="240"></canvas>
             </div>
         </div>
@@ -403,7 +411,7 @@
                     </div>
 
                     <label style="font-weight: bold; margin: 15px 0 5px 0; display: block;">Dodatkowy tekst (nad YO&GO Events):</label>
-                    <input type="text" id="custom-footer-text" placeholder="np. www.yoandgo.pl lub Sponsor: XYZ" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <input type="text" id="custom-footer-text" placeholder="wpisz tekst" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <p style="font-size: 11px; color: #888; margin: 3px 0 10px 0;">Zostaw puste aby wyświetlić tylko YO&GO Events</p>
 
                     <button id="save-display-btn" class="btn-full">Zapisz ustawienia</button>
@@ -549,6 +557,7 @@
             searchBtn: document.getElementById('search-btn'),
             searchStatus: document.getElementById('search-status'),
             ledCanvas: document.getElementById('led-canvas'),
+            displayStatus: document.getElementById('display-status'),
 
             // Status indicators
             apiIndicator: document.getElementById('api-indicator'),
@@ -1522,19 +1531,22 @@
                 y += lineHeight;
             });
 
-            // Footer
+            // Footer - zawsze na dole
             ctx.font = '10px Arial';
-            ctx.fillStyle = '#FF8C00'; // Pomarańczowy
 
             // Opcjonalny tekst nad YO&GO Events (np. sponsor lub adres strony)
             if (config.display.customFooterText && config.display.customFooterText.trim()) {
-                y = 220;
-                ctx.fillText(config.display.customFooterText, 120, y);
-                y = 232;
-                ctx.fillText('YO&GO Events', 120, y);
+                // Custom text białym kolorem
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillText(config.display.customFooterText, 120, 220);
+
+                // YO&GO Events pomarańczowym
+                ctx.fillStyle = '#FF8C00';
+                ctx.fillText('YO&GO Events', 120, 233);
             } else {
-                y = 228;
-                ctx.fillText('YO&GO Events', 120, y);
+                // Samo YO&GO Events pomarańczowym
+                ctx.fillStyle = '#FF8C00';
+                ctx.fillText('YO&GO Events', 120, 233);
             }
 
             selectedAthlete = athlete;
@@ -1555,12 +1567,19 @@
             ctx.fillText('Oczekiwanie na dane...', 120, 120);
 
             selectedAthlete = null;
+            ui.displayStatus.textContent = '';
         }
 
         function sendToLED() {
-            if (!selectedAthlete) return;
+            if (!selectedAthlete) {
+                ui.displayStatus.textContent = '';
+                return;
+            }
 
             const connectionType = config.led.connectionType;
+
+            // Pokaż napis "Wyświetlono"
+            ui.displayStatus.textContent = 'Wyświetlono';
 
             if (connectionType === 'none') {
                 // Only preview, no actual sending
