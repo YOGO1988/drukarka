@@ -1461,8 +1461,10 @@
             // 4. Imię nazwisko - with wrapping
             ctx.font = `bold ${fontSize.name}px Arial`;
             ctx.fillStyle = '#FFD700';
-            const nameLines = wrapText(ctx, athleteName, maxTextWidth);
-            nameLines.forEach(line => {
+            // Recalculate with updated font size
+            ctx.font = `bold ${fontSize.name}px Arial`;
+            let wrappedNameLines = wrapText(ctx, athleteName, maxTextWidth);
+            wrappedNameLines.forEach(line => {
                 ctx.fillText(line, 120, y);
                 y += lineHeight;
             });
