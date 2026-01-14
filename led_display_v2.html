@@ -1457,7 +1457,8 @@
             const footerHeight = hasCustomFooter ? 20 : 12; // 2 linie vs 1 linia
 
             // Oblicz lineHeight aby wszystko się zmieściło
-            const availableHeight = 240 - footerHeight - 12; // Canvas height minus footer and top margin
+            const topMargin = 20; // Wystarczający margines dla największej czcionki
+            const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
@@ -1474,9 +1475,9 @@
             }
 
             // Cap at reasonable maximum
-            if (lineHeight > 28) lineHeight = 28;
+            if (lineHeight > 26) lineHeight = 26;
 
-            let y = 12;
+            let y = topMargin; // Start z prawidłowym marginesem
 
             // 1. Event name (nazwa biegu) - with wrapping
             if (cache.eventInfo && cache.eventInfo.event_name) {
@@ -1871,8 +1872,8 @@
                 cache.clubs = {};
                 cache.tags = {};
                 cache.eventInfo = null;
-                persistentData.genderPlaces = {};
-                persistentData.divisionPlaces = {};
+                cache.persistentData.genderPlaces = {};
+                cache.persistentData.divisionPlaces = {};
 
                 // Clear selected athlete
                 selectedAthlete = null;
