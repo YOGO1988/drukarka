@@ -1434,12 +1434,13 @@
             // 1. Event name (nazwa biegu) - with wrapping
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
-                ctx.fillStyle = '#FFD700';
+                ctx.fillStyle = '#FFD700'; // Złoty
                 const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
                 lines.forEach(line => {
                     ctx.fillText(line, 120, y);
                     y += lineHeight;
                 });
+                y += 3; // Mały odstęp po nazwie biegu
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1460,9 +1461,7 @@
 
             // 4. Imię nazwisko - with wrapping
             ctx.font = `bold ${fontSize.name}px Arial`;
-            ctx.fillStyle = '#FFD700';
-            // Recalculate with updated font size
-            ctx.font = `bold ${fontSize.name}px Arial`;
+            ctx.fillStyle = '#FFFFFF'; // Biały - odróżnia się od nazwy biegu
             let wrappedNameLines = wrapText(ctx, athleteName, maxTextWidth);
             wrappedNameLines.forEach(line => {
                 ctx.fillText(line, 120, y);
@@ -1472,9 +1471,10 @@
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
                 ctx.font = `${fontSize.club}px Arial`;
-                ctx.fillStyle = '#AAA';
+                ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepiej widoczny niż szary
                 ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
+                y += 3; // Mały odstęp po klubie przed czasami
             }
 
             // 6. Czasy - WYNIK (brutto) i NETTO
