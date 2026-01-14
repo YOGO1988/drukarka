@@ -160,18 +160,18 @@
         }
 
         .display-status {
-            color: #00FF00;
+            color: #FF3333;
             font-weight: bold;
             font-size: 16px;
             margin-bottom: 10px;
             text-align: center;
             min-height: 20px;
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 5px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #00FF00;
+            letter-spacing: 3px;
+            box-shadow: 0 2px 8px rgba(255, 51, 51, 0.3);
         }
 
         .unofficial-notice {
@@ -179,11 +179,31 @@
             font-size: 14px;
             font-weight: bold;
             margin-top: 10px;
+            margin-bottom: 5px;
             text-align: center;
             font-style: italic;
             padding: 5px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 3px;
+        }
+
+        .results-link {
+            color: #333;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+            padding: 3px;
+            font-weight: normal;
+        }
+
+        .results-link a {
+            color: #FF8C00;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .results-link a:hover {
+            text-decoration: underline;
         }
         
         .led-info {
@@ -389,6 +409,7 @@
                 <div class="display-status" id="display-status"></div>
                 <canvas id="led-canvas" width="240" height="240"></canvas>
                 <div class="unofficial-notice">Wyniki nieoficjalne</div>
+                <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
             </div>
         </div>
 
