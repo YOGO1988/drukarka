@@ -326,7 +326,7 @@
     <div class="container">
         <header>
             <h1>🖥️ YO&GO LED Display System</h1>
-            <button class="mode-toggle" id="mode-toggle">👁️ Tryb Wyświetlania</button>
+            <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
         </header>
 
         <!-- DISPLAY SCREEN (for athletes) -->
@@ -358,7 +358,6 @@
             
             <div class="led-preview">
                 <canvas id="led-canvas" width="240" height="240"></canvas>
-                <div class="led-info">Tablica LED 240×240 px (96×96 cm, P4)</div>
             </div>
         </div>
 
@@ -383,6 +382,7 @@
                     <label style="font-weight: bold; margin-bottom: 10px; display: block;">Informacje:</label>
                     <div class="checkbox-grid">
                         <div><input type="checkbox" id="show-location" checked><label for="show-location">Miejscowość</label></div>
+                        <div><input type="checkbox" id="show-distance"><label for="show-distance">Dystans</label></div>
                         <div><input type="checkbox" id="show-club" checked><label for="show-club">Klub</label></div>
                     </div>
 
@@ -482,6 +482,7 @@
             },
             display: {
                 showLocation: localStorage.getItem('led-show-location') !== 'false',
+                showDistance: localStorage.getItem('led-show-distance') === 'true',
                 showClub: localStorage.getItem('led-show-club') !== 'false',
                 showNetTime: localStorage.getItem('led-show-net-time') !== 'false',
                 showGunTime: localStorage.getItem('led-show-gun-time') === 'true',
@@ -558,6 +559,7 @@
 
             // Admin screen - Display Config
             showLocation: document.getElementById('show-location'),
+            showDistance: document.getElementById('show-distance'),
             showClub: document.getElementById('show-club'),
             showNetTime: document.getElementById('show-net-time'),
             showGunTime: document.getElementById('show-gun-time'),
@@ -1315,52 +1317,98 @@
 
             ctx.textAlign = 'center';
 
+            // Policz ile kategorii będzie wyświetlanych
+            const categoriesToShow = [];
+            if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
+                for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
+                    if (!position || position <= 0) continue;
+                    const isAge = isAgeBracket(bracketName);
+                    const isSex = isSexBracket(bracketName);
+                    if (isSex) continue;
+                    if ((isAge && config.display.showAge) || (!isAge && !isSex && config.display.showCustom)) {
+                        categoriesToShow.push({ name: bracketName, place: position });
+                    }
+                }
+            } else if (athlete.bracket_name && athlete.division_place) {
+                const isAge = isAgeBracket(athlete.bracket_name);
+                const isSex = isSexBracket(athlete.bracket_name);
+                if (!isSex && ((isAge && config.display.showAge) || (!isAge && config.display.showCustom))) {
+                    categoriesToShow.push({ name: athlete.bracket_name, place: athlete.division_place });
+                }
+            }
+
+            // Policz ile linijek będzie na ekranie
+            let lineCount = 0;
+            lineCount++; // Event name
+            if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) lineCount++;
+            if (config.display.showDistance && athlete.race_distance) lineCount++;
+            lineCount++; // Imię nazwisko
+            if (config.display.showClub && athlete.club) lineCount++;
+            lineCount += (config.display.showNetTime && config.display.showGunTime) ? 2 : 1; // Czasy
+            if (config.display.showOverall && athlete.overall_place) lineCount++;
+            if (config.display.showGender && athlete.gender_place) lineCount++;
+            lineCount += Math.min(categoriesToShow.length, 5);
+            lineCount++; // Footer
+
+            // Dynamiczny lineHeight w zależności od ilości linii
+            const availableHeight = 228; // Canvas height minus footer space
+            let lineHeight = Math.max(12, Math.floor(availableHeight / lineCount));
+            if (lineHeight > 18) lineHeight = 18; // Max line height
+
+            // Dynamiczne czcionki
+            const fontSize = {
+                event: Math.min(16, lineHeight),
+                location: Math.min(11, lineHeight - 2),
+                distance: Math.min(11, lineHeight - 2),
+                name: Math.min(20, lineHeight + 2),
+                club: Math.min(12, lineHeight - 2),
+                time: Math.min(16, lineHeight),
+                category: Math.min(14, lineHeight)
+            };
+
             let y = 12;
-            const lineHeight = 16;  // Zmniejszone z 20 na 16
 
             // 1. Event name (nazwa biegu)
             if (cache.eventInfo && cache.eventInfo.event_name) {
-                ctx.font = 'bold 14px Arial';
+                ctx.font = `bold ${fontSize.event}px Arial`;
                 ctx.fillStyle = '#FFD700';
                 ctx.fillText(cache.eventInfo.event_name, 120, y);
                 y += lineHeight;
             }
 
-            // 2. Location (miejscowość) - if configured
-            if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) {
-                ctx.font = '11px Arial';
+            // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
+            if (config.display.showDistance && athlete.race_distance) {
+                ctx.font = `${fontSize.distance}px Arial`;
                 ctx.fillStyle = '#888';
-                ctx.fillText(cache.eventInfo.location_city, 120, y);
-                y += lineHeight - 2;
+                ctx.fillText(athlete.race_distance, 120, y);
+                y += lineHeight;
             }
 
-            // 3. Imię nazwisko
-            ctx.font = 'bold 18px Arial';
+            // 3. Location (miejscowość) - if configured
+            if (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city) {
+                ctx.font = `${fontSize.location}px Arial`;
+                ctx.fillStyle = '#888';
+                ctx.fillText(cache.eventInfo.location_city, 120, y);
+                y += lineHeight;
+            }
+
+            // 4. Imię nazwisko
+            ctx.font = `bold ${fontSize.name}px Arial`;
             ctx.fillStyle = '#FFD700';
             ctx.fillText(`${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 120, y);
-            y += lineHeight + 2;
+            y += lineHeight;
 
-            // 4. Club (klub)
+            // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
-                ctx.font = '11px Arial';
+                ctx.font = `${fontSize.club}px Arial`;
                 ctx.fillStyle = '#AAA';
                 ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
             }
 
-            // 5. Race distance (optional, małą czcionką)
-            if (athlete.race_distance) {
-                ctx.font = '10px Arial';
-                ctx.fillStyle = '#666';
-                ctx.fillText(athlete.race_distance, 120, y);
-                y += lineHeight - 2;
-            }
-
-            y += 2; // Extra spacing before times
-
             // 6. Czasy - WYNIK (brutto) i NETTO
             ctx.fillStyle = '#00FF00';
-            ctx.font = 'bold 15px Arial';
+            ctx.font = `bold ${fontSize.time}px Arial`;
 
             const showBothTimes = config.display.showNetTime && config.display.showGunTime;
 
@@ -1384,65 +1432,27 @@
                 y += lineHeight;
             }
 
-            y += 2; // Extra spacing before places
-
             // 7. Miejsca w kategoriach
             ctx.fillStyle = '#FF8C00';
-            ctx.font = 'bold 13px Arial';  // Zmniejszone z 15 na 13
+            ctx.font = `bold ${fontSize.category}px Arial`;
 
             // OPEN place
             if (config.display.showOverall && athlete.overall_place) {
                 ctx.fillText(`OPEN: ${athlete.overall_place}`, 120, y);
-                y += lineHeight - 1;
+                y += lineHeight;
             }
 
             // K/M place
             if (config.display.showGender && athlete.gender_place) {
                 const genderLabel = athlete.athlete_sex === 'M' ? 'MĘŻCZYŹNI' : 'KOBIETY';
                 ctx.fillText(`${genderLabel}: ${athlete.gender_place}`, 120, y);
-                y += lineHeight - 1;
+                y += lineHeight;
             }
 
-            // AGE and CUSTOM categories - from bracket_positions OR bracket_name
-            const categoriesToShow = [];
-
-            // Jeśli mamy bracket_positions, użyj ich
-            if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
-                for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
-                    if (!position || position <= 0) continue;
-
-                    const isAge = isAgeBracket(bracketName);
-                    const isSex = isSexBracket(bracketName);
-
-                    // Skip SEX brackets (already shown as K/M above)
-                    if (isSex) continue;
-
-                    // Show AGE categories if enabled
-                    if (isAge && config.display.showAge) {
-                        categoriesToShow.push({ name: bracketName, place: position });
-                    }
-                    // Show CUSTOM categories if enabled
-                    else if (!isAge && !isSex && config.display.showCustom) {
-                        categoriesToShow.push({ name: bracketName, place: position });
-                    }
-                }
-            }
-            // Fallback: użyj bracket_name i division_place
-            else if (athlete.bracket_name && athlete.division_place) {
-                const isAge = isAgeBracket(athlete.bracket_name);
-                const isSex = isSexBracket(athlete.bracket_name);
-
-                if (!isSex) {
-                    if ((isAge && config.display.showAge) || (!isAge && config.display.showCustom)) {
-                        categoriesToShow.push({ name: athlete.bracket_name, place: athlete.division_place });
-                    }
-                }
-            }
-
-            // Wyświetl kategorie (max 4-5 żeby się zmieściło)
+            // Wyświetl kategorie (max 5 żeby się zmieściło)
             categoriesToShow.slice(0, 5).forEach(cat => {
                 ctx.fillText(`${cat.name}: ${cat.place}`, 120, y);
-                y += lineHeight - 1;
+                y += lineHeight;
             });
 
             // Footer
@@ -1675,7 +1685,7 @@
             currentMode = 'admin';
             ui.displayScreen.classList.remove('active');
             ui.adminScreen.classList.add('active');
-            ui.modeToggle.textContent = '👁️ Tryb Wyświetlania';
+            ui.modeToggle.textContent = '👁️ Wyświetl';
 
             // Remove display-mode class
             document.body.classList.remove('display-mode');
@@ -1686,7 +1696,7 @@
             currentMode = 'display';
             ui.adminScreen.classList.remove('active');
             ui.displayScreen.classList.add('active');
-            ui.modeToggle.textContent = '🔧 Tryb Administratora';
+            ui.modeToggle.textContent = '⚙️ Admin';
 
             // Add display-mode class for fullscreen black background
             document.body.classList.add('display-mode');
@@ -1719,6 +1729,7 @@
 
         function saveDisplayConfig() {
             config.display.showLocation = ui.showLocation.checked;
+            config.display.showDistance = ui.showDistance.checked;
             config.display.showClub = ui.showClub.checked;
             config.display.showNetTime = ui.showNetTime.checked;
             config.display.showGunTime = ui.showGunTime.checked;
@@ -1728,6 +1739,7 @@
             config.display.showCustom = ui.showCustom.checked;
 
             localStorage.setItem('led-show-location', config.display.showLocation);
+            localStorage.setItem('led-show-distance', config.display.showDistance);
             localStorage.setItem('led-show-club', config.display.showClub);
             localStorage.setItem('led-show-net-time', config.display.showNetTime);
             localStorage.setItem('led-show-gun-time', config.display.showGunTime);
@@ -1793,6 +1805,7 @@
             }
 
             ui.showLocation.checked = config.display.showLocation;
+            ui.showDistance.checked = config.display.showDistance;
             ui.showClub.checked = config.display.showClub;
             ui.showNetTime.checked = config.display.showNetTime;
             ui.showGunTime.checked = config.display.showGunTime;
