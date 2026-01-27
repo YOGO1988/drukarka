@@ -125,7 +125,71 @@
         .status-indicator.connected {
             background-color: var(--success-color);
         }
-        
+
+        /* Statistics bar */
+        .statistics-bar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .stats-distance-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        .stats-distance-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            min-width: 60px;
+        }
+
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stats-label {
+            color: #aaa;
+        }
+
+        .stats-value {
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stats-value.started {
+            color: #3498db;
+        }
+
+        .stats-value.finished {
+            color: #2ecc71;
+        }
+
+        .stats-value.on-course {
+            color: #f39c12;
+        }
+
+        .stats-total {
+            margin-left: auto;
+            background: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
         /* Tabs */
         .tab-container {
             background-color: var(--light-bg);
@@ -248,7 +312,7 @@
             padding: 15px 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             display: grid;
-            grid-template-columns: 80px 3fr 2fr 120px 150px 100px;
+            grid-template-columns: 80px 3fr 2fr 120px 150px;
             gap: 20px;
             align-items: center;
             min-height: 70px;
@@ -391,12 +455,7 @@
             100% { transform: scale(1); background: var(--success-color); }
         }
         
-        .row-timestamp {
-            font-size: 11px;
-            color: #999;
-            text-align: center;
-            font-weight: 500;
-        }
+        /* row-timestamp usunięte - czas nie jest wyświetlany */
         
         .waiting-state {
             text-align: center;
@@ -740,7 +799,14 @@
                 <span id="athlete-count">Zawodnicy: 0</span>
             </div>
         </div>
-        
+
+        <!-- Pasek statystyk zawodników -->
+        <div class="statistics-bar" id="statistics-bar">
+            <div id="stats-container">
+                <span style="color: #aaa;">Ładowanie statystyk...</span>
+            </div>
+        </div>
+
         <div class="tab-container">
             <div class="tabs">
                 <button id="speaker-tab" class="tab active">🎤 Spiker</button>
@@ -1385,11 +1451,11 @@
                     const timeResultElement = row.querySelector('.row-time-result');
                     
                     if (newResult.netTime && newResult.netTime !== '-') {
-                        // Zawodnik ma już wynik - aktualizuj
+                        // Zawodnik ukończył - pokazujemy tylko status META (bez czasu)
                         timeResultElement.className = 'row-time-result finish-time';
                         timeResultElement.innerHTML = `
-                            <div class="time-display">${newResult.netTime}</div>
-                            <div class="place-display">🏁 META • Miejsce: ${newResult.overallPlace}</div>
+                            <div class="place-display">🏁 META</div>
+                            <div style="font-size: 12px; margin-top: 3px;">Miejsce: ${newResult.overallPlace}</div>
                         `;
                         
                         // Dodaj animację
@@ -1634,7 +1700,6 @@
                 <div class="row-time-result">
                     <div style="color: #FF8C00; font-weight: bold; font-size: 18px;">✓ ODCZYTANO</div>
                 </div>
-                <div class="row-timestamp">${currentTime}</div>
             `;
             
             return row;
@@ -1902,6 +1967,89 @@
 
         function updateAthleteCount() {
             ui.athleteCount.textContent = `Zawodnicy: ${cache.athletes.size}`;
+            updateStatisticsBar();
+        }
+
+        // Obliczanie i wyświetlanie statystyk zawodników
+        function updateStatisticsBar() {
+            const statsContainer = document.getElementById('stats-container');
+            if (!statsContainer) return;
+
+            // Zbierz statystyki według dystansów
+            const stats = {};
+            let totalStarted = 0;
+            let totalFinished = 0;
+
+            // Policz wystartowanych według dystansów (z cache.athletes)
+            cache.athletes.forEach(athlete => {
+                const distance = athlete.distance || 'Nieznany';
+                if (!stats[distance]) {
+                    stats[distance] = { started: 0, finished: 0, onCourse: 0 };
+                }
+                stats[distance].started++;
+                totalStarted++;
+            });
+
+            // Policz ukończonych według dystansów (z cache.results)
+            cache.results.forEach(result => {
+                // Wynik musi mieć czas żeby być uznany za ukończonego
+                if (result.netTime && result.netTime !== '-') {
+                    const distance = result.distance || 'Nieznany';
+                    if (!stats[distance]) {
+                        stats[distance] = { started: 0, finished: 0, onCourse: 0 };
+                    }
+                    stats[distance].finished++;
+                    totalFinished++;
+                }
+            });
+
+            // Oblicz na trasie dla każdego dystansu
+            for (const distance in stats) {
+                stats[distance].onCourse = Math.max(0, stats[distance].started - stats[distance].finished);
+            }
+
+            const totalOnCourse = Math.max(0, totalStarted - totalFinished);
+
+            // Buduj HTML
+            let html = '';
+
+            // Sortuj dystanse alfabetycznie
+            const sortedDistances = Object.keys(stats).sort();
+
+            if (sortedDistances.length === 0) {
+                html = '<span style="color: #aaa;">Brak danych - pobierz zawodników z API</span>';
+            } else {
+                // Dla każdego dystansu
+                sortedDistances.forEach(distance => {
+                    const s = stats[distance];
+                    html += `
+                        <div class="stats-distance-group">
+                            <span class="stats-distance-name">${distance}</span>
+                            <div class="stats-item">
+                                <span class="stats-label">Start:</span>
+                                <span class="stats-value started">${s.started}</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">Meta:</span>
+                                <span class="stats-value finished">${s.finished}</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-label">Trasa:</span>
+                                <span class="stats-value on-course">${s.onCourse}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Podsumowanie
+                html += `
+                    <div class="stats-total">
+                        RAZEM: ${totalStarted} start | ${totalFinished} meta | ${totalOnCourse} trasa
+                    </div>
+                `;
+            }
+
+            statsContainer.innerHTML = html;
         }
 
         // Aktualizacja zakładek dystansów
@@ -2128,6 +2276,9 @@
                 row.innerHTML = '<td colspan="9" style="text-align: center; color: #666; padding: 40px;">Brak wyników</td>';
                 ui.resultsTbody.appendChild(row);
             }
+
+            // Aktualizuj pasek statystyk po każdej aktualizacji wyników
+            updateStatisticsBar();
         }
 
         // Pełny ekran
