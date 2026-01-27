@@ -4,8 +4,8 @@ const http = require('http');
 const fs = require('fs');
 const os = require('os');
 
-console.log('🏃 YO&GO MiniTrack → Spiker Bridge v1.2 (Multi-device)');
-console.log('=====================================================');
+console.log('🏃 YO&GO MiniTrack → Spiker Bridge v1.3 (Multi-device + Winners)');
+console.log('==============================================================');
 
 let tagReads = [];
 let tagStatus = [];
@@ -16,6 +16,10 @@ let allPacketsReceived = 0;
 // WebSocket clients (aplikacje spikera)
 let wsClients = [];
 let wsConnections = 0;
+
+// Dane zwycięzców
+let winnersData = [];
+let lastWinnersSent = null;
 
 // KONFIGURACJA - dodaj tutaj IP swoich urządzeń MiniTrack
 const ALLOWED_MINITRACK_IPS = [
@@ -398,8 +402,140 @@ udpServer.on('error', (error) => {
 // Bind UDP server to port 10006
 udpServer.bind(10006, '0.0.0.0');
 
+// ============================================
+// WINNERS FUNCTIONALITY - Wysyłanie zwycięzców
+// ============================================
+
+// Parsowanie pliku CSV/TSV z wynikami
+function parseWinnersCSV(csvContent, encoding = 'auto') {
+    console.log('📄 Parsing winners CSV...');
+
+    // Próba dekodowania UTF-16LE (typowe dla eksportu z Excela)
+    let content = csvContent;
+
+    // Wykryj BOM i zdekoduj odpowiednio
+    if (Buffer.isBuffer(csvContent)) {
+        if (csvContent[0] === 0xFF && csvContent[1] === 0xFE) {
+            // UTF-16LE BOM
+            content = csvContent.slice(2).toString('utf16le');
+            console.log('   Detected UTF-16LE encoding');
+        } else if (csvContent[0] === 0xEF && csvContent[1] === 0xBB && csvContent[2] === 0xBF) {
+            // UTF-8 BOM
+            content = csvContent.slice(3).toString('utf8');
+            console.log('   Detected UTF-8 encoding');
+        } else {
+            content = csvContent.toString('utf8');
+            console.log('   Using default UTF-8 encoding');
+        }
+    }
+
+    // Rozdziel na linie
+    const lines = content.split(/\r?\n/).filter(line => line.trim());
+
+    if (lines.length < 2) {
+        console.log('   ❌ Not enough lines in CSV');
+        return [];
+    }
+
+    // Wykryj separator (tab lub przecinek)
+    const firstLine = lines[0];
+    const separator = firstLine.includes('\t') ? '\t' : ',';
+    console.log(`   Separator: ${separator === '\t' ? 'TAB' : 'COMMA'}`);
+
+    // Nagłówki
+    const headers = lines[0].split(separator).map(h => h.trim().toUpperCase());
+    console.log(`   Headers: ${headers.join(', ')}`);
+
+    // Znajdź indeksy kolumn
+    const divisionIdx = headers.findIndex(h => h.includes('DIVISION') || h.includes('KATEGORIA') || h.includes('CAT'));
+    const rankIdx = headers.findIndex(h => h.includes('RANK') || h.includes('MIEJSCE') || h.includes('PLACE') || h === 'PR_DIV');
+    const nameIdx = headers.findIndex(h => h.includes('NAME') || h.includes('NAZWISKO') || h.includes('IMIE'));
+    const hometownIdx = headers.findIndex(h => h.includes('HOMETOWN') || h.includes('MIASTO') || h.includes('CITY') || h.includes('CLUB'));
+    const timeIdx = headers.findIndex(h => h.includes('TIME') || h.includes('CZAS') || h.includes('AWARD'));
+    const bibIdx = headers.findIndex(h => h.includes('BIB') || h.includes('NUMER') || h.includes('NR'));
+
+    console.log(`   Column indices - Division: ${divisionIdx}, Rank: ${rankIdx}, Name: ${nameIdx}, Hometown: ${hometownIdx}, Time: ${timeIdx}, Bib: ${bibIdx}`);
+
+    const winners = [];
+
+    // Parsuj wiersze danych
+    for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(separator);
+
+        if (cols.length < 3) continue; // Pomiń puste lub niekompletne wiersze
+
+        const winner = {
+            division: divisionIdx >= 0 ? cols[divisionIdx]?.trim() || 'OPEN' : 'OPEN',
+            rank: rankIdx >= 0 ? parseInt(cols[rankIdx]?.trim()) || i : i,
+            name: nameIdx >= 0 ? cols[nameIdx]?.trim() || '' : '',
+            hometown: hometownIdx >= 0 ? cols[hometownIdx]?.trim() || '' : '',
+            time: timeIdx >= 0 ? cols[timeIdx]?.trim() || '' : '',
+            bib: bibIdx >= 0 ? cols[bibIdx]?.trim() || '' : ''
+        };
+
+        // Pomiń wiersze bez nazwy
+        if (winner.name) {
+            winners.push(winner);
+        }
+    }
+
+    console.log(`   ✅ Parsed ${winners.length} winners`);
+    return winners;
+}
+
+// Wysyłanie danych zwycięzców do tabletów
+function broadcastWinners(winners, eventName = '') {
+    if (wsClients.length === 0) {
+        console.log('⚠️  No speaker apps connected - winners not sent');
+        return false;
+    }
+
+    const message = {
+        type: 'winners_data',
+        winners: winners,
+        eventName: eventName,
+        timestamp: new Date().toISOString(),
+        count: winners.length
+    };
+
+    const messageStr = JSON.stringify(message);
+
+    console.log(`🏅 SENDING WINNERS to ${wsClients.length} speaker apps (${winners.length} entries)`);
+
+    let sentCount = 0;
+    wsClients.forEach((client, index) => {
+        if (client.readyState === WebSocket.OPEN) {
+            try {
+                client.send(messageStr);
+                sentCount++;
+            } catch (error) {
+                console.log(`❌ Error sending winners to app ${index}: ${error.message}`);
+            }
+        }
+    });
+
+    if (sentCount > 0) {
+        console.log(`✅ Winners sent to ${sentCount} apps`);
+        lastWinnersSent = new Date();
+        winnersData = winners;
+        return true;
+    }
+
+    return false;
+}
+
+// Odczytaj body POST jako Buffer
+function readRequestBody(req) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+    });
+}
+
 // Create HTTP server for web interface
-const httpServer = http.createServer((req, res) => {
+const httpServer = http.createServer(async (req, res) => {
     if (req.url === '/') {
         const devicesList = Array.from(stats.devices.entries())
             .map(([key, device]) => `
@@ -486,7 +622,352 @@ const httpServer = http.createServer((req, res) => {
         
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(html);
-    } else {
+    }
+    // ==========================================
+    // WINNERS PAGE - strona do wysyłania zwycięzców
+    // ==========================================
+    else if (req.url === '/winners') {
+        const winnersPageHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <title>🏅 Zwycięzcy - YO&GO Bridge</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #333; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        textarea { width: 100%; height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; }
+        button { background: #FF8C00; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #FF7000; }
+        button.secondary { background: #6c757d; }
+        .status { padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #cce5ff; color: #004085; }
+        .preview { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow: auto; }
+        .preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .preview th, .preview td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .preview th { background: #e9ecef; }
+        .connected-apps { background: #e8f4fd; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; }
+        .back-link { display: inline-block; margin-bottom: 15px; color: #FF8C00; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { padding: 10px 20px; background: #e9ecef; border: none; border-radius: 8px 8px 0 0; cursor: pointer; }
+        .tab.active { background: white; border-bottom: 2px solid white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Powrót do głównej</a>
+
+        <div class="header">
+            <h1>🏅 Wysyłanie Zwycięzców</h1>
+            <p>Wczytaj plik CSV z wynikami i wyślij do tabletu</p>
+        </div>
+
+        <div class="connected-apps">
+            📱 Połączone aplikacje spikera: <strong id="appCount">${wsConnections}</strong>
+            ${wsConnections === 0 ? '<span style="color: #dc3545;"> (Brak połączonych tabletów!)</span>' : '<span style="color: #28a745;"> ✓</span>'}
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('file')">📁 Plik CSV</button>
+                <button class="tab" onclick="showTab('paste')">📋 Wklej dane</button>
+                <button class="tab" onclick="showTab('path')">📂 Ścieżka do pliku</button>
+            </div>
+
+            <div id="tab-file" class="tab-content active">
+                <div class="form-group">
+                    <label>Wybierz plik CSV z wynikami:</label>
+                    <input type="file" id="csvFile" accept=".csv,.tsv,.txt">
+                </div>
+            </div>
+
+            <div id="tab-paste" class="tab-content">
+                <div class="form-group">
+                    <label>Wklej zawartość CSV (skopiuj z Excela lub pliku):</label>
+                    <textarea id="csvPaste" placeholder="DIVISION&#9;RANK&#9;NAME&#9;HOMETOWN&#9;PR_DIV&#9;AWARD TIME&#9;PACE&#9;BIB
+K&#9;1&#9;Anna Kowalska&#9;Warszawa&#9;1&#9;00:42:15&#9;4:13&#9;101
+M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
+                </div>
+            </div>
+
+            <div id="tab-path" class="tab-content">
+                <div class="form-group">
+                    <label>Ścieżka do pliku CSV na tym komputerze:</label>
+                    <input type="text" id="csvPath" placeholder="C:\\Users\\YoGo\\Desktop\\wyniki.csv">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nazwa wydarzenia (opcjonalnie):</label>
+                <input type="text" id="eventName" placeholder="np. Bieg Wawrzynkowy 2026">
+            </div>
+
+            <button onclick="previewCSV()">👁️ Podgląd</button>
+            <button onclick="sendWinners()" id="sendBtn">📤 Wyślij do tabletu</button>
+            ${winnersData.length > 0 ? '<button class="secondary" onclick="resendWinners()">🔄 Wyślij ponownie ostatnie</button>' : ''}
+
+            <div id="status"></div>
+            <div id="preview" class="preview" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        async function getCSVContent() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+
+            if (activeTab === 'tab-file') {
+                const fileInput = document.getElementById('csvFile');
+                if (!fileInput.files[0]) {
+                    throw new Error('Wybierz plik CSV');
+                }
+                return await fileInput.files[0].arrayBuffer();
+            } else if (activeTab === 'tab-paste') {
+                const content = document.getElementById('csvPaste').value;
+                if (!content.trim()) {
+                    throw new Error('Wklej dane CSV');
+                }
+                return content;
+            } else if (activeTab === 'tab-path') {
+                const path = document.getElementById('csvPath').value;
+                if (!path.trim()) {
+                    throw new Error('Podaj ścieżkę do pliku');
+                }
+                // Fetch from server using path
+                const response = await fetch('/api/read-csv?path=' + encodeURIComponent(path));
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Błąd odczytu pliku');
+                }
+                const data = await response.json();
+                return data.content;
+            }
+        }
+
+        async function previewCSV() {
+            const statusDiv = document.getElementById('status');
+            const previewDiv = document.getElementById('preview');
+
+            try {
+                statusDiv.innerHTML = '<div class="status info">⏳ Przetwarzanie...</div>';
+
+                const content = await getCSVContent();
+                const eventName = document.getElementById('eventName').value;
+
+                const response = await fetch('/api/parse-csv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: typeof content === 'string' ? content : Array.from(new Uint8Array(content)),
+                        eventName: eventName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ Znaleziono ' + result.winners.length + ' zwycięzców</div>';
+
+                // Show preview table
+                let tableHtml = '<h4>Podgląd danych:</h4><table><tr><th>Kat.</th><th>Miejsce</th><th>Imię i nazwisko</th><th>Miasto</th><th>Czas</th><th>BIB</th></tr>';
+                result.winners.slice(0, 20).forEach(w => {
+                    tableHtml += '<tr><td>' + w.division + '</td><td>' + w.rank + '</td><td>' + w.name + '</td><td>' + w.hometown + '</td><td>' + w.time + '</td><td>' + w.bib + '</td></tr>';
+                });
+                if (result.winners.length > 20) {
+                    tableHtml += '<tr><td colspan="6" style="text-align: center; color: #666;">... i ' + (result.winners.length - 20) + ' więcej</td></tr>';
+                }
+                tableHtml += '</table>';
+
+                previewDiv.innerHTML = tableHtml;
+                previewDiv.style.display = 'block';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+                previewDiv.style.display = 'none';
+            }
+        }
+
+        async function sendWinners() {
+            const statusDiv = document.getElementById('status');
+            const sendBtn = document.getElementById('sendBtn');
+
+            try {
+                sendBtn.disabled = true;
+                statusDiv.innerHTML = '<div class="status info">⏳ Wysyłanie do tabletu...</div>';
+
+                const content = await getCSVContent();
+                const eventName = document.getElementById('eventName').value;
+
+                const response = await fetch('/api/send-winners', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: typeof content === 'string' ? content : Array.from(new Uint8Array(content)),
+                        eventName: eventName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ Wysłano ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function resendWinners() {
+            const statusDiv = document.getElementById('status');
+
+            try {
+                statusDiv.innerHTML = '<div class="status info">⏳ Wysyłanie ponownie...</div>';
+
+                const response = await fetch('/api/resend-winners', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ Wysłano ponownie ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>`;
+
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(winnersPageHtml);
+    }
+    // ==========================================
+    // API ENDPOINTS for winners
+    // ==========================================
+    else if (req.url === '/api/parse-csv' && req.method === 'POST') {
+        try {
+            const body = await readRequestBody(req);
+            const data = JSON.parse(body.toString());
+
+            let csvContent;
+            if (Array.isArray(data.content)) {
+                csvContent = Buffer.from(data.content);
+            } else {
+                csvContent = data.content;
+            }
+
+            const winners = parseWinnersCSV(csvContent);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, winners: winners }));
+        } catch (error) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+        }
+    }
+    else if (req.url === '/api/send-winners' && req.method === 'POST') {
+        try {
+            const body = await readRequestBody(req);
+            const data = JSON.parse(body.toString());
+
+            let csvContent;
+            if (Array.isArray(data.content)) {
+                csvContent = Buffer.from(data.content);
+            } else {
+                csvContent = data.content;
+            }
+
+            const winners = parseWinnersCSV(csvContent);
+
+            if (winners.length === 0) {
+                throw new Error('Nie znaleziono żadnych zwycięzców w pliku');
+            }
+
+            if (wsClients.length === 0) {
+                throw new Error('Brak połączonych tabletów! Połącz tablet i spróbuj ponownie.');
+            }
+
+            const sent = broadcastWinners(winners, data.eventName || '');
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                winnersCount: winners.length,
+                sentTo: wsClients.length
+            }));
+        } catch (error) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+        }
+    }
+    else if (req.url === '/api/resend-winners' && req.method === 'POST') {
+        try {
+            if (winnersData.length === 0) {
+                throw new Error('Brak zapisanych danych zwycięzców. Najpierw wyślij plik CSV.');
+            }
+
+            if (wsClients.length === 0) {
+                throw new Error('Brak połączonych tabletów!');
+            }
+
+            broadcastWinners(winnersData);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                winnersCount: winnersData.length,
+                sentTo: wsClients.length
+            }));
+        } catch (error) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+        }
+    }
+    else if (req.url.startsWith('/api/read-csv')) {
+        try {
+            const urlParams = new URL(req.url, 'http://localhost');
+            const filePath = urlParams.searchParams.get('path');
+
+            if (!filePath) {
+                throw new Error('Brak ścieżki do pliku');
+            }
+
+            const content = fs.readFileSync(filePath);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ content: Array.from(content) }));
+        } catch (error) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+        }
+    }
+    else {
         res.writeHead(404);
         res.end('Not found');
     }
@@ -509,11 +990,12 @@ wsServer.on('connection', (ws, req) => {
     // Send welcome message
     ws.send(JSON.stringify({
         type: 'system',
-        message: 'Connected to MiniTrack → Spiker Bridge v1.2 (Multi-device)',
+        message: 'Connected to MiniTrack → Spiker Bridge v1.3 (Multi-device + Winners)',
         timestamp: new Date().toISOString(),
-        version: '1.2',
+        version: '1.3',
         serverIP: LOCAL_IP,
-        multiDevice: true
+        multiDevice: true,
+        winnersSupport: true
     }));
     
     ws.on('message', (message) => {
@@ -616,11 +1098,12 @@ process.on('SIGINT', () => {
     process.exit(0);
 });
 
-console.log('\n🎯 MINITRACK → SPIKER BRIDGE READY! (Multi-device)');
-console.log('================================================');
+console.log('\n🎯 MINITRACK → SPIKER BRIDGE READY! (Multi-device + Winners)');
+console.log('============================================================');
 console.log('📡 UDP: Listening for MiniTrack on port 10006');
 console.log(`🎤 WebSocket: Speaker apps connect to ${LOCAL_IP}:8081`);
 console.log(`🌐 Web interface: http://${LOCAL_IP}:8081`);
+console.log(`🏅 Winners page: http://${LOCAL_IP}:8081/winners`);
 console.log(`📱 In speaker app: IP = ${LOCAL_IP}, Port = 8081`);
 console.log('\n🔧 Configuration:');
 if (ACCEPT_ALL_IPS) {
@@ -635,5 +1118,6 @@ console.log('   1. Bridge receives MiniTrack data from multiple devices (UDP 100
 console.log('   2. Tracks and identifies each device by IP:port');
 console.log('   3. Converts to speaker app format with device info');
 console.log('   4. Sends to connected speaker apps (WS 8081)');
+console.log('   5. Winners: Open /winners page, upload CSV, send to tablets');
 console.log('\n🛑 Press Ctrl+C to stop');
-console.log('================================================');
+console.log('============================================================');
