@@ -575,7 +575,187 @@
         .results-table tr {
             cursor: pointer;
         }
-        
+
+        /* Winners panel */
+        .winners-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .winners-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 10px 15px;
+            background: var(--light-bg);
+            border-radius: 8px;
+        }
+
+        .winners-status {
+            font-size: 14px;
+        }
+
+        .winners-status .status-waiting {
+            color: #666;
+        }
+
+        .winners-status .status-received {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .winners-display-mode {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .winners-display-mode label {
+            font-weight: bold;
+        }
+
+        .mode-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .mode-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .winners-container {
+            flex: 1;
+            overflow: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+        }
+
+        .winners-waiting-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            text-align: center;
+            color: #666;
+        }
+
+        .winners-waiting-state h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .winners-waiting-state p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .winners-waiting-state .hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 15px;
+        }
+
+        .winner-category {
+            margin-bottom: 25px;
+        }
+
+        .winner-category-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .winner-category-header.open-category {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+        }
+
+        .winner-category-header.female {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+        }
+
+        .winner-category-header.male {
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+        }
+
+        .winner-category-header.extra {
+            background: linear-gradient(135deg, #9370DB, #8A2BE2);
+        }
+
+        .winner-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 200px 120px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            gap: 15px;
+        }
+
+        .winner-row:last-child {
+            border-bottom: none;
+        }
+
+        .winner-row:hover {
+            background: var(--light-bg);
+        }
+
+        .winner-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .winner-rank.gold { color: #FFD700; }
+        .winner-rank.silver { color: #C0C0C0; }
+        .winner-rank.bronze { color: #CD7F32; }
+
+        .winner-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .winner-hometown {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .winner-time {
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            color: var(--success-color);
+        }
+
+        .winner-bib {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+        }
+
         /* Config panel */
         .config-panel {
             position: absolute;
@@ -811,6 +991,7 @@
             <div class="tabs">
                 <button id="speaker-tab" class="tab active">🎤 Spiker</button>
                 <button id="results-tab" class="tab">🏆 Wyniki</button>
+                <button id="winners-tab" class="tab">🏅 Zwycięzcy</button>
             </div>
         </div>
         
@@ -899,7 +1080,31 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Panel zwycięzców -->
+            <div id="winners-content" class="tab-content">
+                <div class="winners-view">
+                    <div class="winners-controls">
+                        <div class="winners-status" id="winners-status">
+                            <span class="status-waiting">⏳ Oczekiwanie na dane zwycięzców z komputera...</span>
+                        </div>
+                        <div class="winners-display-mode">
+                            <label>Tryb wyświetlania:</label>
+                            <button id="winners-mode-alternating" class="mode-btn active">Naprzemiennie (K→M→K16→M16)</button>
+                            <button id="winners-mode-grouped" class="mode-btn">Grupowane (wszystkie K, potem M)</button>
+                        </div>
+                    </div>
+
+                    <div class="winners-container" id="winners-container">
+                        <div class="winners-waiting-state">
+                            <h3>🏅 Oczekiwanie na dane zwycięzców</h3>
+                            <p>Dane zostaną przesłane automatycznie z komputera przez sieć.</p>
+                            <p class="hint">Komputer wysyła dane po wczytaniu pliku CSV z wynikami.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Panel konfiguracji -->
             <div id="config-panel" class="config-panel">
                 <div class="config-header">
@@ -1007,7 +1212,9 @@
             refreshTimers: {
                 results: null,
                 individual: new Map()
-            }
+            },
+            winners: [],
+            winnersDisplayMode: 'alternating'
         };
 
         // Elementy UI
@@ -1027,9 +1234,15 @@
             
             speakerTab: document.getElementById('speaker-tab'),
             resultsTab: document.getElementById('results-tab'),
+            winnersTab: document.getElementById('winners-tab'),
             speakerContent: document.getElementById('speaker-content'),
             resultsContent: document.getElementById('results-content'),
-            
+            winnersContent: document.getElementById('winners-content'),
+            winnersContainer: document.getElementById('winners-container'),
+            winnersStatus: document.getElementById('winners-status'),
+            winnersModeAlternating: document.getElementById('winners-mode-alternating'),
+            winnersModeGrouped: document.getElementById('winners-mode-grouped'),
+
             searchInput: document.getElementById('search-input'),
             searchBtn: document.getElementById('search-btn'),
             athleteDisplay: document.getElementById('athlete-display'),
@@ -1795,10 +2008,198 @@
         function handleBridgeMessage(data) {
             const msgReceiveTime = performance.now();
             console.log(`[${msgReceiveTime.toFixed(2)}ms] Bridge message received:`, data);
-            
+
             if (data.type === 'ccs_reading' && data.tag) {
                 handleTagRead(data.tag, data.time, msgReceiveTime);
+            } else if (data.type === 'winners_data' && data.winners) {
+                handleWinnersData(data.winners, data.eventName);
             }
+        }
+
+        // Obsługa danych zwycięzców otrzymanych z komputera
+        function handleWinnersData(winners, eventName) {
+            console.log(`Received winners data: ${winners.length} entries`);
+            cache.winners = winners;
+
+            // Aktualizacja statusu
+            const statusHtml = `<span class="status-received">✅ Odebrano dane zwycięzców${eventName ? ` - ${eventName}` : ''} (${winners.length} pozycji)</span>`;
+            ui.winnersStatus.innerHTML = statusHtml;
+
+            // Wyświetlenie zwycięzców
+            displayWinners(winners);
+
+            // Automatyczne przełączenie na zakładkę zwycięzców (opcjonalnie)
+            // switchTab('winners');
+        }
+
+        // Wyświetlanie zwycięzców
+        function displayWinners(winners) {
+            if (!winners || winners.length === 0) {
+                ui.winnersContainer.innerHTML = `
+                    <div class="winners-waiting-state">
+                        <h3>🏅 Brak danych zwycięzców</h3>
+                        <p>Oczekiwanie na dane z komputera...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Grupowanie według kategorii
+            const categories = new Map();
+            winners.forEach(winner => {
+                const cat = winner.division || 'OPEN';
+                if (!categories.has(cat)) {
+                    categories.set(cat, []);
+                }
+                categories.get(cat).push(winner);
+            });
+
+            // Sortowanie kategorii
+            let sortedCategories = Array.from(categories.entries());
+
+            if (cache.winnersDisplayMode === 'alternating') {
+                // Naprzemiennie: K, M, K16, M16, K20, M20, etc.
+                sortedCategories = sortCategoriesAlternating(sortedCategories);
+            } else {
+                // Grupowane: wszystkie K, potem wszystkie M
+                sortedCategories = sortCategoriesGrouped(sortedCategories);
+            }
+
+            // Generowanie HTML
+            let html = '';
+            sortedCategories.forEach(([category, categoryWinners]) => {
+                const categoryClass = getCategoryClass(category);
+                const categoryIcon = getCategoryIcon(category);
+
+                html += `<div class="winner-category">`;
+                html += `<div class="winner-category-header ${categoryClass}">${categoryIcon} ${category}</div>`;
+
+                categoryWinners.forEach(winner => {
+                    const rankClass = getRankClass(winner.rank);
+                    const rankIcon = getRankIcon(winner.rank);
+
+                    html += `
+                        <div class="winner-row">
+                            <div class="winner-rank ${rankClass}">${rankIcon}${winner.rank}</div>
+                            <div class="winner-info">
+                                <div class="winner-name">${winner.name || 'Nieznany'}</div>
+                                <div class="winner-hometown">${winner.hometown || ''}</div>
+                            </div>
+                            <div class="winner-time">${winner.time || ''}</div>
+                            <div class="winner-bib">BIB: ${winner.bib || ''}</div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            ui.winnersContainer.innerHTML = html;
+        }
+
+        // Sortowanie kategorii naprzemiennie (K, M, K16, M16, ...)
+        function sortCategoriesAlternating(categories) {
+            const open = [];
+            const female = [];
+            const male = [];
+            const extra = [];
+
+            categories.forEach(([cat, winners]) => {
+                const upperCat = cat.toUpperCase();
+                if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
+                    open.push([cat, winners]);
+                } else if (upperCat.startsWith('K') || upperCat.includes('KOBIET') || upperCat.includes('FEMALE') || upperCat.includes('WOMEN')) {
+                    female.push([cat, winners]);
+                } else if (upperCat.startsWith('M') || upperCat.includes('MĘSKI') || upperCat.includes('MALE') || upperCat.includes('MEN')) {
+                    male.push([cat, winners]);
+                } else {
+                    extra.push([cat, winners]);
+                }
+            });
+
+            // Sortowanie K i M według numeru kategorii
+            const sortByNumber = (a, b) => {
+                const numA = parseInt(a[0].match(/\d+/)?.[0] || '0');
+                const numB = parseInt(b[0].match(/\d+/)?.[0] || '0');
+                return numA - numB;
+            };
+
+            female.sort(sortByNumber);
+            male.sort(sortByNumber);
+
+            // Przeplatanie K i M
+            const result = [...open];
+            const maxLen = Math.max(female.length, male.length);
+            for (let i = 0; i < maxLen; i++) {
+                if (female[i]) result.push(female[i]);
+                if (male[i]) result.push(male[i]);
+            }
+
+            return [...result, ...extra];
+        }
+
+        // Sortowanie kategorii grupowane (wszystkie K, potem M)
+        function sortCategoriesGrouped(categories) {
+            const open = [];
+            const female = [];
+            const male = [];
+            const extra = [];
+
+            categories.forEach(([cat, winners]) => {
+                const upperCat = cat.toUpperCase();
+                if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
+                    open.push([cat, winners]);
+                } else if (upperCat.startsWith('K') || upperCat.includes('KOBIET') || upperCat.includes('FEMALE') || upperCat.includes('WOMEN')) {
+                    female.push([cat, winners]);
+                } else if (upperCat.startsWith('M') || upperCat.includes('MĘSKI') || upperCat.includes('MALE') || upperCat.includes('MEN')) {
+                    male.push([cat, winners]);
+                } else {
+                    extra.push([cat, winners]);
+                }
+            });
+
+            const sortByNumber = (a, b) => {
+                const numA = parseInt(a[0].match(/\d+/)?.[0] || '0');
+                const numB = parseInt(b[0].match(/\d+/)?.[0] || '0');
+                return numA - numB;
+            };
+
+            female.sort(sortByNumber);
+            male.sort(sortByNumber);
+            extra.sort((a, b) => a[0].localeCompare(b[0]));
+
+            return [...open, ...female, ...male, ...extra];
+        }
+
+        // Pomocnicze funkcje do stylowania
+        function getCategoryClass(category) {
+            const upper = category.toUpperCase();
+            if (upper === 'OPEN' || upper === 'OVERALL') return 'open-category';
+            if (upper.startsWith('K') || upper.includes('KOBIET') || upper.includes('FEMALE') || upper.includes('WOMEN')) return 'female';
+            if (upper.startsWith('M') || upper.includes('MĘSKI') || upper.includes('MALE') || upper.includes('MEN')) return 'male';
+            return 'extra';
+        }
+
+        function getCategoryIcon(category) {
+            const upper = category.toUpperCase();
+            if (upper === 'OPEN' || upper === 'OVERALL') return '👑';
+            if (upper.startsWith('K') || upper.includes('KOBIET') || upper.includes('FEMALE') || upper.includes('WOMEN')) return '👩';
+            if (upper.startsWith('M') || upper.includes('MĘSKI') || upper.includes('MALE') || upper.includes('MEN')) return '👨';
+            return '🏆';
+        }
+
+        function getRankClass(rank) {
+            if (rank === 1 || rank === '1') return 'gold';
+            if (rank === 2 || rank === '2') return 'silver';
+            if (rank === 3 || rank === '3') return 'bronze';
+            return '';
+        }
+
+        function getRankIcon(rank) {
+            if (rank === 1 || rank === '1') return '🥇 ';
+            if (rank === 2 || rank === '2') return '🥈 ';
+            if (rank === 3 || rank === '3') return '🥉 ';
+            return '';
         }
 
         function handleTagRead(tag, time, receiveTime) {
@@ -1913,16 +2314,21 @@
         function switchTab(tabName) {
             ui.speakerContent.classList.remove('active');
             ui.resultsContent.classList.remove('active');
-            
+            ui.winnersContent.classList.remove('active');
+
             ui.speakerTab.classList.remove('active');
             ui.resultsTab.classList.remove('active');
-            
+            ui.winnersTab.classList.remove('active');
+
             if (tabName === 'speaker') {
                 ui.speakerContent.classList.add('active');
                 ui.speakerTab.classList.add('active');
             } else if (tabName === 'results') {
                 ui.resultsContent.classList.add('active');
                 ui.resultsTab.classList.add('active');
+            } else if (tabName === 'winners') {
+                ui.winnersContent.classList.add('active');
+                ui.winnersTab.classList.add('active');
             }
         }
 
@@ -2358,7 +2764,29 @@
         ui.resultsTab.addEventListener('click', () => {
             switchTab('results');
         });
-        
+
+        ui.winnersTab.addEventListener('click', () => {
+            switchTab('winners');
+        });
+
+        ui.winnersModeAlternating.addEventListener('click', () => {
+            ui.winnersModeAlternating.classList.add('active');
+            ui.winnersModeGrouped.classList.remove('active');
+            cache.winnersDisplayMode = 'alternating';
+            if (cache.winners && cache.winners.length > 0) {
+                displayWinners(cache.winners);
+            }
+        });
+
+        ui.winnersModeGrouped.addEventListener('click', () => {
+            ui.winnersModeGrouped.classList.add('active');
+            ui.winnersModeAlternating.classList.remove('active');
+            cache.winnersDisplayMode = 'grouped';
+            if (cache.winners && cache.winners.length > 0) {
+                displayWinners(cache.winners);
+            }
+        });
+
         ui.fullscreenToggle.addEventListener('click', () => {
             toggleFullscreen();
         });
@@ -2537,6 +2965,10 @@
                     case '2':
                         e.preventDefault();
                         switchTab('results');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        switchTab('winners');
                         break;
                 }
             }
