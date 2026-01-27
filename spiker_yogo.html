@@ -312,7 +312,7 @@
             padding: 15px 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             display: grid;
-            grid-template-columns: 80px 3fr 2fr 120px 150px;
+            grid-template-columns: 80px 3fr 2fr 120px;
             gap: 20px;
             align-items: center;
             min-height: 70px;
@@ -726,7 +726,7 @@
         /* Responsive design */
         @media (max-width: 1400px) {
             .athlete-row {
-                grid-template-columns: 70px 2.5fr 1.5fr 100px 130px 90px;
+                grid-template-columns: 70px 2.5fr 1.5fr 100px;
                 gap: 15px;
             }
         }
@@ -1451,17 +1451,10 @@
                     const timeResultElement = row.querySelector('.row-time-result');
                     
                     if (newResult.netTime && newResult.netTime !== '-') {
-                        // Zawodnik ukończył - pokazujemy tylko status META (bez czasu)
-                        timeResultElement.className = 'row-time-result finish-time';
-                        timeResultElement.innerHTML = `
-                            <div class="place-display">🏁 META</div>
-                            <div style="font-size: 12px; margin-top: 3px;">Miejsce: ${newResult.overallPlace}</div>
-                        `;
-                        
-                        // Dodaj animację
+                        // Zawodnik ukończył - nie pokazujemy nic, tylko zielony pasek
                         row.classList.add('finish-time');
-                        
-                        console.log(`Updated displayed result for BIB ${bib}: ${newResult.netTime}`);
+
+                        console.log(`Athlete BIB ${bib} finished`);
                     }
                 }
             });
@@ -1697,9 +1690,6 @@
                 </div>
                 <div class="row-custom">${athlete.club || ''}</div>
                 <div class="row-category">${athlete.category || 'OPEN'}</div>
-                <div class="row-time-result">
-                    <div style="color: #FF8C00; font-weight: bold; font-size: 18px;">✓ ODCZYTANO</div>
-                </div>
             `;
             
             return row;
