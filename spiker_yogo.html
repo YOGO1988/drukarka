@@ -651,6 +651,41 @@
             border-color: var(--primary-color);
         }
 
+        .winners-event-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+            padding-left: 20px;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .winners-event-selector label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .event-btn {
+            padding: 6px 12px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            background: white;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .event-btn:hover {
+            background: #ebf5fb;
+        }
+
+        .event-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
         .winners-container {
             flex: 1;
             overflow: auto;
@@ -1138,6 +1173,10 @@
                             <label>Tryb wyświetlania:</label>
                             <button id="winners-mode-alternating" class="mode-btn active">Naprzemiennie (K→M→K16→M16)</button>
                             <button id="winners-mode-grouped" class="mode-btn">Grupowane (wszystkie K, potem M)</button>
+                            <div class="winners-event-selector" id="winners-event-selector" style="display: none;">
+                                <label>Dystans:</label>
+                                <div id="winners-event-buttons"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -1260,6 +1299,8 @@
                 individual: new Map()
             },
             winners: [],
+            winnersSets: {},
+            currentWinnersEvent: null,
             winnersDisplayMode: 'alternating'
         };
 
@@ -2066,18 +2107,68 @@
 
         // Obsługa danych zwycięzców otrzymanych z komputera
         function handleWinnersData(winners, eventName) {
-            console.log(`Received winners data: ${winners.length} entries`);
+            console.log(`Received winners data: ${winners.length} entries, event: ${eventName}`);
+
+            // Zapisz pod nazwą wydarzenia (lub "Wszyscy" jeśli brak nazwy)
+            const eventKey = eventName && eventName.trim() ? eventName.trim() : 'Wszyscy';
+            cache.winnersSets[eventKey] = winners;
+
+            // Ustaw jako aktywny event
+            cache.currentWinnersEvent = eventKey;
             cache.winners = winners;
 
+            // Aktualizuj przyciski wydarzeń
+            updateWinnersEventButtons();
+
             // Aktualizacja statusu
-            const statusHtml = `<span class="status-received">✅ Odebrano dane zwycięzców${eventName ? ` - ${eventName}` : ''} (${winners.length} pozycji)</span>`;
+            const eventCount = Object.keys(cache.winnersSets).length;
+            const statusHtml = `<span class="status-received">✅ Odebrano dane zwycięzców - ${eventKey} (${winners.length} pozycji)</span>`;
             ui.winnersStatus.innerHTML = statusHtml;
 
             // Wyświetlenie zwycięzców
             displayWinners(winners);
+        }
 
-            // Automatyczne przełączenie na zakładkę zwycięzców (opcjonalnie)
-            // switchTab('winners');
+        // Aktualizacja przycisków wyboru wydarzenia
+        function updateWinnersEventButtons() {
+            const events = Object.keys(cache.winnersSets);
+            const container = document.getElementById('winners-event-buttons');
+            const selector = document.getElementById('winners-event-selector');
+
+            if (events.length <= 1) {
+                selector.style.display = 'none';
+                return;
+            }
+
+            selector.style.display = 'flex';
+            container.innerHTML = '';
+
+            events.forEach(eventKey => {
+                const btn = document.createElement('button');
+                btn.className = 'event-btn' + (eventKey === cache.currentWinnersEvent ? ' active' : '');
+                btn.textContent = eventKey;
+                btn.onclick = () => switchWinnersEvent(eventKey);
+                container.appendChild(btn);
+            });
+        }
+
+        // Przełączanie między wydarzeniami
+        function switchWinnersEvent(eventKey) {
+            if (!cache.winnersSets[eventKey]) return;
+
+            cache.currentWinnersEvent = eventKey;
+            cache.winners = cache.winnersSets[eventKey];
+
+            // Aktualizuj przyciski
+            document.querySelectorAll('.event-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === eventKey);
+            });
+
+            // Aktualizuj status
+            ui.winnersStatus.innerHTML = `<span class="status-received">✅ ${eventKey} (${cache.winners.length} pozycji)</span>`;
+
+            // Wyświetl
+            displayWinners(cache.winners);
         }
 
         // Wyświetlanie zwycięzców
