@@ -127,14 +127,19 @@ async function sendFileToLED(imageBuffer, ledIP, ledPort, filename = 'display.pn
             writeShort(startPacket, 0, offset);
 
             console.log(`Sending FileStartAsk packet (${offset} bytes)`);
+            // Debug: Show hex dump of first 64 bytes
+            console.log('Packet hex:', startPacket.slice(0, Math.min(offset, 64)).toString('hex'));
             socket.write(startPacket.slice(0, offset));
         });
 
         let receivedData = Buffer.alloc(0);
+        let dataReceived = false;
 
         socket.on('data', (data) => {
+            dataReceived = true;
             receivedData = Buffer.concat([receivedData, data]);
-            console.log(`Received ${data.length} bytes from LED controller`);
+            console.log(`✅ Received ${data.length} bytes from LED controller`);
+            console.log('Response hex:', data.toString('hex'));
 
             // Check if we have at least packet length
             if (receivedData.length >= 2) {
@@ -192,19 +197,28 @@ async function sendFileToLED(imageBuffer, ledIP, ledPort, filename = 'display.pn
         });
 
         socket.on('error', (err) => {
-            console.error('Socket error:', err.message);
+            console.error('❌ Socket error:', err.message);
             reject(err);
         });
 
         socket.on('close', () => {
-            console.log('Connection closed');
+            if (!dataReceived) {
+                console.warn('⚠️  Connection closed WITHOUT receiving any response from LED!');
+                console.warn('   Possible causes:');
+                console.warn('   1. LED controller not in Asynchronous mode (check HDPlayer)');
+                console.warn('   2. LED controller firewall blocking incoming connections');
+                console.warn('   3. Protocol requires additional initialization (GUID/Session ID)');
+                console.warn('   4. LED controller requires active program/playlist');
+            } else {
+                console.log('Connection closed normally');
+            }
         });
 
         // Timeout after 30 seconds
         socket.setTimeout(30000, () => {
-            console.error('Connection timeout');
+            console.error('⏱️  Connection timeout - LED controller did not respond within 30 seconds');
             socket.destroy();
-            reject(new Error('Connection timeout'));
+            reject(new Error('Connection timeout - LED controller not responding'));
         });
     });
 }
