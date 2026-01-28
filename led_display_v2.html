@@ -2090,24 +2090,27 @@
             }
         }
 
-        function testLedConnection() {
+        async function testLedConnection() {
             if (config.led.connectionType === 'ethernet') {
-                // Test connection to LED controller
-                fetch(`http://${config.led.ip}:${config.led.port}/ping`)
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Połączenie z tablicą LED działa!');
-                            updateIndicator('led-indicator', 'led-status', true, 'LED: Ethernet połączony');
-                        } else {
-                            throw new Error('Connection failed');
-                        }
-                    })
-                    .catch(error => {
-                        alert('Nie można połączyć się z tablicą LED. Sprawdź adres IP i port.');
-                        updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd połączenia');
-                    });
+                // Test connection to Node.js bridge server (not directly to LED!)
+                try {
+                    const response = await fetch('http://localhost:3000/status');
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert(`✅ Bridge server działa!\n\nLED IP: ${data.ledIP}\nLED Port: ${data.ledPort}\n\nTeraz bridge server będzie próbował połączyć się z tablicą LED przez TCP.`);
+                        updateIndicator('led-indicator', 'led-status', true, 'LED: Bridge server połączony');
+                    } else {
+                        throw new Error('Bridge server nie odpowiada');
+                    }
+                } catch (error) {
+                    alert(`❌ Nie można połączyć się z bridge serverem!\n\nUpewnij się że Node.js server działa:\n\nnode led-bridge-server.js\n\nBłąd: ${error.message}`);
+                    updateIndicator('led-indicator', 'led-status', false, 'LED: Bridge server offline');
+                }
+            } else if (config.led.connectionType === 'hdmi') {
+                alert('✅ Tryb HDMI aktywny\n\nWyświetl zawodnika i naciśnij F11 dla fullscreen');
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI gotowy');
             } else {
-                alert('Test połączenia dostępny tylko dla trybu Ethernet');
+                alert('⚠️ Wybierz typ połączenia LED w konfiguracji');
             }
         }
 
