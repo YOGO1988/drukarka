@@ -1,0 +1,13 @@
+{
+  "name": "led-bridge-server",
+  "version": "1.0.0",
+  "description": "Bridge server for Huidu HD-A4L LED controller",
+  "main": "led-bridge-server.js",
+  "scripts": {
+    "start": "node led-bridge-server.js",
+    "dev": "nodemon led-bridge-server.js"
+  },
+  "keywords": ["led", "huidu", "tcp", "bridge"],
+  "author": "YOGO Events",
+  "license": "MIT"
+}

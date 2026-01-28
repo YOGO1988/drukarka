@@ -1793,21 +1793,25 @@
                 const canvas = ui.ledCanvas;
                 const imageData = canvas.toDataURL('image/png');
 
-                // Send image to LED controller
-                const response = await fetch(`http://${config.led.ip}:${config.led.port}/display`, {
+                // Send image to Node.js bridge server (which forwards to LED via TCP)
+                // Bridge server must be running: node led-bridge-server.js
+                const response = await fetch('http://localhost:3000/send-to-led', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: imageData })
                 });
 
                 if (response.ok) {
-                    updateIndicator('led-indicator', 'led-status', true, 'LED: Wysłano przez Ethernet');
+                    const result = await response.json();
+                    console.log('LED response:', result);
+                    updateIndicator('led-indicator', 'led-status', true, 'LED: Wysłano przez TCP');
                 } else {
-                    throw new Error('HTTP Error: ' + response.status);
+                    const error = await response.json();
+                    throw new Error(error.error || 'HTTP Error: ' + response.status);
                 }
             } catch (error) {
                 console.error('Send to LED error:', error);
-                updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd wysyłania');
+                updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd - ' + error.message);
             }
         }
 
