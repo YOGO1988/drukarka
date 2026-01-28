@@ -1798,7 +1798,11 @@
                 const response = await fetch('http://localhost:3000/send-to-led', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: imageData })
+                    body: JSON.stringify({
+                        image: imageData,
+                        ledIP: config.led.ip,
+                        ledPort: parseInt(config.led.port)
+                    })
                 });
 
                 if (response.ok) {
@@ -2097,8 +2101,8 @@
                     const response = await fetch('http://localhost:3000/status');
                     if (response.ok) {
                         const data = await response.json();
-                        alert(`✅ Bridge server działa!\n\nLED IP: ${data.ledIP}\nLED Port: ${data.ledPort}\n\nTeraz bridge server będzie próbował połączyć się z tablicą LED przez TCP.`);
-                        updateIndicator('led-indicator', 'led-status', true, 'LED: Bridge server połączony');
+                        alert(`✅ Bridge server działa!\n\n${data.message}\n\nKonfiguracja:\nLED IP: ${config.led.ip}\nLED Port: ${config.led.port}\n\nTeraz wyświetl zawodnika aby przetestować połączenie TCP z tablicą.`);
+                        updateIndicator('led-indicator', 'led-status', true, 'LED: Bridge server gotowy');
                     } else {
                         throw new Error('Bridge server nie odpowiada');
                     }

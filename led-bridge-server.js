@@ -89,19 +89,20 @@ function writeString(buffer, offset, str, maxLength = null) {
 /**
  * Send file to LED controller via TCP
  */
-async function sendFileToLED(imageBuffer, filename = 'display.png') {
+async function sendFileToLED(imageBuffer, ledIP, ledPort, filename = 'display.png') {
     return new Promise((resolve, reject) => {
         const md5 = getMD5(imageBuffer);
         const fileSize = imageBuffer.length;
 
         console.log(`Sending file: ${filename}`);
         console.log(`Size: ${fileSize} bytes, MD5: ${md5}`);
+        console.log(`Target LED: ${ledIP}:${ledPort}`);
 
         const socket = net.createConnection({
-            host: CONFIG.LED_IP,
-            port: CONFIG.LED_PORT
+            host: ledIP,
+            port: ledPort
         }, () => {
-            console.log(`Connected to LED controller at ${CONFIG.LED_IP}:${CONFIG.LED_PORT}`);
+            console.log(`Connected to LED controller at ${ledIP}:${ledPort}`);
 
             // Send FileStartAsk packet
             const startPacket = Buffer.alloc(1024);
@@ -240,6 +241,10 @@ const server = http.createServer(async (req, res) => {
                     return;
                 }
 
+                // Get LED IP and port from request (or use defaults)
+                const ledIP = data.ledIP || CONFIG.LED_IP;
+                const ledPort = data.ledPort || CONFIG.LED_PORT;
+
                 // Convert data URL to buffer
                 const imageBuffer = dataURLToBuffer(data.image);
                 console.log(`Received image from browser: ${imageBuffer.length} bytes`);
@@ -249,8 +254,8 @@ const server = http.createServer(async (req, res) => {
                 fs.writeFileSync(tempFile, imageBuffer);
                 console.log(`Saved temp file: ${tempFile}`);
 
-                // Send to LED controller
-                const result = await sendFileToLED(imageBuffer, 'display.png');
+                // Send to LED controller with dynamic IP/port
+                const result = await sendFileToLED(imageBuffer, ledIP, ledPort, 'display.png');
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(result));
@@ -267,8 +272,7 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             status: 'running',
-            ledIP: CONFIG.LED_IP,
-            ledPort: CONFIG.LED_PORT
+            message: 'Bridge server ready. LED IP/Port configured in HTML.'
         }));
 
     } else {
@@ -282,12 +286,14 @@ server.listen(CONFIG.HTTP_PORT, () => {
     console.log('LED Bridge Server - Huidu HD-A4L Integration');
     console.log('='.repeat(60));
     console.log(`HTTP Server: http://localhost:${CONFIG.HTTP_PORT}`);
-    console.log(`LED Controller: ${CONFIG.LED_IP}:${CONFIG.LED_PORT}`);
+    console.log(`LED IP/Port: Configured in HTML (dynamic)`);
     console.log('');
     console.log('Endpoints:');
     console.log(`  POST /send-to-led - Send image to LED display`);
+    console.log(`       Body: {image, ledIP, ledPort}`);
     console.log(`  GET  /status - Check server status`);
     console.log('='.repeat(60));
+    console.log('Waiting for requests from browser...');
 });
 
 // Graceful shutdown
