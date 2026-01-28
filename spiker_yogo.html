@@ -1550,6 +1550,7 @@
                                     genderPlace: result.results_sex_rank || '',
                                     netTime: formatTime(result.results_time),
                                     gunTime: formatTime(result.results_gun_time),
+                                    startTime: result.results_start_time || result.results_begin_chip_time || null,
                                     pace: result.results_pace,
                                     distance: result.results_race_name,
                                     category: result.results_primary_bracket_name,
@@ -1645,6 +1646,7 @@
                         genderPlace: resultData.results_sex_rank || '',
                         netTime: formatTime(resultData.results_time),
                         gunTime: formatTime(resultData.results_gun_time),
+                        startTime: resultData.results_start_time || resultData.results_begin_chip_time || null,
                         pace: resultData.results_pace,
                         distance: resultData.results_race_name,
                         category: resultData.results_primary_bracket_name,
@@ -2419,8 +2421,8 @@
             let totalFinished = 0;
 
             // Policz wystartowanych i ukończonych z cache.results
-            // Wystartowani = ci którzy mają gunTime (czas brutto) LUB jakikolwiek checkpoint
-            //                (to oznacza że przekroczyli linię startu lub punkt pośredni)
+            // Wystartowani = ci którzy mają startTime (czas startu z chipa)
+            //                LUB mają netTime (jeśli ktoś jest na mecie, to na pewno wystartował - nawet bez czasu startu)
             // Ukończeni = ci którzy mają netTime (czas netto na mecie)
             cache.results.forEach(result => {
                 const athlete = cache.athletes.get(result.bib);
@@ -2430,13 +2432,12 @@
                     stats[distance] = { started: 0, finished: 0, onCourse: 0 };
                 }
 
-                // Sprawdź czy wystartował - ma gunTime LUB checkpoint LUB netTime
-                const hasGunTime = result.gunTime && result.gunTime !== '-' && result.gunTime !== '';
-                const hasCheckpoint = result.checkpoints && result.checkpoints.length > 0;
+                // Sprawdź czy ma czas startu
+                const hasStartTime = result.startTime && result.startTime !== null;
                 const hasNetTime = result.netTime && result.netTime !== '-' && result.netTime !== '';
 
-                // Ktoś wystartował jeśli ma jakikolwiek czas (gunTime, checkpoint lub netTime)
-                if (hasGunTime || hasCheckpoint || hasNetTime) {
+                // Ktoś wystartował jeśli ma czas startu LUB czas mety (jeśli jest na mecie to na pewno wystartował)
+                if (hasStartTime || hasNetTime) {
                     stats[distance].started++;
                     totalStarted++;
                 }
