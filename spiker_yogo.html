@@ -130,46 +130,53 @@
         .statistics-bar {
             background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
-            padding: 8px 20px;
+            padding: 6px 15px;
             display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            gap: 25px;
-            font-size: 12px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11px;
             border-bottom: 2px solid var(--primary-color);
             position: relative;
             z-index: 10;
         }
 
+        .stats-distances-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
         .stats-distance-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
         }
 
         .stats-distance-name {
             font-weight: bold;
             color: var(--primary-color);
-            min-width: 60px;
+            font-size: 11px;
         }
 
         .stats-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
 
         .stats-label {
             color: #aaa;
+            font-size: 10px;
         }
 
         .stats-value {
             font-weight: bold;
             font-family: 'Courier New', monospace;
+            font-size: 11px;
         }
 
         .stats-value.started {
@@ -185,11 +192,13 @@
         }
 
         .stats-total {
-            margin-left: auto;
             background: var(--primary-color);
-            padding: 6px 15px;
-            border-radius: 6px;
+            padding: 4px 12px;
+            border-radius: 4px;
             font-weight: bold;
+            font-size: 11px;
+            display: inline-block;
+            align-self: flex-start;
         }
 
         /* Tabs */
@@ -626,6 +635,7 @@
             border: 2px solid var(--border-color);
             border-radius: 8px;
             background: white;
+            color: var(--text-color);
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
@@ -2150,7 +2160,10 @@
 
             categories.forEach(([cat, winners]) => {
                 const upperCat = cat.toUpperCase();
-                if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
+                // Najpierw sprawdź czy to kategoria dodatkowa
+                if (upperCat.includes('DODATKOWE') || upperCat.includes('DODATK')) {
+                    extra.push([cat, winners]);
+                } else if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
                     open.push([cat, winners]);
                 } else if (upperCat.startsWith('K') || upperCat.includes('KOBIET') || upperCat.includes('FEMALE') || upperCat.includes('WOMEN')) {
                     female.push([cat, winners]);
@@ -2191,7 +2204,10 @@
 
             categories.forEach(([cat, winners]) => {
                 const upperCat = cat.toUpperCase();
-                if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
+                // Najpierw sprawdź czy to kategoria dodatkowa
+                if (upperCat.includes('DODATKOWE') || upperCat.includes('DODATK')) {
+                    extra.push([cat, winners]);
+                } else if (upperCat === 'OPEN' || upperCat === 'OVERALL') {
                     open.push([cat, winners]);
                 } else if (upperCat.startsWith('K') || upperCat.includes('KOBIET') || upperCat.includes('FEMALE') || upperCat.includes('WOMEN')) {
                     female.push([cat, winners]);
@@ -2218,6 +2234,8 @@
         // Pomocnicze funkcje do stylowania
         function getCategoryClass(category) {
             const upper = category.toUpperCase();
+            // Najpierw sprawdź czy to kategoria dodatkowa
+            if (upper.includes('DODATKOWE') || upper.includes('DODATK')) return 'extra';
             if (upper === 'OPEN' || upper === 'OVERALL') return 'open-category';
             if (upper.startsWith('K') || upper.includes('KOBIET') || upper.includes('FEMALE') || upper.includes('WOMEN')) return 'female';
             if (upper.startsWith('M') || upper.includes('MĘSKI') || upper.includes('MALE') || upper.includes('MEN')) return 'male';
@@ -2465,7 +2483,8 @@
             if (sortedDistances.length === 0) {
                 html = '<span style="color: #aaa;">Brak danych - pobierz zawodników z API</span>';
             } else {
-                // Dla każdego dystansu
+                // Dystanse w jednym wierszu
+                html += '<div class="stats-distances-row">';
                 sortedDistances.forEach(distance => {
                     const s = stats[distance];
                     html += `
@@ -2486,8 +2505,9 @@
                         </div>
                     `;
                 });
+                html += '</div>';
 
-                // Podsumowanie
+                // Podsumowanie na dole
                 html += `
                     <div class="stats-total">
                         RAZEM: ${totalStarted} start | ${totalFinished} meta | ${totalOnCourse} trasa

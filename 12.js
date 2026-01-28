@@ -406,6 +406,20 @@ udpServer.bind(10006, '0.0.0.0');
 // WINNERS FUNCTIONALITY - Wysyłanie zwycięzców
 // ============================================
 
+// Zaokrąglanie czasu - usuwa setne sekundy (np. "00:49:09.35" -> "00:49:09")
+function roundTime(timeStr) {
+    if (!timeStr) return timeStr;
+    // Usuń cudzysłowy
+    let clean = timeStr.replace(/"/g, '').trim();
+    // Sprawdź czy ma setne sekundy (format HH:MM:SS.cc lub MM:SS.cc)
+    const match = clean.match(/^(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})\.(\d+)$/);
+    if (match) {
+        // Zwróć tylko część przed kropką (HH:MM:SS lub MM:SS)
+        return match[1];
+    }
+    return clean;
+}
+
 // Parsowanie pliku CSV/TSV z wynikami
 function parseWinnersCSV(csvContent, encoding = 'auto') {
     console.log('📄 Parsing winners CSV...');
@@ -464,12 +478,13 @@ function parseWinnersCSV(csvContent, encoding = 'auto') {
 
         if (cols.length < 3) continue; // Pomiń puste lub niekompletne wiersze
 
+        const rawTime = timeIdx >= 0 ? cols[timeIdx]?.trim() || '' : '';
         const winner = {
             division: divisionIdx >= 0 ? cols[divisionIdx]?.trim() || 'OPEN' : 'OPEN',
             rank: rankIdx >= 0 ? parseInt(cols[rankIdx]?.trim()) || i : i,
             name: nameIdx >= 0 ? cols[nameIdx]?.trim() || '' : '',
             hometown: hometownIdx >= 0 ? cols[hometownIdx]?.trim() || '' : '',
-            time: timeIdx >= 0 ? cols[timeIdx]?.trim() || '' : '',
+            time: roundTime(rawTime),
             bib: bibIdx >= 0 ? cols[bibIdx]?.trim() || '' : ''
         };
 
