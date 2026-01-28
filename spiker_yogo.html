@@ -2419,8 +2419,9 @@
             let totalFinished = 0;
 
             // Policz wystartowanych i ukończonych z cache.results
-            // Wystartowani = ci którzy mają JAKIKOLWIEK wpis w results (choćby bez czasu końcowego)
-            // Ukończeni = ci którzy mają netTime (czas końcowy)
+            // Wystartowani = ci którzy mają gunTime (czas brutto) LUB jakikolwiek checkpoint
+            //                (to oznacza że przekroczyli linię startu lub punkt pośredni)
+            // Ukończeni = ci którzy mają netTime (czas netto na mecie)
             cache.results.forEach(result => {
                 const athlete = cache.athletes.get(result.bib);
                 const distance = athlete?.distance || result.distance || 'Nieznany';
@@ -2429,12 +2430,19 @@
                     stats[distance] = { started: 0, finished: 0, onCourse: 0 };
                 }
 
-                // Każdy kto ma wpis w results - wystartował
-                stats[distance].started++;
-                totalStarted++;
+                // Sprawdź czy wystartował - ma gunTime LUB checkpoint LUB netTime
+                const hasGunTime = result.gunTime && result.gunTime !== '-' && result.gunTime !== '';
+                const hasCheckpoint = result.checkpoints && result.checkpoints.length > 0;
+                const hasNetTime = result.netTime && result.netTime !== '-' && result.netTime !== '';
 
-                // Wynik musi mieć czas żeby być uznany za ukończonego
-                if (result.netTime && result.netTime !== '-' && result.netTime !== '') {
+                // Ktoś wystartował jeśli ma jakikolwiek czas (gunTime, checkpoint lub netTime)
+                if (hasGunTime || hasCheckpoint || hasNetTime) {
+                    stats[distance].started++;
+                    totalStarted++;
+                }
+
+                // Ukończył jeśli ma netTime
+                if (hasNetTime) {
                     stats[distance].finished++;
                     totalFinished++;
                 }
