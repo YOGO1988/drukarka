@@ -1725,7 +1725,7 @@
         setTimeout(() => {
             document.body.click();
         }, 500);
-    </script>
+    <\/script>
 </body>
 </html>
             `);
@@ -2203,6 +2203,7 @@
         ui.saveLedBtn.addEventListener('click', saveLedConfig);
         ui.testLedBtn.addEventListener('click', testLedConnection);
         ui.connectRfidBtn.addEventListener('click', connectRFID);
+        ui.openLedWindowBtn.addEventListener('click', openLEDWindow);
 
         ui.ledConnectionType.addEventListener('change', updateLedConnectionUI);
         ui.rfidPower.addEventListener('input', updateRfidPowerLabel);
