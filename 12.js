@@ -639,64 +639,252 @@ const httpServer = http.createServer(async (req, res) => {
         res.end(html);
     }
     // ==========================================
-    // WINNERS PAGE - strona do wysyłania zwycięzców
+    // YOGO PAGE - strona do wysyłania zwycięzców
     // ==========================================
-    else if (req.url === '/winners') {
+    else if (req.url === '/yogo') {
         const winnersPageHtml = `<!DOCTYPE html>
 <html>
 <head>
-    <title>🏅 Zwycięzcy - YO&GO Bridge</title>
+    <title>🏅 YO&GO - Wysyłanie Zwycięzców</title>
     <meta charset="utf-8">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
         .container { max-width: 800px; margin: 0 auto; }
-        .header { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        textarea { width: 100%; height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; }
-        button { background: #FF8C00; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-right: 10px; }
-        button:hover { background: #FF7000; }
-        button.secondary { background: #6c757d; }
-        .status { padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .status.info { background: #cce5ff; color: #004085; }
-        .preview { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; max-height: 500px; overflow: auto; }
-        .preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .preview th, .preview td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-        .preview th { background: #e9ecef; }
-        .connected-apps { background: #e8f4fd; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; }
-        .back-link { display: inline-block; margin-bottom: 15px; color: #FF8C00; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab { padding: 10px 20px; background: #e9ecef; border: none; border-radius: 8px 8px 0 0; cursor: pointer; }
-        .tab.active { background: white; border-bottom: 2px solid white; }
+
+        .header {
+            background: linear-gradient(135deg, #FF8C00, #FF6B00);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(255, 140, 0, 0.3);
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 28px; }
+        .header p { margin: 0; opacity: 0.9; }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #FF8C00;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #FF8C00;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+            padding: 6px;
+            border-radius: 12px;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+        .tab.active {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #FF8C00, #FF6B00);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button.secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+        button.secondary:hover {
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+        }
+
+        .status {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .status.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .status.info {
+            background: linear-gradient(135deg, #cce5ff, #b8daff);
+            color: #004085;
+            border-left: 4px solid #007bff;
+        }
+
+        .preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #e0e0e0;
+        }
+        .preview table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .preview th {
+            background: #FF8C00;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        .preview td { padding: 10px; border-bottom: 1px solid #e0e0e0; }
+        .preview tr:hover td { background: #fff3e0; }
+
+        .connected-apps {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            border-left: 4px solid #2196f3;
+        }
+        .connected-apps.warning {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-left-color: #ff9800;
+        }
+        .connected-apps.error {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-left-color: #f44336;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            color: #FF8C00;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .category-group { margin-bottom: 15px; }
+        .category-header {
+            font-weight: 600;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-link">← Powrót do głównej</a>
+        <a href="/" class="back-link">← Powrót do panelu głównego</a>
 
         <div class="header">
             <h1>🏅 Wysyłanie Zwycięzców</h1>
-            <p>Wczytaj plik CSV z wynikami i wyślij do tabletu</p>
+            <p>Wczytaj plik CSV z wynikami i wyślij na tablet spikera</p>
         </div>
 
-        <div class="connected-apps">
-            📱 Połączone aplikacje spikera: <strong id="appCount">${wsConnections}</strong>
-            ${wsConnections === 0 ? '<span style="color: #dc3545;"> (Brak połączonych tabletów!)</span>' : '<span style="color: #28a745;"> ✓</span>'}
+        <div class="connected-apps ${wsConnections === 0 ? 'error' : ''}">
+            📱 Połączone tablety: <strong>${wsConnections}</strong>
+            ${wsConnections === 0 ? '<span style="color: #c62828;"> — Brak połączonych tabletów!</span>' : '<span style="color: #2e7d32;"> ✓ Gotowe do wysyłania</span>'}
         </div>
 
         <div class="card">
             <div class="tabs">
-                <button class="tab active" onclick="showTab('file')">📁 Plik CSV</button>
+                <button class="tab active" onclick="showTab('file')">📁 Wybierz plik</button>
                 <button class="tab" onclick="showTab('paste')">📋 Wklej dane</button>
-                <button class="tab" onclick="showTab('path')">📂 Ścieżka do pliku</button>
             </div>
 
             <div id="tab-file" class="tab-content active">
@@ -709,35 +897,23 @@ const httpServer = http.createServer(async (req, res) => {
             <div id="tab-paste" class="tab-content">
                 <div class="form-group">
                     <label>Wklej zawartość CSV (skopiuj z Excela lub pliku):</label>
-                    <textarea id="csvPaste" placeholder="DIVISION&#9;RANK&#9;NAME&#9;HOMETOWN&#9;PR_DIV&#9;AWARD TIME&#9;PACE&#9;BIB
-K&#9;1&#9;Anna Kowalska&#9;Warszawa&#9;1&#9;00:42:15&#9;4:13&#9;101
-M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
-                </div>
-            </div>
-
-            <div id="tab-path" class="tab-content">
-                <div class="form-group">
-                    <label>Ścieżka do pliku CSV na tym komputerze:</label>
-                    <input type="text" id="csvPath" placeholder="C:\\Users\\YoGo\\Desktop\\wyniki.csv">
+                    <textarea id="csvPaste" placeholder="DIVISION&#9;RANK&#9;NAME&#9;HOMETOWN&#9;AWARD TIME&#9;BIB
+K&#9;1&#9;Anna Kowalska&#9;Warszawa&#9;00:42:15&#9;101
+M&#9;1&#9;Jan Nowak&#9;Kraków&#9;00:38:22&#9;202"></textarea>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Nazwa wydarzenia (opcjonalnie):</label>
-                <input type="text" id="eventName" placeholder="np. Bieg Wawrzynkowy 2026">
+                <label>Nazwa dystansu / wydarzenia:</label>
+                <input type="text" id="eventName" placeholder="np. 10km, 5km, Bieg Główny...">
+                <small style="color: #666; margin-top: 4px; display: block;">Każdy dystans wysyłaj z inną nazwą - na tablecie pojawią się przyciski do przełączania</small>
             </div>
 
-            <div class="form-group" style="margin: 15px 0;">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" id="appendMode" style="width: 18px; height: 18px;">
-                    <span>➕ Dodaj do istniejących (dla wielu dystansów)</span>
-                </label>
-                <small style="color: #666; margin-left: 28px;">Zaznacz, aby połączyć z wcześniej wysłanymi zwycięzcami</small>
+            <div class="btn-group">
+                <button onclick="previewCSV()">👁️ Podgląd</button>
+                <button onclick="sendWinners()" id="sendBtn">📤 Wyślij do tabletu</button>
+                ${winnersData.length > 0 ? '<button class="secondary" onclick="resendWinners()">🔄 Wyślij ostatnie</button>' : ''}
             </div>
-
-            <button onclick="previewCSV()">👁️ Podgląd</button>
-            <button onclick="sendWinners()" id="sendBtn">📤 Wyślij do tabletu</button>
-            ${winnersData.length > 0 ? '<button class="secondary" onclick="resendWinners()">🔄 Wyślij ponownie ostatnie</button>' : ''}
 
             <div id="status"></div>
             <div id="preview" class="preview" style="display: none;"></div>
@@ -767,19 +943,6 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                     throw new Error('Wklej dane CSV');
                 }
                 return content;
-            } else if (activeTab === 'tab-path') {
-                const path = document.getElementById('csvPath').value;
-                if (!path.trim()) {
-                    throw new Error('Podaj ścieżkę do pliku');
-                }
-                // Fetch from server using path
-                const response = await fetch('/api/read-csv?path=' + encodeURIComponent(path));
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Błąd odczytu pliku');
-                }
-                const data = await response.json();
-                return data.content;
             }
         }
 
@@ -817,6 +980,88 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                 });
 
                 const catCount = Object.keys(categories).length;
+                statusDiv.innerHTML = '<div class="status success">✅ Wczytano ' + result.winners.length + ' zawodników w ' + catCount + ' kategoriach</div>';
+
+                // Pokaż podgląd
+                let html = '<table><thead><tr><th>Kat.</th><th>M.</th><th>Zawodnik</th><th>Miejscowość</th><th>Czas</th><th>Nr</th></tr></thead><tbody>';
+
+                Object.keys(categories).sort().forEach(cat => {
+                    categories[cat].forEach(w => {
+                        html += '<tr><td><strong>' + cat + '</strong></td><td>' + w.rank + '</td><td>' + w.name + '</td><td>' + (w.hometown || '-') + '</td><td>' + (w.time || '-') + '</td><td>' + (w.bib || '-') + '</td></tr>';
+                    });
+                });
+
+                html += '</tbody></table>';
+                previewDiv.innerHTML = html;
+                previewDiv.style.display = 'block';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+                previewDiv.style.display = 'none';
+            }
+        }
+
+        async function sendWinners() {
+            const statusDiv = document.getElementById('status');
+            const sendBtn = document.getElementById('sendBtn');
+
+            try {
+                sendBtn.disabled = true;
+                statusDiv.innerHTML = '<div class="status info">⏳ Wysyłanie do tabletu...</div>';
+
+                const content = await getCSVContent();
+                const eventName = document.getElementById('eventName').value;
+
+                const response = await fetch('/api/send-winners', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: typeof content === 'string' ? content : Array.from(new Uint8Array(content)),
+                        eventName: eventName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ Wysłano ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function resendWinners() {
+            const statusDiv = document.getElementById('status');
+
+            try {
+                statusDiv.innerHTML = '<div class="status info">⏳ Wysyłanie ponownie...</div>';
+
+                const response = await fetch('/api/resend-winners', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                statusDiv.innerHTML = '<div class="status success">✅ Wysłano ponownie ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>`;
+
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(winnersPageHtml);
+    }
                 statusDiv.innerHTML = '<div class="status success">✅ Znaleziono ' + result.winners.length + ' zwycięzców w ' + catCount + ' kategoriach</div>';
 
                 // Show preview - all data grouped by category
@@ -945,33 +1190,22 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                 csvContent = data.content;
             }
 
-            let newWinners = parseWinnersCSV(csvContent);
+            const winners = parseWinnersCSV(csvContent);
 
-            if (newWinners.length === 0) {
+            if (winners.length === 0) {
                 throw new Error('Nie znaleziono żadnych zwycięzców w pliku');
-            }
-
-            // Tryb dodawania - połącz z istniejącymi
-            let finalWinners;
-            if (data.append && winnersData.length > 0) {
-                finalWinners = [...winnersData, ...newWinners];
-                console.log(`📎 Appending ${newWinners.length} winners to existing ${winnersData.length}`);
-            } else {
-                finalWinners = newWinners;
             }
 
             if (wsClients.length === 0) {
                 throw new Error('Brak połączonych tabletów! Połącz tablet i spróbuj ponownie.');
             }
 
-            const sent = broadcastWinners(finalWinners, data.eventName || '');
+            const sent = broadcastWinners(winners, data.eventName || '');
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 success: true,
-                winnersCount: finalWinners.length,
-                newWinners: newWinners.length,
-                appendedTo: data.append ? winnersData.length - newWinners.length : 0,
+                winnersCount: winners.length,
                 sentTo: wsClients.length
             }));
         } catch (error) {
