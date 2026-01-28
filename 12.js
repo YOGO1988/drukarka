@@ -727,6 +727,14 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                 <input type="text" id="eventName" placeholder="np. Bieg Wawrzynkowy 2026">
             </div>
 
+            <div class="form-group" style="margin: 15px 0;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="appendMode" style="width: 18px; height: 18px;">
+                    <span>➕ Dodaj do istniejących (dla wielu dystansów)</span>
+                </label>
+                <small style="color: #666; margin-left: 28px;">Zaznacz, aby połączyć z wcześniej wysłanymi zwycięzcami</small>
+            </div>
+
             <button onclick="previewCSV()">👁️ Podgląd</button>
             <button onclick="sendWinners()" id="sendBtn">📤 Wyślij do tabletu</button>
             ${winnersData.length > 0 ? '<button class="secondary" onclick="resendWinners()">🔄 Wyślij ponownie ostatnie</button>' : ''}
@@ -844,13 +852,15 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
 
                 const content = await getCSVContent();
                 const eventName = document.getElementById('eventName').value;
+                const appendMode = document.getElementById('appendMode').checked;
 
                 const response = await fetch('/api/send-winners', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         content: typeof content === 'string' ? content : Array.from(new Uint8Array(content)),
-                        eventName: eventName
+                        eventName: eventName,
+                        append: appendMode
                     })
                 });
 
@@ -860,7 +870,11 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                     throw new Error(result.error);
                 }
 
-                statusDiv.innerHTML = '<div class="status success">✅ Wysłano ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!</div>';
+                let msg = '✅ Wysłano ' + result.winnersCount + ' zwycięzców do ' + result.sentTo + ' tabletów!';
+                if (result.appendedTo > 0) {
+                    msg += ' (dodano ' + result.newWinners + ' nowych)';
+                }
+                statusDiv.innerHTML = '<div class="status success">' + msg + '</div>';
 
             } catch (error) {
                 statusDiv.innerHTML = '<div class="status error">❌ ' + error.message + '</div>';
@@ -931,22 +945,33 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                 csvContent = data.content;
             }
 
-            const winners = parseWinnersCSV(csvContent);
+            let newWinners = parseWinnersCSV(csvContent);
 
-            if (winners.length === 0) {
+            if (newWinners.length === 0) {
                 throw new Error('Nie znaleziono żadnych zwycięzców w pliku');
+            }
+
+            // Tryb dodawania - połącz z istniejącymi
+            let finalWinners;
+            if (data.append && winnersData.length > 0) {
+                finalWinners = [...winnersData, ...newWinners];
+                console.log(`📎 Appending ${newWinners.length} winners to existing ${winnersData.length}`);
+            } else {
+                finalWinners = newWinners;
             }
 
             if (wsClients.length === 0) {
                 throw new Error('Brak połączonych tabletów! Połącz tablet i spróbuj ponownie.');
             }
 
-            const sent = broadcastWinners(winners, data.eventName || '');
+            const sent = broadcastWinners(finalWinners, data.eventName || '');
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 success: true,
-                winnersCount: winners.length,
+                winnersCount: finalWinners.length,
+                newWinners: newWinners.length,
+                appendedTo: data.append ? winnersData.length - newWinners.length : 0,
                 sentTo: wsClients.length
             }));
         } catch (error) {
