@@ -500,6 +500,8 @@
                     
                     <button id="save-led-btn" class="btn-full">Zapisz połączenie</button>
                     <button id="test-led-btn" class="btn-full secondary">Test połączenia</button>
+                    <button id="open-led-window-btn" class="btn-full" style="background: #00AA00; margin-top: 15px;">🖥️ Otwórz okno LED (HDMI)</button>
+                    <p style="font-size: 11px; color: #888; margin-top: 5px;">Otwiera osobne okno do wyświetlenia na drugim monitorze (LED). Przesuń na LED i naciśnij F11.</p>
                 </div>
             </div>
         </div>
@@ -642,6 +644,7 @@
             ledPort: document.getElementById('led-port'),
             saveLedBtn: document.getElementById('save-led-btn'),
             testLedBtn: document.getElementById('test-led-btn'),
+            openLedWindowBtn: document.getElementById('open-led-window-btn'),
 
             // Password modal
             passwordModal: document.getElementById('password-modal'),
@@ -655,6 +658,7 @@
         let currentMode = 'admin';  // 'display' or 'admin'
         let refreshTimer = null;
         let selectedAthlete = null;
+        let ledWindow = null;
 
         // =====================================
         // UTILITY FUNCTIONS
@@ -1634,6 +1638,121 @@
             ui.displayStatus.textContent = '';
         }
 
+        // =====================================
+        // LED WINDOW FOR HDMI DISPLAY - AUTOMATIC
+        // =====================================
+
+        async function openLEDWindow() {
+            // Jeśli okno już otwarte, zamknij stare
+            if (ledWindow && !ledWindow.closed) {
+                ledWindow.close();
+            }
+
+            try {
+                // Użyj Window Placement API aby wykryć drugi monitor
+                if ('getScreenDetails' in window) {
+                    const screens = await window.getScreenDetails();
+                    const secondScreen = screens.screens.length > 1 ? screens.screens[1] : screens.screens[0];
+
+                    // Otwórz fullscreen na drugim monitorze
+                    ledWindow = window.open(
+                        '',
+                        'LED_Display',
+                        `left=${secondScreen.left},top=${secondScreen.top},width=${secondScreen.width},height=${secondScreen.height},toolbar=no,location=no,status=no,menubar=no,scrollbars=no,fullscreen=yes`
+                    );
+                } else {
+                    // Fallback - otwórz po prawej stronie
+                    ledWindow = window.open(
+                        '',
+                        'LED_Display',
+                        `left=${window.screen.width},top=0,width=1024,height=768,toolbar=no,location=no,status=no,menubar=no,scrollbars=no`
+                    );
+                }
+            } catch (error) {
+                console.error('Could not use Window Placement API:', error);
+                // Fallback
+                ledWindow = window.open(
+                    '',
+                    'LED_Display',
+                    `left=${window.screen.width},top=0,width=1024,height=768,toolbar=no,location=no,status=no,menubar=no,scrollbars=no`
+                );
+            }
+
+            if (!ledWindow) {
+                alert('Nie można otworzyć okna LED. Sprawdź czy przeglądarka nie blokuje popup.');
+                return;
+            }
+
+            // Wygeneruj HTML dla okna LED - pełny ekran czarny, sam canvas
+            ledWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LED Display</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+        #led-canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="led-canvas" width="240" height="240"></canvas>
+    <script>
+        // Auto fullscreen
+        document.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(console.error);
+            }
+        });
+
+        // Kliknij aby wejść w fullscreen
+        setTimeout(() => {
+            document.body.click();
+        }, 500);
+    </script>
+</body>
+</html>
+            `);
+            ledWindow.document.close();
+
+            // Synchronizuj canvas
+            syncLEDWindow();
+
+            console.log('LED window opened automatically');
+        }
+
+        function syncLEDWindow() {
+            if (!ledWindow || ledWindow.closed) return;
+
+            try {
+                const sourceCanvas = ui.ledCanvas;
+                const targetCanvas = ledWindow.document.getElementById('led-canvas');
+
+                if (targetCanvas && sourceCanvas) {
+                    const targetCtx = targetCanvas.getContext('2d');
+                    targetCtx.drawImage(sourceCanvas, 0, 0);
+                }
+            } catch (error) {
+                console.error('LED window sync error:', error);
+            }
+        }
+
         function sendToLED() {
             if (!selectedAthlete) {
                 if (ui.displayStatus) ui.displayStatus.textContent = '';
@@ -1647,6 +1766,9 @@
                 ui.displayStatus.textContent = 'WYŚWIETLONO';
                 ui.displayStatus.style.display = 'block';
             }
+
+            // Synchronizuj z oknem LED jeśli jest otwarte
+            syncLEDWindow();
 
             if (connectionType === 'none') {
                 // Only preview, no actual sending
