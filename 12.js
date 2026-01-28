@@ -649,7 +649,7 @@ const httpServer = http.createServer(async (req, res) => {
         .status.success { background: #d4edda; color: #155724; }
         .status.error { background: #f8d7da; color: #721c24; }
         .status.info { background: #cce5ff; color: #004085; }
-        .preview { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow: auto; }
+        .preview { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; max-height: 500px; overflow: auto; }
         .preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .preview th, .preview td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
         .preview th { background: #e9ecef; }
@@ -785,17 +785,30 @@ M&#9;1&#9;Jan Nowak&#9;Kraków&#9;1&#9;00:38:22&#9;3:50&#9;202"></textarea>
                     throw new Error(result.error);
                 }
 
-                statusDiv.innerHTML = '<div class="status success">✅ Znaleziono ' + result.winners.length + ' zwycięzców</div>';
-
-                // Show preview table
-                let tableHtml = '<h4>Podgląd danych:</h4><table><tr><th>Kat.</th><th>Miejsce</th><th>Imię i nazwisko</th><th>Miasto</th><th>Czas</th><th>BIB</th></tr>';
-                result.winners.slice(0, 20).forEach(w => {
-                    tableHtml += '<tr><td>' + w.division + '</td><td>' + w.rank + '</td><td>' + w.name + '</td><td>' + w.hometown + '</td><td>' + w.time + '</td><td>' + w.bib + '</td></tr>';
+                // Grupuj według kategorii
+                const categories = {};
+                result.winners.forEach(w => {
+                    const cat = w.division || 'OPEN';
+                    if (!categories[cat]) categories[cat] = [];
+                    categories[cat].push(w);
                 });
-                if (result.winners.length > 20) {
-                    tableHtml += '<tr><td colspan="6" style="text-align: center; color: #666;">... i ' + (result.winners.length - 20) + ' więcej</td></tr>';
-                }
-                tableHtml += '</table>';
+
+                const catCount = Object.keys(categories).length;
+                statusDiv.innerHTML = '<div class="status success">✅ Znaleziono ' + result.winners.length + ' zwycięzców w ' + catCount + ' kategoriach</div>';
+
+                // Show preview - all data grouped by category
+                let tableHtml = '<h4>Podgląd danych (' + result.winners.length + ' pozycji):</h4>';
+
+                Object.keys(categories).sort().forEach(cat => {
+                    const catWinners = categories[cat];
+                    tableHtml += '<div style="background: #2c3e50; color: white; padding: 6px 10px; margin-top: 10px; font-weight: bold;">' + cat + ' (' + catWinners.length + ')</div>';
+                    tableHtml += '<table style="margin-bottom: 5px;"><tr><th>M.</th><th>Zawodnik</th><th>Miejscowość</th><th>Czas</th><th>Nr</th></tr>';
+                    catWinners.forEach(w => {
+                        const cleanTime = (w.time || '').replace(/"/g, '');
+                        tableHtml += '<tr><td>' + w.rank + '</td><td>' + w.name + '</td><td>' + w.hometown + '</td><td>' + cleanTime + '</td><td>' + w.bib + '</td></tr>';
+                    });
+                    tableHtml += '</table>';
+                });
 
                 previewDiv.innerHTML = tableHtml;
                 previewDiv.style.display = 'block';

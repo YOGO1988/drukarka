@@ -138,6 +138,8 @@
             font-size: 12px;
             flex-wrap: wrap;
             border-bottom: 2px solid var(--primary-color);
+            position: relative;
+            z-index: 10;
         }
 
         .stats-distance-group {
@@ -675,85 +677,118 @@
         }
 
         .winner-category {
-            margin-bottom: 25px;
+            margin-bottom: 0;
         }
 
         .winner-category-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: #2c3e50;
             color: white;
-            padding: 12px 20px;
-            font-size: 18px;
+            padding: 10px 15px;
+            font-size: 15px;
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            border-bottom: 2px solid var(--primary-color);
         }
 
         .winner-category-header.open-category {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
+            background: #1a5f2a;
         }
 
         .winner-category-header.female {
-            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            background: #8b1a5c;
         }
 
         .winner-category-header.male {
-            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            background: #1a4a8b;
         }
 
         .winner-category-header.extra {
-            background: linear-gradient(135deg, #9370DB, #8A2BE2);
+            background: #5a1a8b;
+        }
+
+        .winners-table-header {
+            display: grid;
+            grid-template-columns: 60px 1fr 150px 100px 80px;
+            padding: 8px 15px;
+            background: #e9ecef;
+            font-weight: bold;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .winner-row {
             display: grid;
-            grid-template-columns: 80px 1fr 200px 120px;
-            padding: 15px 20px;
+            grid-template-columns: 60px 1fr 150px 100px 80px;
+            padding: 10px 15px;
             border-bottom: 1px solid var(--border-color);
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            font-size: 14px;
         }
 
-        .winner-row:last-child {
-            border-bottom: none;
+        .winner-row:nth-child(even) {
+            background: #fafafa;
         }
 
         .winner-row:hover {
-            background: var(--light-bg);
+            background: #fff3cd;
         }
 
         .winner-rank {
-            font-size: 24px;
+            font-size: 16px;
             font-weight: bold;
-            color: var(--primary-color);
             text-align: center;
         }
 
-        .winner-rank.gold { color: #FFD700; }
-        .winner-rank.silver { color: #C0C0C0; }
-        .winner-rank.bronze { color: #CD7F32; }
+        .winner-rank.gold {
+            color: #b8860b;
+            font-size: 18px;
+        }
+        .winner-rank.silver {
+            color: #6c757d;
+            font-size: 17px;
+        }
+        .winner-rank.bronze {
+            color: #a0522d;
+            font-size: 16px;
+        }
+
+        .winner-info {
+            overflow: hidden;
+        }
 
         .winner-name {
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .winner-hometown {
-            font-size: 14px;
-            color: #666;
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .winner-time {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
-            font-family: 'Consolas', monospace;
-            color: var(--success-color);
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #333;
         }
 
         .winner-bib {
-            font-size: 16px;
-            color: #666;
+            font-size: 14px;
+            color: #333;
             text-align: center;
+            font-weight: 500;
         }
 
         /* Config panel */
@@ -2069,24 +2104,31 @@
             let html = '';
             sortedCategories.forEach(([category, categoryWinners]) => {
                 const categoryClass = getCategoryClass(category);
-                const categoryIcon = getCategoryIcon(category);
 
                 html += `<div class="winner-category">`;
-                html += `<div class="winner-category-header ${categoryClass}">${categoryIcon} ${category}</div>`;
+                html += `<div class="winner-category-header ${categoryClass}">${category} (${categoryWinners.length})</div>`;
+                html += `<div class="winners-table-header">
+                    <div>Miejsce</div>
+                    <div>Zawodnik</div>
+                    <div>Miejscowość</div>
+                    <div>Czas</div>
+                    <div>Nr start.</div>
+                </div>`;
 
                 categoryWinners.forEach(winner => {
                     const rankClass = getRankClass(winner.rank);
-                    const rankIcon = getRankIcon(winner.rank);
+                    // Usuń cudzysłowy z czasu
+                    const cleanTime = (winner.time || '').replace(/"/g, '');
 
                     html += `
                         <div class="winner-row">
-                            <div class="winner-rank ${rankClass}">${rankIcon}${winner.rank}</div>
+                            <div class="winner-rank ${rankClass}">${winner.rank}</div>
                             <div class="winner-info">
-                                <div class="winner-name">${winner.name || 'Nieznany'}</div>
-                                <div class="winner-hometown">${winner.hometown || ''}</div>
+                                <div class="winner-name">${winner.name || ''}</div>
                             </div>
-                            <div class="winner-time">${winner.time || ''}</div>
-                            <div class="winner-bib">BIB: ${winner.bib || ''}</div>
+                            <div class="winner-hometown">${winner.hometown || ''}</div>
+                            <div class="winner-time">${cleanTime}</div>
+                            <div class="winner-bib">${winner.bib || ''}</div>
                         </div>
                     `;
                 });
@@ -2376,24 +2418,23 @@
             let totalStarted = 0;
             let totalFinished = 0;
 
-            // Policz wystartowanych według dystansów (z cache.athletes)
-            cache.athletes.forEach(athlete => {
-                const distance = athlete.distance || 'Nieznany';
+            // Policz wystartowanych i ukończonych z cache.results
+            // Wystartowani = ci którzy mają JAKIKOLWIEK wpis w results (choćby bez czasu końcowego)
+            // Ukończeni = ci którzy mają netTime (czas końcowy)
+            cache.results.forEach(result => {
+                const athlete = cache.athletes.get(result.bib);
+                const distance = athlete?.distance || result.distance || 'Nieznany';
+
                 if (!stats[distance]) {
                     stats[distance] = { started: 0, finished: 0, onCourse: 0 };
                 }
+
+                // Każdy kto ma wpis w results - wystartował
                 stats[distance].started++;
                 totalStarted++;
-            });
 
-            // Policz ukończonych według dystansów (z cache.results)
-            cache.results.forEach(result => {
                 // Wynik musi mieć czas żeby być uznany za ukończonego
-                if (result.netTime && result.netTime !== '-') {
-                    const distance = result.distance || 'Nieznany';
-                    if (!stats[distance]) {
-                        stats[distance] = { started: 0, finished: 0, onCourse: 0 };
-                    }
+                if (result.netTime && result.netTime !== '-' && result.netTime !== '') {
                     stats[distance].finished++;
                     totalFinished++;
                 }
