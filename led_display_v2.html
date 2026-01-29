@@ -375,7 +375,13 @@
     <div class="container">
         <header>
             <h1>🖥️ YO&GO LED Display System</h1>
-            <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="lock-cursor-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span>🔒 Blokuj kursor (Ctrl+Alt+L aby odblokować)</span>
+                </label>
+                <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
+            </div>
         </header>
 
         <!-- DISPLAY SCREEN (for athletes) -->
@@ -384,7 +390,7 @@
                 <div class="search-box">
                     <h2>Wprowadź numer startowy</h2>
                     <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
-                    <button id="search-btn" class="btn-full">WYŚWIETL</button>
+                    <button id="search-btn" class="btn-full">ENTER ↵</button>
                     <div id="search-status" class="status-box"></div>
                 </div>
                 
@@ -602,6 +608,7 @@
             searchStatus: document.getElementById('search-status'),
             ledCanvas: document.getElementById('led-canvas'),
             displayStatus: document.getElementById('display-status'),
+            lockCursorCheckbox: document.getElementById('lock-cursor-checkbox'),
 
             // Status indicators
             apiIndicator: document.getElementById('api-indicator'),
@@ -1707,9 +1714,11 @@
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
 
-            /* Wyskaluj do maksymalnego rozmiaru zachowując proporcje kwadratu */
-            width: 100vmin;
-            height: 100vmin;
+            /* POPRAWKA: Wypełnij CAŁY ekran - użyj większego wymiaru dla tablicy kwadratowej */
+            width: 100vh;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vw;
 
             /* Zapewnia idealne dopasowanie dla tablicy P4 240×240px */
             object-fit: contain;
@@ -2201,20 +2210,80 @@
         }
 
         // =====================================
+        // CURSOR LOCK (Bezobsługowe - blokada kursora)
+        // =====================================
+
+        let cursorLocked = false;
+
+        function lockCursor() {
+            if (!cursorLocked && ui.lockCursorCheckbox.checked) {
+                document.body.requestPointerLock();
+            }
+        }
+
+        function unlockCursor() {
+            if (document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+        }
+
+        function updateCursorLockUI() {
+            cursorLocked = !!document.pointerLockElement;
+            ui.lockCursorCheckbox.checked = cursorLocked;
+
+            if (cursorLocked) {
+                console.log('🔒 Kursor zablokowany - nie można wyjechać na drugi ekran');
+            } else {
+                console.log('🔓 Kursor odblokowany');
+            }
+        }
+
+        // Nasłuchuj zmian pointer lock
+        document.addEventListener('pointerlockchange', updateCursorLockUI);
+        document.addEventListener('pointerlockerror', () => {
+            console.error('Nie można zablokować kursora');
+            ui.lockCursorCheckbox.checked = false;
+        });
+
+        // =====================================
         // EVENT LISTENERS
         // =====================================
 
         ui.modeToggle.addEventListener('click', toggleMode);
 
+        // Checkbox blokowania kursora
+        ui.lockCursorCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                lockCursor();
+            } else {
+                unlockCursor();
+            }
+        });
+
+        // Skrót klawiszowy: Ctrl+Alt+L = odblokuj kursor
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.altKey && e.key === 'l') {
+                e.preventDefault();
+                unlockCursor();
+                ui.lockCursorCheckbox.checked = false;
+                console.log('🔓 Kursor odblokowany przez skrót Ctrl+Alt+L');
+            }
+        });
+
         ui.searchBtn.addEventListener('click', () => {
             const bib = ui.searchInput.value.trim();
             searchAndDisplay(bib);
+            // Auto-kasowanie po wyświetleniu - kolejny zawodnik nie musi używać backspace
+            ui.searchInput.value = '';
+            ui.searchInput.focus(); // Przywróć focus do inputa
         });
 
         ui.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const bib = ui.searchInput.value.trim();
                 searchAndDisplay(bib);
+                // Auto-kasowanie po wyświetleniu - kolejny zawodnik nie musi używać backspace
+                ui.searchInput.value = '';
             }
         });
 
