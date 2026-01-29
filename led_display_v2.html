@@ -79,7 +79,7 @@
         }
         
         .search-panel {
-            flex: 0 0 400px;
+            flex: 0 0 550px; /* Zwiększone z 400px - większy focus na wpisywanie */
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -95,13 +95,13 @@
         .search-box h2 {
             color: #FF8C00;
             margin-bottom: 20px;
-            font-size: 20px;
+            font-size: 24px; /* Zwiększone z 20px - większa widoczność */
         }
         
         #search-input {
             width: 100%;
-            padding: 20px;
-            font-size: 32px;
+            padding: 25px;
+            font-size: 42px; /* Zwiększone z 32px - większy focus na wpisywanie */
             font-weight: bold;
             text-align: center;
             border: 2px solid #ddd;
@@ -1493,12 +1493,15 @@
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // ZMNIEJSZ ODSTĘPY O POŁOWĘ (user request)
-            lineHeight = Math.floor(lineHeight * 0.5);
+            // POPRAWKA: Odstępy 0.75 zamiast 0.5 (lepszy balans)
+            lineHeight = Math.floor(lineHeight * 0.75);
+
+            // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
+            const eventLineHeight = 17; // Niezależny od długości imienia zawodnika
 
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
-            if (lineHeight < 12) {
-                const scale = lineHeight / 12;
+            if (lineHeight < 14) {
+                const scale = lineHeight / 14;
                 fontSize.event = Math.max(10, Math.floor(fontSize.event * scale));
                 fontSize.location = Math.max(8, Math.floor(fontSize.location * scale));
                 fontSize.distance = Math.max(8, Math.floor(fontSize.distance * scale));
@@ -1506,22 +1509,22 @@
                 fontSize.club = Math.max(9, Math.floor(fontSize.club * scale));
                 fontSize.time = Math.max(10, Math.floor(fontSize.time * scale));
                 fontSize.category = Math.max(9, Math.floor(fontSize.category * scale));
-                lineHeight = Math.max(10, lineHeight);
+                lineHeight = Math.max(12, lineHeight);
             }
 
-            // Cap at reasonable maximum (też zmniejszony o połowę)
-            if (lineHeight > 13) lineHeight = 13;
+            // Cap at reasonable maximum
+            if (lineHeight > 20) lineHeight = 20;
 
             let y = topMargin; // Start z prawidłowym marginesem
 
-            // 1. Event name (nazwa biegu) - with wrapping
+            // 1. Event name (nazwa biegu) - with wrapping, STAŁY lineHeight
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 ctx.fillStyle = '#FFD700'; // Złoty
                 const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
                 lines.forEach(line => {
                     ctx.fillText(line, 120, y);
-                    y += lineHeight;
+                    y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
                 y += 3; // Mały odstęp po nazwie biegu
             }
@@ -2265,7 +2268,8 @@
 
         // Skrót klawiszowy: Ctrl+Alt+L = odblokuj kursor
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.altKey && e.key === 'l') {
+            // Użyj e.code zamiast e.key - działa niezależnie od Shift/CapsLock
+            if (e.ctrlKey && e.altKey && e.code === 'KeyL') {
                 e.preventDefault();
                 unlockCursor();
                 ui.lockCursorCheckbox.checked = false;
