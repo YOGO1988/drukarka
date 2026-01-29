@@ -378,7 +378,7 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
                     <input type="checkbox" id="lock-cursor-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                    <span>🔒 Blokuj kursor (Ctrl+Alt+L aby odblokować)</span>
+                    <span>🔒 Blokuj kursor</span>
                 </label>
                 <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
             </div>
@@ -1493,21 +1493,24 @@
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
+            // ZMNIEJSZ ODSTĘPY O POŁOWĘ (user request)
+            lineHeight = Math.floor(lineHeight * 0.5);
+
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
-            if (lineHeight < 18) {
-                const scale = lineHeight / 18;
-                fontSize.event = Math.max(12, Math.floor(fontSize.event * scale));
-                fontSize.location = Math.max(9, Math.floor(fontSize.location * scale));
-                fontSize.distance = Math.max(9, Math.floor(fontSize.distance * scale));
-                fontSize.name = Math.max(14, Math.floor(fontSize.name * scale));
-                fontSize.club = Math.max(10, Math.floor(fontSize.club * scale));
-                fontSize.time = Math.max(12, Math.floor(fontSize.time * scale));
-                fontSize.category = Math.max(11, Math.floor(fontSize.category * scale));
-                lineHeight = Math.max(12, lineHeight);
+            if (lineHeight < 12) {
+                const scale = lineHeight / 12;
+                fontSize.event = Math.max(10, Math.floor(fontSize.event * scale));
+                fontSize.location = Math.max(8, Math.floor(fontSize.location * scale));
+                fontSize.distance = Math.max(8, Math.floor(fontSize.distance * scale));
+                fontSize.name = Math.max(12, Math.floor(fontSize.name * scale));
+                fontSize.club = Math.max(9, Math.floor(fontSize.club * scale));
+                fontSize.time = Math.max(10, Math.floor(fontSize.time * scale));
+                fontSize.category = Math.max(9, Math.floor(fontSize.category * scale));
+                lineHeight = Math.max(10, lineHeight);
             }
 
-            // Cap at reasonable maximum
-            if (lineHeight > 26) lineHeight = 26;
+            // Cap at reasonable maximum (też zmniejszony o połowę)
+            if (lineHeight > 13) lineHeight = 13;
 
             let y = topMargin; // Start z prawidłowym marginesem
 
@@ -1714,14 +1717,12 @@
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
 
-            /* POPRAWKA: Wypełnij CAŁY ekran - użyj większego wymiaru dla tablicy kwadratowej */
-            width: 100vh;
-            height: 100vh;
-            max-width: 100vw;
-            max-height: 100vw;
+            /* Wypełnij cały dostępny ekran LED */
+            width: 100%;
+            height: 100%;
 
-            /* Zapewnia idealne dopasowanie dla tablicy P4 240×240px */
-            object-fit: contain;
+            /* Rozciągnij do pełnego rozmiaru (tablica jest kwadratowa więc OK) */
+            object-fit: fill;
         }
     </style>
 </head>
@@ -2233,6 +2234,8 @@
 
             if (cursorLocked) {
                 console.log('🔒 Kursor zablokowany - nie można wyjechać na drugi ekran');
+                // Auto-focus na input po zablokowaniu - od razu gotowe do wpisywania
+                ui.searchInput.focus();
             } else {
                 console.log('🔓 Kursor odblokowany');
             }
