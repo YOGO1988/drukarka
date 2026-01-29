@@ -1688,7 +1688,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>LED Display</title>
+    <title>LED Display - 240×240px (96cm×96cm P4)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -1702,29 +1702,43 @@
             cursor: none;
         }
         #led-canvas {
+            /* Pixelated rendering - ostre krawędzie jak fizyczna tablica LED P4 */
             image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
+
+            /* Wyskaluj do maksymalnego rozmiaru zachowując proporcje kwadratu */
+            width: 100vmin;
+            height: 100vmin;
+
+            /* Zapewnia idealne dopasowanie dla tablicy P4 240×240px */
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
     <canvas id="led-canvas" width="240" height="240"></canvas>
     <script>
-        // Auto fullscreen
-        document.addEventListener('click', () => {
+        // Auto fullscreen - maksymalizuje obraz LED
+        function enterFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(console.error);
+                document.documentElement.requestFullscreen()
+                    .then(() => console.log('Fullscreen: ON - LED Display 240×240px scaled to full screen'))
+                    .catch(err => console.error('Fullscreen error:', err));
             }
-        });
+        }
 
-        // Kliknij aby wejść w fullscreen
-        setTimeout(() => {
-            document.body.click();
-        }, 500);
+        // Automatycznie fullscreen po 100ms
+        setTimeout(enterFullscreen, 100);
+
+        // Backup - kliknięcie też włącza fullscreen
+        document.addEventListener('click', enterFullscreen);
+
+        // Info dla developera
+        console.log('LED Display Window Ready');
+        console.log('Physical: 96cm × 96cm, P4 (4mm pitch)');
+        console.log('Resolution: 240 × 240 pixels');
+        console.log('Canvas scaled to full screen with pixelated rendering');
     <\/script>
 </body>
 </html>
