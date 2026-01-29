@@ -1486,18 +1486,18 @@
 
             // Footer zajmuje więcej miejsca gdy jest custom text
             const hasCustomFooter = config.display.customFooterText && config.display.customFooterText.trim();
-            const footerHeight = hasCustomFooter ? 20 : 12; // 2 linie vs 1 linia
+            const footerHeight = hasCustomFooter ? 35 : 30; // 3 linie + custom vs 2 linie (YO&GO + wyniki)
 
             // Oblicz lineHeight aby wszystko się zmieściło
             const topMargin = 20; // Wystarczający margines dla największej czcionki
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // POPRAWKA: Odstępy 0.75 zamiast 0.5 (lepszy balans)
-            lineHeight = Math.floor(lineHeight * 0.75);
+            // ZMNIEJSZ do 0.7 aby zrobić miejsce na odstępy między sekcjami
+            lineHeight = Math.floor(lineHeight * 0.7);
 
             // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
-            const eventLineHeight = 17; // Niezależny od długości imienia zawodnika
+            const eventLineHeight = 16; // Niezależny od długości imienia zawodnika
 
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
             if (lineHeight < 14) {
@@ -1526,7 +1526,7 @@
                     ctx.fillText(line, 120, y);
                     y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
-                y += 3; // Mały odstęp po nazwie biegu
+                y += 3; // Odstęp po nazwie biegu
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1535,6 +1535,7 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
+                y += 2; // Odstęp po dystansie
             }
 
             // 3. Location (miejscowość) - if configured
@@ -1543,6 +1544,7 @@
                 ctx.fillStyle = '#FFD700'; // Żółty
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
                 y += lineHeight;
+                y += 3; // Odstęp po miejscowości
             }
 
             // 4. Imię nazwisko - with wrapping
@@ -1553,6 +1555,7 @@
                 ctx.fillText(line, 120, y);
                 y += lineHeight;
             });
+            y += 2; // Odstęp po imieniu
 
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
@@ -1560,7 +1563,7 @@
                 ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepiej widoczny niż szary
                 ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
-                y += 3; // Mały odstęp po klubie przed czasami
+                y += 3; // Odstęp po klubie przed czasami
             }
 
             // 6. Czasy - WYNIK (brutto) i NETTO
@@ -1612,23 +1615,23 @@
                 y += lineHeight;
             });
 
-            // Footer - zawsze na dole
-            ctx.font = '10px Arial';
-
-            // Opcjonalny tekst nad YO&GO Events (np. sponsor lub adres strony)
+            // Footer - DUŻY i wypełnia pozostałe 15% ekranu
+            // Opcjonalny tekst użytkownika (jeśli jest)
             if (config.display.customFooterText && config.display.customFooterText.trim()) {
-                // Custom text białym kolorem
+                ctx.font = 'bold 11px Arial';
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillText(config.display.customFooterText, 120, 220);
-
-                // YO&GO Events pomarańczowym
-                ctx.fillStyle = '#FF8C00';
-                ctx.fillText('YO&GO Events', 120, 233);
-            } else {
-                // Samo YO&GO Events pomarańczowym
-                ctx.fillStyle = '#FF8C00';
-                ctx.fillText('YO&GO Events', 120, 233);
+                ctx.fillText(config.display.customFooterText, 120, 212);
             }
+
+            // YO&GO Events - pomiar czasu
+            ctx.font = 'bold 11px Arial';
+            ctx.fillStyle = '#FF8C00';
+            ctx.fillText('YO&GO Events - pomiar czasu', 120, 225);
+
+            // wyniki www.yogoevents.pl
+            ctx.font = '10px Arial';
+            ctx.fillStyle = '#FF8C00';
+            ctx.fillText('wyniki www.yogoevents.pl', 120, 237);
 
             selectedAthlete = athlete;
 
