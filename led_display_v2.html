@@ -1526,7 +1526,7 @@
                     ctx.fillText(line, 120, y);
                     y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
-                y += 3; // Odstęp po nazwie biegu
+                y += 5; // Większy odstęp po nazwie biegu
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1535,7 +1535,7 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
-                y += 2; // Odstęp po dystansie
+                y += 7; // WIĘKSZY odstęp po dystansie (nachodzi na nazwisko!)
             }
 
             // 3. Location (miejscowość) - if configured
@@ -1544,7 +1544,7 @@
                 ctx.fillStyle = '#FFD700'; // Żółty
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
                 y += lineHeight;
-                y += 3; // Odstęp po miejscowości
+                y += 7; // WIĘKSZY odstęp po miejscowości (nachodzi na nazwisko!)
             }
 
             // 4. Imię nazwisko - with wrapping
@@ -1555,15 +1555,15 @@
                 ctx.fillText(line, 120, y);
                 y += lineHeight;
             });
-            y += 2; // Odstęp po imieniu
+            y += 4; // Większy odstęp po imieniu
 
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
                 ctx.font = `${fontSize.club}px Arial`;
-                ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepiej widoczny niż szary
+                ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepszy widoczny niż szary
                 ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
-                y += 3; // Odstęp po klubie przed czasami
+                y += 5; // Większy odstęp po klubie przed czasami
             }
 
             // 6. Czasy - WYNIK (brutto) i NETTO
