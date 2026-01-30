@@ -1493,8 +1493,9 @@
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // POPRAWKA: 0.75 dla lepszej czytelności (0.7 było za ciasne - tekst nachodzi)
-            lineHeight = Math.floor(lineHeight * 0.75);
+            // POPRAWKA: 0.82 dla polskich znaków diakrytycznych (ż,ź,ć,ę,ą)
+            // Kreska nad Ż/Ź/Ć i ogonek Ę/Ą wymagają więcej przestrzeni
+            lineHeight = Math.floor(lineHeight * 0.82);
 
             // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
             const eventLineHeight = 19; // Zwiększony z 16 aby uniknąć nachodzenia przy 3-liniowej nazwie
