@@ -1296,6 +1296,10 @@
             try {
                 updateIndicator('api-indicator', 'api-status', false, 'API: Odświeżanie...');
 
+                // Wyczyść cache zawodników żeby załadować świeże dane z bracket_positions
+                cache.athletes = {};
+                console.log('Cleared athletes cache for fresh data reload');
+
                 await fetchEventInfo();
                 await refreshOpenResults();
 
