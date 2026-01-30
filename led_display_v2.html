@@ -1493,9 +1493,9 @@
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // POPRAWKA: 0.82 dla polskich znaków diakrytycznych (ż,ź,ć,ę,ą)
+            // POPRAWKA: 0.85 dla polskich znaków diakrytycznych (ż,ź,ć,ę,ą)
             // Kreska nad Ż/Ź/Ć i ogonek Ę/Ą wymagają więcej przestrzeni
-            lineHeight = Math.floor(lineHeight * 0.82);
+            lineHeight = Math.floor(lineHeight * 0.85);
 
             // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
             const eventLineHeight = 19; // Zwiększony z 16 aby uniknąć nachodzenia przy 3-liniowej nazwie
@@ -1562,7 +1562,15 @@
                 ctx.fillText(line, 120, y);
                 y += lineHeight;
             });
-            y += 4; // Większy odstęp po imieniu
+
+            // Warunkowy odstęp po nazwisku: większy gdy nazwisko na 2 liniach i jest klub
+            const hasClub = config.display.showClub && athlete.club;
+            const isNameWrapped = wrappedNameLines.length > 1;
+            if (isNameWrapped && hasClub) {
+                y += 6; // Większy odstęp dla 2-liniowego nazwiska z klubem
+            } else {
+                y += 4; // Standardowy odstęp
+            }
 
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
