@@ -1452,8 +1452,8 @@
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 let lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
-                // Jeśli nazwa zajmuje > 3 linie, zmniejsz czcionkę
-                while (lines.length > 3 && fontSize.event > 12) {
+                // Jeśli nazwa zajmuje > 2 linie, zmniejsz czcionkę (preferujemy 2 linie max)
+                while (lines.length > 2 && fontSize.event > 10) {
                     fontSize.event -= 1;
                     ctx.font = `bold ${fontSize.event}px Arial`;
                     lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
