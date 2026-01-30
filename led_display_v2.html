@@ -1493,8 +1493,8 @@
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
-            // ZMNIEJSZ do 0.7 aby zrobić miejsce na odstępy między sekcjami
-            lineHeight = Math.floor(lineHeight * 0.7);
+            // POPRAWKA: 0.75 dla lepszej czytelności (0.7 było za ciasne - tekst nachodzi)
+            lineHeight = Math.floor(lineHeight * 0.75);
 
             // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
             const eventLineHeight = 16; // Niezależny od długości imienia zawodnika
@@ -1535,7 +1535,7 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
-                y += 7; // WIĘKSZY odstęp po dystansie (nachodzi na nazwisko!)
+                y += 2; // Mały odstęp po dystansie
             }
 
             // 3. Location (miejscowość) - if configured
@@ -1544,7 +1544,7 @@
                 ctx.fillStyle = '#FFD700'; // Żółty
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
                 y += lineHeight;
-                y += 7; // WIĘKSZY odstęp po miejscowości (nachodzi na nazwisko!)
+                y += 2; // Mały odstęp po miejscowości
             }
 
             // 4. Imię nazwisko - with wrapping
