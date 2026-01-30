@@ -914,7 +914,10 @@
 
         async function refreshOpenResults() {
             try {
-                const params = { size: 100 };  // BEZ include_all_fields!
+                const params = {
+                    size: 100,
+                    include_all_fields: '1'  // POTRZEBNE dla bracket_positions (kategorie dodatkowe)
+                };
                 console.log("Fetching OPEN results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
@@ -1416,23 +1419,41 @@
 
             // Policz ile kategorii będzie wyświetlanych
             const categoriesToShow = [];
+            console.log('🔍 CATEGORY DEBUG for BIB', athlete.bib_num);
+            console.log('bracket_positions:', athlete.bracket_positions);
+            console.log('config.display.showAge:', config.display.showAge);
+            console.log('config.display.showCustom:', config.display.showCustom);
+
             if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
                 for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
                     if (!position || position <= 0) continue;
                     const isAge = isAgeBracket(bracketName);
                     const isSex = isSexBracket(bracketName);
-                    if (isSex) continue;
+                    console.log(`  Category "${bracketName}": position=${position}, isAge=${isAge}, isSex=${isSex}`);
+
+                    if (isSex) {
+                        console.log(`    ❌ Skipped (sex bracket)`);
+                        continue;
+                    }
                     if ((isAge && config.display.showAge) || (!isAge && !isSex && config.display.showCustom)) {
+                        console.log(`    ✅ Added to display`);
                         categoriesToShow.push({ name: bracketName, place: position });
+                    } else {
+                        console.log(`    ❌ Not added (showAge=${config.display.showAge}, showCustom=${config.display.showCustom})`);
                     }
                 }
             } else if (athlete.bracket_name && athlete.division_place) {
                 const isAge = isAgeBracket(athlete.bracket_name);
                 const isSex = isSexBracket(athlete.bracket_name);
+                console.log(`  Single category "${athlete.bracket_name}": isAge=${isAge}, isSex=${isSex}`);
                 if (!isSex && ((isAge && config.display.showAge) || (!isAge && config.display.showCustom))) {
+                    console.log(`    ✅ Added to display`);
                     categoriesToShow.push({ name: athlete.bracket_name, place: athlete.division_place });
+                } else {
+                    console.log(`    ❌ Not added`);
                 }
             }
+            console.log('📊 Final categoriesToShow:', categoriesToShow);
 
             // Ustal większe stałe rozmiary czcionek
             const fontSize = {
