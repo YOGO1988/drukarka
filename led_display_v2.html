@@ -1500,9 +1500,10 @@
             const eventLineHeight = 19; // Zwiększony z 16 aby uniknąć nachodzenia przy 3-liniowej nazwie
 
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
+            // UWAGA: NIE skalujemy fontSize.event - nazwa biegu zawsze tego samego rozmiaru
             if (lineHeight < 14) {
                 const scale = lineHeight / 14;
-                fontSize.event = Math.max(10, Math.floor(fontSize.event * scale));
+                // fontSize.event NIE skalowany - zawsze 14px
                 fontSize.location = Math.max(8, Math.floor(fontSize.location * scale));
                 fontSize.distance = Math.max(8, Math.floor(fontSize.distance * scale));
                 fontSize.name = Math.max(12, Math.floor(fontSize.name * scale));
@@ -1535,7 +1536,12 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
-                // Bez dodatkowego odstępu po dystansie
+
+                // Jeśli NIE MA miejscowości, dodaj odstęp (żeby nie nachodzić na nazwisko)
+                const hasLocation = config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city;
+                if (!hasLocation) {
+                    y += 5;
+                }
             }
 
             // 3. Location (miejscowość) - if configured
