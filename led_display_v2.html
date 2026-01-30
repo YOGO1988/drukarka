@@ -1526,7 +1526,7 @@
                     ctx.fillText(line, 120, y);
                     y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
-                y += 5; // Większy odstęp po nazwie biegu
+                // Bez dodatkowego odstępu po nazwie biegu
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1535,7 +1535,7 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
-                y += 2; // Mały odstęp po dystansie
+                // Bez dodatkowego odstępu po dystansie
             }
 
             // 3. Location (miejscowość) - if configured
@@ -1544,7 +1544,7 @@
                 ctx.fillStyle = '#FFD700'; // Żółty
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
                 y += lineHeight;
-                y += 2; // Mały odstęp po miejscowości
+                y += 5; // Większy odstęp po miejscowości (żeby nie nachodzić na nazwisko)
             }
 
             // 4. Imię nazwisko - with wrapping
@@ -1577,6 +1577,7 @@
                 if (athlete.formatted_gun_time) {
                     ctx.fillText(`WYNIK: ${athlete.formatted_gun_time}`, 120, y);
                     y += lineHeight;
+                    y += 3; // Większy odstęp między WYNIK i NETTO
                 }
                 if (athlete.formatted_net_time) {
                     ctx.fillText(`NETTO: ${athlete.formatted_net_time}`, 120, y);
@@ -1600,6 +1601,13 @@
             if (config.display.showOverall && athlete.overall_place) {
                 ctx.fillText(`OPEN: ${athlete.overall_place}`, 120, y);
                 y += lineHeight;
+
+                // Dodatkowy odstęp między OPEN a MĘŻCZYŹNI (tylko gdy są dystans i miejscowość)
+                const hasDistanceAndLocation = config.display.showDistance && athlete.race_distance &&
+                                              config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city;
+                if (hasDistanceAndLocation) {
+                    y += 3;
+                }
             }
 
             // K/M place
