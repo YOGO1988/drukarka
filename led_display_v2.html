@@ -1445,7 +1445,7 @@
                 category: 16
             };
 
-            const maxTextWidth = 230; // Canvas width minus margins
+            const maxTextWidth = 238; // Canvas width (240px) minus small margins
 
             // Sprawdź wrapping z tymi rozmiarami - zmniejsz czcionkę gdy za długa
             let eventNameLines = 1;
@@ -1528,7 +1528,13 @@
                     ctx.fillText(line, 120, y);
                     y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
-                // Bez dodatkowego odstępu po nazwie biegu
+
+                // Dodaj odstęp po nazwie biegu TYLKO gdy NIE MA dystansu/miejscowości
+                const hasDistanceOrLocation = (config.display.showDistance && athlete.race_distance) ||
+                                             (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city);
+                if (!hasDistanceOrLocation) {
+                    y += 2; // Mały odstęp między nazwą biegu a nazwiskiem
+                }
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
