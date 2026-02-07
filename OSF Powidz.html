@@ -3,59 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSF - Ośrodek Sprawności Fizycznej</title>
+    <title>OSF - Osrodek Sprawnosci Fizycznej</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
-        .nav { display: flex; background: #e9ecef; border-bottom: 1px solid #ddd; }
-        .nav-btn { flex: 1; padding: 15px; background: #e9ecef; border: none; cursor: pointer; font-size: 16px; font-weight: 500; color: #495057; transition: all 0.3s; }
-        .nav-btn:hover { background: #dee2e6; color: #343a40; }
-        .nav-btn.active { background: white; border-bottom: 3px solid #667eea; color: #667eea; font-weight: bold; }
-        .content { padding: 20px; min-height: 500px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef1f5; padding: 20px; color: #2d3748; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%); color: white; padding: 24px; text-align: center; }
+        .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+        .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+        .nav { display: flex; background: #f7f8fa; border-bottom: 2px solid #e2e8f0; }
+        .nav-btn { flex: 1; padding: 14px 8px; background: #f7f8fa; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #64748b; transition: all 0.2s; }
+        .nav-btn:hover { background: #edf2f7; color: #2d3748; }
+        .nav-btn.active { background: white; border-bottom: 3px solid #3182ce; color: #3182ce; font-weight: 600; }
+        .content { padding: 24px; min-height: 500px; }
         .section { display: none; }
         .section.active { display: block; }
-        input, select, button, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
-        button { background: #667eea; color: white; border: none; cursor: pointer; transition: all 0.3s; }
-        button:hover { background: #5a6fd8; }
-        .btn-success { background: #28a745; }
-        .btn-success:hover { background: #218838; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        .btn-warning:hover { background: #e0a800; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #5a6268; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; font-weight: bold; }
-        .pk-row { background: #fff3cd; }
+        input, select, button, textarea { padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+        button { background: #3182ce; color: white; border: none; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+        button:hover { background: #2c5282; }
+        .btn-success { background: #38a169; }
+        .btn-success:hover { background: #2f855a; }
+        .btn-danger { background: #e53e3e; }
+        .btn-danger:hover { background: #c53030; }
+        .btn-warning { background: #d69e2e; color: #fff; }
+        .btn-warning:hover { background: #b7791f; }
+        .btn-secondary { background: #718096; }
+        .btn-secondary:hover { background: #4a5568; }
+        .btn-live { background: #805ad5; }
+        .btn-live:hover { background: #6b46c1; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; }
+        th { background: #f7fafc; font-weight: 600; color: #4a5568; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pk-row { background: #fffff0; }
         .flex { display: flex; gap: 10px; align-items: center; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .card h3 { color: #2d3748; font-size: 16px; margin-bottom: 12px; }
         .text-center { text-align: center; }
-        .text-success { color: #28a745; }
-        .text-danger { color: #dc3545; }
-        .text-warning { color: #ffc107; }
+        .text-success { color: #38a169; }
+        .text-danger { color: #e53e3e; }
+        .text-warning { color: #d69e2e; }
         .mt-20 { margin-top: 20px; }
         .mb-20 { margin-bottom: 20px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; }
         .modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; max-width: 500px; width: 90%; }
+        .modal-content { background: white; padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
         .lane-selector { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
         .time-input { width: 80px; }
         .status-select { width: 70px; }
+        h2 { color: #2d3748; font-size: 20px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .section-subtitle { color: #718096; font-size: 14px; margin-bottom: 16px; }
+        .results-nav { display: flex; gap: 8px; margin-bottom: 20px; }
+        .results-nav .nav-btn { flex: none; padding: 8px 20px; border-radius: 20px; font-size: 13px; background: #edf2f7; color: #4a5568; }
+        .results-nav .nav-btn.active { background: #3182ce; color: white; }
+        .results-nav .nav-btn:hover:not(.active) { background: #e2e8f0; }
+        .gender-section { margin-bottom: 24px; }
+        .gender-section h4 { padding: 10px 16px; border-radius: 8px 8px 0 0; margin-bottom: 0; font-size: 15px; }
+        .gender-section-male h4 { background: #ebf4ff; color: #2b6cb0; border-left: 4px solid #3182ce; }
+        .gender-section-female h4 { background: #fff5f5; color: #c53030; border-left: 4px solid #e53e3e; }
         @media print { .nav, button:not(.print-only) { display: none !important; } .container { box-shadow: none; } .content { padding: 0; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏆 OSF - Ośrodek Sprawności Fizycznej</h1>
-            <p>System zarządzania zawodami sportowymi</p>
+            <h1>OSF - Osrodek Sprawnosci Fizycznej</h1>
+            <p>System zarzadzania zawodami sportowymi</p>
         </div>
-        
+
         <div class="nav">
             <button class="nav-btn active" onclick="showSection('units')">Jednostki</button>
             <button class="nav-btn" onclick="showSection('competitors')">Zawodnicy</button>
@@ -64,21 +80,21 @@
             <button class="nav-btn" onclick="showSection('series2')">II Seria</button>
             <button class="nav-btn" onclick="showSection('results')">Wyniki</button>
         </div>
-        
+
         <div class="content">
             <div class="card">
                 <h3>Informacje o zawodach</h3>
                 <div class="flex">
-                    <input type="text" id="eventName" placeholder="Nazwa zawodów" style="flex: 1;">
-                    <input type="text" id="eventLocation" placeholder="Miejscowość" style="flex: 1;">
+                    <input type="text" id="eventName" placeholder="Nazwa zawodow" style="flex: 1;">
+                    <input type="text" id="eventLocation" placeholder="Miejscowosc" style="flex: 1;">
                 </div>
             </div>
-            
+
             <!-- Jednostki -->
             <div id="units" class="section active">
-                <h2>Zarządzanie Jednostkami</h2>
+                <h2>Zarzadzanie Jednostkami</h2>
                 <div class="card">
-                    <h3>Dodaj Jednostkę</h3>
+                    <h3>Dodaj Jednostke</h3>
                     <div class="flex">
                         <input type="text" id="unitName" placeholder="Nazwa jednostki" style="flex: 1;">
                         <input type="number" id="unitNumber" placeholder="Numer" min="1" max="10">
@@ -97,122 +113,130 @@
                     </table>
                 </div>
             </div>
-            
+
             <!-- Zawodnicy -->
             <div id="competitors" class="section">
-                <h2>Zarządzanie Zawodnikami</h2>
+                <h2>Zarzadzanie Zawodnikami</h2>
                 <div class="card">
                     <h3>Dodaj Zawodnika</h3>
                     <div class="grid">
-                        <input type="text" id="competitorFirstName" placeholder="Imię">
+                        <input type="text" id="competitorFirstName" placeholder="Imie">
                         <input type="text" id="competitorLastName" placeholder="Nazwisko">
                         <select id="competitorUnit">
-                            <option value="">Wybierz jednostkę</option>
+                            <option value="">Wybierz jednostke</option>
                         </select>
                         <select id="competitorGender">
-                            <option value="M">Mężczyzna</option>
+                            <option value="M">Mezczyzna</option>
                             <option value="K">Kobieta</option>
                         </select>
                     </div>
                     <div class="flex mt-20">
-                        <label><input type="checkbox" id="competitorPK"> PK (Poza Konkurencją)</label>
+                        <label><input type="checkbox" id="competitorPK"> PK (Poza Konkurencja)</label>
                         <button onclick="addCompetitor()" class="btn-success">Dodaj Zawodnika</button>
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Lista Zawodników</h3>
+                    <h3>Lista Zawodnikow</h3>
                     <div id="competitorsList"></div>
                 </div>
             </div>
-            
+
             <!-- Schemat -->
             <div id="schema" class="section">
-                <h2>Schemat Biegów - I Seria</h2>
+                <h2>Schemat Biegow - I Seria</h2>
                 <div class="card">
                     <div class="flex">
                         <button onclick="generateAutoSchema()" class="btn-success">Generuj Automatycznie</button>
-                        <button onclick="addManualRace()">Dodaj Bieg Ręcznie</button>
-                        <button onclick="clearSchema()" class="btn-danger">Wyczyść</button>
-                        <button onclick="printSection('schema')" class="btn-warning">🖨️ Drukuj</button>
+                        <button onclick="addManualRace()">Dodaj Bieg Recznie</button>
+                        <button onclick="clearSchema()" class="btn-danger">Wyczysc</button>
+                        <button onclick="printSection('schema')" class="btn-warning">Drukuj</button>
                     </div>
-                    
-                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                        <h4>Szybkie Dodawanie Biegu</h4>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-bottom: 10px; color: #4a5568;">Szybkie Dodawanie Biegu</h4>
                         <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
                             <div>
-                                <label>Lewy - Jednostka:</label>
-                                <select id="quickLeftUnit">
+                                <label style="font-size: 12px; color: #718096;">Lewy - Jednostka:</label>
+                                <select id="quickLeftUnit" style="width: 100%;">
                                     <option value="">-</option>
                                 </select>
                             </div>
                             <div>
-                                <label>Pozycja:</label>
-                                <select id="quickLeftPos">
+                                <label style="font-size: 12px; color: #718096;">Pozycja:</label>
+                                <select id="quickLeftPos" style="width: 100%;">
                                     <option value="">-</option>
                                 </select>
                             </div>
                             <div>
-                                <label>Prawy - Jednostka:</label>
-                                <select id="quickRightUnit">
+                                <label style="font-size: 12px; color: #718096;">Prawy - Jednostka:</label>
+                                <select id="quickRightUnit" style="width: 100%;">
                                     <option value="">-</option>
                                 </select>
                             </div>
                             <div>
-                                <label>Pozycja:</label>
-                                <select id="quickRightPos">
+                                <label style="font-size: 12px; color: #718096;">Pozycja:</label>
+                                <select id="quickRightPos" style="width: 100%;">
                                     <option value="">-</option>
                                 </select>
                             </div>
                         </div>
                         <div class="flex" style="margin-top: 15px;">
-                            <span id="quickPreview" style="flex: 1; font-style: italic; color: #666;"></span>
+                            <span id="quickPreview" style="flex: 1; font-style: italic; color: #718096;"></span>
                             <button onclick="addQuickRace()" class="btn-success">Dodaj Bieg</button>
                         </div>
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Lista Biegów</h3>
+                    <h3>Lista Biegow</h3>
                     <div id="schemaList"></div>
                     <button id="startSeries1Btn" onclick="startSeries1()" class="btn-success" style="display:none; margin-top: 20px;">
-                        🚀 Rozpocznij I Serię
+                        Rozpocznij I Serie
                     </button>
                 </div>
             </div>
-            
+
             <!-- I Seria -->
             <div id="series1" class="section">
-                <h2>I Seria - Wprowadzanie Wyników</h2>
+                <h2>I Seria - Wprowadzanie Wynikow</h2>
                 <div class="card">
-                    <button onclick="printSection('series1')" class="btn-warning">🖨️ Drukuj</button>
+                    <div class="flex mb-20">
+                        <button onclick="printSection('series1')" class="btn-warning">Drukuj</button>
+                        <button onclick="openLiveResults()" class="btn-live">Wyniki na zywo (drugi ekran)</button>
+                    </div>
                     <h3>Lista Startowa I Serii</h3>
                     <div id="series1List"></div>
                     <button id="startSeries2Btn" onclick="startSeries2()" class="btn-success" style="display:none; margin-top: 20px;">
-                        🔄 Generuj II Serię
+                        Generuj II Serie
                     </button>
                 </div>
             </div>
-            
+
             <!-- II Seria -->
             <div id="series2" class="section">
                 <h2>II Seria - Wyniki</h2>
                 <div class="card">
-                    <button onclick="printSection('series2')" class="btn-warning">🖨️ Drukuj</button>
-                    <p><strong>Zasada:</strong> Zawodnicy zmieniają tory (lewy↔prawy). Kolejność: DDF/DSQ → najgorsze czasy → najlepsze czasy</p>
+                    <div class="flex mb-20">
+                        <button onclick="printSection('series2')" class="btn-warning">Drukuj</button>
+                        <button onclick="openLiveResults()" class="btn-live">Wyniki na zywo (drugi ekran)</button>
+                    </div>
+                    <p class="section-subtitle"><strong>Zasada:</strong> Zawodnicy zmieniaja tory (lewy - prawy). Kolejnosc: DDF/DSQ - najgorsze czasy - najlepsze czasy. Oddzielne drabinki dla kobiet i mezczyzn.</p>
                     <div id="series2List"></div>
                     <button id="generateResultsBtn" onclick="generateFinalResults()" class="btn-success" style="display:none; margin-top: 20px;">
-                        🏆 Generuj Wyniki Końcowe
+                        Generuj Wyniki Koncowe
                     </button>
                 </div>
             </div>
-            
+
             <!-- Wyniki -->
             <div id="results" class="section">
-                <h2>Wyniki Końcowe</h2>
+                <h2>Wyniki Koncowe</h2>
                 <div class="card">
-                    <button onclick="printSection('results')" class="btn-warning">🖨️ Drukuj</button>
                     <div class="flex mb-20">
-                        <button onclick="showResults('all')" class="nav-btn active" id="resultsAllBtn">Wszyscy</button>
-                        <button onclick="showResults('M')" class="nav-btn" id="resultsMBtn">Mężczyźni</button>
+                        <button onclick="printSection('results')" class="btn-warning">Drukuj</button>
+                        <button onclick="openLiveResults()" class="btn-live">Wyniki na zywo (drugi ekran)</button>
+                    </div>
+                    <div class="results-nav">
+                        <button onclick="showResults('M')" class="nav-btn active" id="resultsMBtn">Mezczyzni</button>
                         <button onclick="showResults('K')" class="nav-btn" id="resultsKBtn">Kobiety</button>
                     </div>
                     <div id="finalResultsList"></div>
@@ -220,11 +244,11 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal edycji -->
     <div id="editRaceModal" class="modal">
         <div class="modal-content">
-            <h3>Edytuj Bieg</h3>
+            <h3 style="margin-bottom: 16px;">Edytuj Bieg</h3>
             <div class="lane-selector">
                 <label>Tor lewy:</label>
                 <select id="editLeftUnit"><option value="">Brak</option></select>
@@ -252,16 +276,17 @@
         let schema = [];
         let series1Results = [];
         let series2Results = [];
-        let currentResultsView = 'all';
+        let currentResultsView = 'M';
         let editingRaceId = null;
-        
+        let liveResultsWindow = null;
+
         function showSection(sectionName) {
             document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav > .nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(sectionName).classList.add('active');
             event.target.classList.add('active');
         }
-        
+
         function timeToSeconds(timeStr) {
             if (!timeStr || timeStr === '-') return 9999;
             const parts = timeStr.split(':');
@@ -270,67 +295,74 @@
             }
             return 9999;
         }
-        
+
+        function getCompetitorGender(competitorId) {
+            const comp = competitors.find(c => c.id === competitorId);
+            return comp ? comp.gender : 'M';
+        }
+
+        // ==================== UNITS ====================
+
         function addUnit() {
             const name = document.getElementById('unitName').value.trim();
             const number = document.getElementById('unitNumber').value;
-            
+
             if (!name) {
-                alert('Wprowadź nazwę jednostki');
+                alert('Wprowadz nazwe jednostki');
                 return;
             }
-            
+
             if (number && units.find(u => u.number == number)) {
-                alert('Ten numer jest już zajęty');
+                alert('Ten numer jest juz zajety');
                 return;
             }
-            
+
             units.push({
                 id: Date.now(),
                 name: name,
                 number: number ? parseInt(number) : null
             });
-            
+
             document.getElementById('unitName').value = '';
             document.getElementById('unitNumber').value = '';
-            
+
             updateUnitsTable();
             updateCompetitorUnitSelect();
             updateEditModalsSelects();
         }
-        
+
         function updateUnitsTable() {
             const tbody = document.getElementById('unitsTableBody');
-            
+
             if (units.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center">Brak jednostek</td></tr>';
                 return;
             }
-            
+
             tbody.innerHTML = units.map(unit => {
                 const competitorCount = competitors.filter(c => c.unitId === unit.id).length;
                 return `
                     <tr>
                         <td>${unit.name}</td>
                         <td>
-                            <input type="number" value="${unit.number || ''}" 
+                            <input type="number" value="${unit.number || ''}"
                                    onchange="updateUnitNumber(${unit.id}, this.value)"
                                    min="1" max="10" style="width: 60px;">
                         </td>
                         <td>${competitorCount}/12</td>
                         <td>
-                            <button onclick="deleteUnit(${unit.id})" class="btn-danger">Usuń</button>
+                            <button onclick="deleteUnit(${unit.id})" class="btn-danger">Usun</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
-        
+
         function updateUnitNumber(unitId, number) {
             const unit = units.find(u => u.id === unitId);
             if (unit) {
                 if (number && units.find(u => u.id !== unitId && u.number == number)) {
-                    alert('Ten numer jest już zajęty');
+                    alert('Ten numer jest juz zajety');
                     updateUnitsTable();
                     return;
                 }
@@ -338,9 +370,9 @@
                 updateEditModalsSelects();
             }
         }
-        
+
         function deleteUnit(unitId) {
-            if (confirm('Czy na pewno usunąć jednostkę? Zostaną usunięci również jej zawodnicy.')) {
+            if (confirm('Czy na pewno usunac jednostke? Zostana usunieci rowniez jej zawodnicy.')) {
                 units = units.filter(u => u.id !== unitId);
                 competitors = competitors.filter(c => c.unitId !== unitId);
                 updateUnitsTable();
@@ -349,34 +381,36 @@
                 updateEditModalsSelects();
             }
         }
-        
+
         function updateCompetitorUnitSelect() {
             const select = document.getElementById('competitorUnit');
-            select.innerHTML = '<option value="">Wybierz jednostkę</option>';
+            select.innerHTML = '<option value="">Wybierz jednostke</option>';
             units.forEach(unit => {
                 select.innerHTML += `<option value="${unit.id}">${unit.name}${unit.number ? ` (${unit.number})` : ''}</option>`;
             });
         }
-        
+
+        // ==================== COMPETITORS ====================
+
         function addCompetitor() {
             const firstName = document.getElementById('competitorFirstName').value.trim();
             const lastName = document.getElementById('competitorLastName').value.trim();
             const unitId = document.getElementById('competitorUnit').value;
             const gender = document.getElementById('competitorGender').value;
             const isPK = document.getElementById('competitorPK').checked;
-            
+
             if (!firstName || !lastName || !unitId) {
-                alert('Wypełnij wszystkie pola');
+                alert('Wypelnij wszystkie pola');
                 return;
             }
-            
+
             const unitCompetitors = competitors.filter(c => c.unitId == unitId);
-            
+
             if (unitCompetitors.length >= 12) {
-                alert('Maksymalnie 12 zawodników na jednostkę');
+                alert('Maksymalnie 12 zawodnikow na jednostke');
                 return;
             }
-            
+
             competitors.push({
                 id: Date.now(),
                 firstName: firstName,
@@ -386,23 +420,23 @@
                 isPK: isPK,
                 position: unitCompetitors.length + 1
             });
-            
+
             document.getElementById('competitorFirstName').value = '';
             document.getElementById('competitorLastName').value = '';
             document.getElementById('competitorPK').checked = false;
-            
+
             updateCompetitorsList();
             updateUnitsTable();
         }
-        
+
         function updateCompetitorsList() {
             const container = document.getElementById('competitorsList');
-            
+
             if (competitors.length === 0) {
-                container.innerHTML = '<p class="text-center">Brak zawodników</p>';
+                container.innerHTML = '<p class="text-center">Brak zawodnikow</p>';
                 return;
             }
-            
+
             const competitorsByUnit = {};
             competitors.forEach(competitor => {
                 if (!competitorsByUnit[competitor.unitId]) {
@@ -410,30 +444,30 @@
                 }
                 competitorsByUnit[competitor.unitId].push(competitor);
             });
-            
+
             container.innerHTML = Object.keys(competitorsByUnit).map(unitId => {
                 const unit = units.find(u => u.id == unitId);
                 const unitCompetitors = competitorsByUnit[unitId].sort((a, b) => a.position - b.position);
-                
+
                 return `
                     <div class="card">
                         <h4>${unit.name}${unit.number ? ` (${unit.number})` : ''}</h4>
                         <table>
                             <thead>
-                                <tr><th>Lp.</th><th>Imię i Nazwisko</th><th>Płeć</th><th>Status</th><th>Kod</th><th>Akcje</th></tr>
+                                <tr><th>Lp.</th><th>Imie i Nazwisko</th><th>Plec</th><th>Status</th><th>Kod</th><th>Akcje</th></tr>
                             </thead>
                             <tbody>
                                 ${unitCompetitors.map(competitor => `
                                     <tr class="${competitor.isPK ? 'pk-row' : ''}">
                                         <td>${competitor.position}</td>
                                         <td>${competitor.firstName} ${competitor.lastName}</td>
-                                        <td>${competitor.gender}</td>
+                                        <td>${competitor.gender === 'M' ? 'M' : 'K'}</td>
                                         <td>${competitor.isPK ? '<span class="text-warning">PK</span>' : '<span class="text-success">W konkurencji</span>'}</td>
                                         <td>${unit.number ? `${unit.number}/${competitor.position}` : '-'}</td>
                                         <td>
-                                            <button onclick="moveCompetitor(${competitor.id}, 'up')">↑</button>
-                                            <button onclick="moveCompetitor(${competitor.id}, 'down')">↓</button>
-                                            <button onclick="deleteCompetitor(${competitor.id})" class="btn-danger">✕</button>
+                                            <button onclick="moveCompetitor(${competitor.id}, 'up')">&#8593;</button>
+                                            <button onclick="moveCompetitor(${competitor.id}, 'down')">&#8595;</button>
+                                            <button onclick="deleteCompetitor(${competitor.id})" class="btn-danger">&#10005;</button>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -443,12 +477,12 @@
                 `;
             }).join('');
         }
-        
+
         function moveCompetitor(competitorId, direction) {
             const competitor = competitors.find(c => c.id === competitorId);
             const unitCompetitors = competitors.filter(c => c.unitId === competitor.unitId).sort((a, b) => a.position - b.position);
             const currentIndex = unitCompetitors.findIndex(c => c.id === competitorId);
-            
+
             if (direction === 'up' && currentIndex > 0) {
                 const swapWith = unitCompetitors[currentIndex - 1];
                 const tempPosition = competitor.position;
@@ -460,52 +494,81 @@
                 competitor.position = swapWith.position;
                 swapWith.position = tempPosition;
             }
-            
+
             updateCompetitorsList();
         }
-        
+
         function deleteCompetitor(competitorId) {
-            if (confirm('Czy na pewno usunąć zawodnika?')) {
+            if (confirm('Czy na pewno usunac zawodnika?')) {
                 const competitor = competitors.find(c => c.id === competitorId);
                 competitors = competitors.filter(c => c.id !== competitorId);
-                
+
                 const unitCompetitors = competitors.filter(c => c.unitId === competitor.unitId).sort((a, b) => a.position - b.position);
                 unitCompetitors.forEach((comp, index) => {
                     comp.position = index + 1;
                 });
-                
+
                 updateCompetitorsList();
                 updateUnitsTable();
             }
         }
-        
+
+        // ==================== SCHEMA ====================
+
         function generateAutoSchema() {
             const numberedUnits = units.filter(u => u.number !== null).sort((a, b) => a.number - b.number);
-            
+
             if (numberedUnits.length < 2) {
                 alert('Potrzebujesz co najmniej 2 jednostki z numerami');
                 return;
             }
-            
+
             schema = [];
-            
+
+            // Generate separate schemas for men and women
             for (let i = 0; i < numberedUnits.length; i += 2) {
                 if (i + 1 < numberedUnits.length) {
                     const unit1 = numberedUnits[i];
                     const unit2 = numberedUnits[i + 1];
-                    
-                    const competitors1 = competitors.filter(c => c.unitId === unit1.id && !c.isPK).sort((a, b) => a.position - b.position);
-                    const competitors2 = competitors.filter(c => c.unitId === unit2.id && !c.isPK).sort((a, b) => a.position - b.position);
-                    
-                    const maxLength = Math.max(competitors1.length, competitors2.length);
-                    
-                    for (let j = 0; j < maxLength; j++) {
-                        const comp1 = competitors1[j];
-                        const comp2 = competitors2[j];
-                        
+
+                    // Men first
+                    const maleComp1 = competitors.filter(c => c.unitId === unit1.id && !c.isPK && c.gender === 'M').sort((a, b) => a.position - b.position);
+                    const maleComp2 = competitors.filter(c => c.unitId === unit2.id && !c.isPK && c.gender === 'M').sort((a, b) => a.position - b.position);
+
+                    const maleMaxLen = Math.max(maleComp1.length, maleComp2.length);
+                    for (let j = 0; j < maleMaxLen; j++) {
+                        const comp1 = maleComp1[j];
+                        const comp2 = maleComp2[j];
                         if (comp1 || comp2) {
                             schema.push({
-                                id: Date.now() + schema.length,
+                                id: Date.now() + schema.length + Math.random(),
+                                leftLane: comp1 ? {
+                                    unitNumber: unit1.number,
+                                    position: comp1.position,
+                                    competitorId: comp1.id,
+                                    name: `${comp1.firstName} ${comp1.lastName}`
+                                } : null,
+                                rightLane: comp2 ? {
+                                    unitNumber: unit2.number,
+                                    position: comp2.position,
+                                    competitorId: comp2.id,
+                                    name: `${comp2.firstName} ${comp2.lastName}`
+                                } : null
+                            });
+                        }
+                    }
+
+                    // Then women
+                    const femaleComp1 = competitors.filter(c => c.unitId === unit1.id && !c.isPK && c.gender === 'K').sort((a, b) => a.position - b.position);
+                    const femaleComp2 = competitors.filter(c => c.unitId === unit2.id && !c.isPK && c.gender === 'K').sort((a, b) => a.position - b.position);
+
+                    const femaleMaxLen = Math.max(femaleComp1.length, femaleComp2.length);
+                    for (let j = 0; j < femaleMaxLen; j++) {
+                        const comp1 = femaleComp1[j];
+                        const comp2 = femaleComp2[j];
+                        if (comp1 || comp2) {
+                            schema.push({
+                                id: Date.now() + schema.length + Math.random(),
                                 leftLane: comp1 ? {
                                     unitNumber: unit1.number,
                                     position: comp1.position,
@@ -523,32 +586,32 @@
                     }
                 }
             }
-            
+
             updateSchemaList();
         }
-        
+
         function addManualRace() {
             const race = {
                 id: Date.now(),
                 leftLane: null,
                 rightLane: null
             };
-            
+
             schema.push(race);
             updateSchemaList();
-            
+
             setTimeout(() => {
                 editRace(race.id);
             }, 100);
         }
-        
+
         function quickAddRace(leftUnit, leftPos, rightUnit, rightPos) {
             const race = {
                 id: Date.now(),
                 leftLane: null,
                 rightLane: null
             };
-            
+
             if (leftUnit && leftPos) {
                 const unit = units.find(u => u.number == leftUnit);
                 const competitor = competitors.find(c => c.unitId === unit.id && c.position == leftPos && !c.isPK);
@@ -561,7 +624,7 @@
                     };
                 }
             }
-            
+
             if (rightUnit && rightPos) {
                 const unit = units.find(u => u.number == rightUnit);
                 const competitor = competitors.find(c => c.unitId === unit.id && c.position == rightPos && !c.isPK);
@@ -574,157 +637,192 @@
                     };
                 }
             }
-            
+
             schema.push(race);
             updateSchemaList();
         }
-        
+
         function clearSchema() {
-            if (confirm('Czy na pewno wyczyścić cały schemat?')) {
+            if (confirm('Czy na pewno wyczyscic caly schemat?')) {
                 schema = [];
                 updateSchemaList();
             }
         }
-        
+
         function updateSchemaList() {
             const container = document.getElementById('schemaList');
-            
+
             if (schema.length === 0) {
-                container.innerHTML = '<p class="text-center">Brak biegów w schemacie</p>';
+                container.innerHTML = '<p class="text-center" style="color: #718096;">Brak biegow w schemacie</p>';
                 document.getElementById('startSeries1Btn').style.display = 'none';
                 return;
             }
-            
+
             container.innerHTML = `
                 <table>
                     <thead>
                         <tr><th>Bieg</th><th>Tor Lewy</th><th>Tor Prawy</th><th>Akcje</th></tr>
                     </thead>
                     <tbody>
-                        ${schema.map((race, index) => `
+                        ${schema.map((race, index) => {
+                            const leftGender = race.leftLane ? getCompetitorGender(race.leftLane.competitorId) : '';
+                            const rightGender = race.rightLane ? getCompetitorGender(race.rightLane.competitorId) : '';
+                            const genderLabel = leftGender || rightGender;
+                            return `
                             <tr>
-                                <td><strong>${index + 1}</strong></td>
+                                <td><strong>${index + 1}</strong> <span style="font-size:11px;color:#718096;">${genderLabel === 'K' ? '(K)' : genderLabel === 'M' ? '(M)' : ''}</span></td>
                                 <td>${race.leftLane ? `${race.leftLane.unitNumber}/${race.leftLane.position} - ${race.leftLane.name}` : '-'}</td>
                                 <td>${race.rightLane ? `${race.rightLane.unitNumber}/${race.rightLane.position} - ${race.rightLane.name}` : '-'}</td>
                                 <td>
                                     <button onclick="editRace(${race.id})">Edytuj</button>
-                                    <button onclick="deleteRace(${race.id})" class="btn-danger">Usuń</button>
+                                    <button onclick="deleteRace(${race.id})" class="btn-danger">Usun</button>
                                 </td>
                             </tr>
-                        `).join('')}
+                        `}).join('')}
                     </tbody>
                 </table>
             `;
-            
+
             document.getElementById('startSeries1Btn').style.display = 'block';
         }
-        
+
         function deleteRace(raceId) {
-            if (confirm('Czy na pewno usunąć ten bieg?')) {
+            if (confirm('Czy na pewno usunac ten bieg?')) {
                 schema = schema.filter(r => r.id !== raceId);
                 updateSchemaList();
             }
         }
-        
+
+        // ==================== EDIT RACE MODAL ====================
+
         function editRace(raceId) {
             editingRaceId = raceId;
             const race = schema.find(r => r.id === raceId);
-            
+
             updateEditModalsSelects();
-            
-            document.getElementById('editLeftUnit').value = race.leftLane ? race.leftLane.unitNumber : '';
-            document.getElementById('editRightUnit').value = race.rightLane ? race.rightLane.unitNumber : '';
-            
-            updatePositionSelects();
-            
+
+            // Set unit values first without triggering position reset
+            const leftUnitSelect = document.getElementById('editLeftUnit');
+            const rightUnitSelect = document.getElementById('editRightUnit');
+
+            leftUnitSelect.value = race.leftLane ? race.leftLane.unitNumber : '';
+            rightUnitSelect.value = race.rightLane ? race.rightLane.unitNumber : '';
+
+            // Update position selects for both lanes
+            updateSinglePositionSelect('editLeftPosition', 'editLeftName', leftUnitSelect.value);
+            updateSinglePositionSelect('editRightPosition', 'editRightName', rightUnitSelect.value);
+
+            // Now set position values
             if (race.leftLane) {
                 document.getElementById('editLeftPosition').value = race.leftLane.position;
                 updateCompetitorName('editLeftName', race.leftLane.unitNumber, race.leftLane.position);
             }
-            
+
             if (race.rightLane) {
                 document.getElementById('editRightPosition').value = race.rightLane.position;
                 updateCompetitorName('editRightName', race.rightLane.unitNumber, race.rightLane.position);
             }
-            
+
             document.getElementById('editRaceModal').classList.add('active');
         }
-        
+
         function updateEditModalsSelects() {
             const leftSelect = document.getElementById('editLeftUnit');
             const rightSelect = document.getElementById('editRightUnit');
-            
+
             if (leftSelect && rightSelect) {
-                const unitOptions = '<option value="">Brak</option>' + 
+                const unitOptions = '<option value="">Brak</option>' +
                     units.filter(u => u.number !== null)
                           .sort((a, b) => a.number - b.number)
                           .map(unit => `<option value="${unit.number}">${unit.number} - ${unit.name}</option>`)
                           .join('');
-                
+
                 leftSelect.innerHTML = unitOptions;
                 rightSelect.innerHTML = unitOptions;
-                
-                leftSelect.onchange = () => updatePositionSelects();
-                rightSelect.onchange = () => updatePositionSelects();
+
+                // FIX: Only update the changed lane's position select
+                leftSelect.onchange = () => {
+                    updateSinglePositionSelect('editLeftPosition', 'editLeftName', leftSelect.value);
+                };
+                rightSelect.onchange = () => {
+                    updateSinglePositionSelect('editRightPosition', 'editRightName', rightSelect.value);
+                };
             }
-            
+
             updateQuickSelects();
         }
-        
+
+        function updateSinglePositionSelect(positionSelectId, nameSpanId, unitNumber) {
+            const positionSelect = document.getElementById(positionSelectId);
+
+            if (!unitNumber) {
+                positionSelect.innerHTML = '<option value="">-</option>';
+                document.getElementById(nameSpanId).textContent = '';
+                return;
+            }
+
+            const unit = units.find(u => u.number == unitNumber);
+            if (!unit) return;
+
+            const unitCompetitors = competitors.filter(c => c.unitId === unit.id && !c.isPK).sort((a, b) => a.position - b.position);
+
+            positionSelect.innerHTML = '<option value="">-</option>' +
+                unitCompetitors.map(comp => `<option value="${comp.position}">${comp.position}</option>`).join('');
+
+            positionSelect.onchange = () => updateCompetitorName(nameSpanId, unitNumber, positionSelect.value);
+        }
+
         function updateQuickSelects() {
             const quickLeftUnit = document.getElementById('quickLeftUnit');
             const quickRightUnit = document.getElementById('quickRightUnit');
-            
+
             if (quickLeftUnit && quickRightUnit) {
-                const unitOptions = '<option value="">-</option>' + 
+                const unitOptions = '<option value="">-</option>' +
                     units.filter(u => u.number !== null)
                           .sort((a, b) => a.number - b.number)
                           .map(unit => `<option value="${unit.number}">${unit.number}</option>`)
                           .join('');
-                
+
                 quickLeftUnit.innerHTML = unitOptions;
                 quickRightUnit.innerHTML = unitOptions;
-                
-                quickLeftUnit.onchange = () => updateQuickPositions();
-                quickRightUnit.onchange = () => updateQuickPositions();
-                
+
+                quickLeftUnit.onchange = () => {
+                    updateQuickPositionSelect('quickLeftPos', quickLeftUnit.value);
+                    updateQuickPreview();
+                };
+                quickRightUnit.onchange = () => {
+                    updateQuickPositionSelect('quickRightPos', quickRightUnit.value);
+                    updateQuickPreview();
+                };
+
                 document.getElementById('quickLeftPos').onchange = () => updateQuickPreview();
                 document.getElementById('quickRightPos').onchange = () => updateQuickPreview();
             }
         }
-        
-        function updateQuickPositions() {
-            const leftUnit = document.getElementById('quickLeftUnit').value;
-            const rightUnit = document.getElementById('quickRightUnit').value;
-            
-            updateQuickPositionSelect('quickLeftPos', leftUnit);
-            updateQuickPositionSelect('quickRightPos', rightUnit);
-            updateQuickPreview();
-        }
-        
+
         function updateQuickPositionSelect(selectId, unitNumber) {
             const select = document.getElementById(selectId);
-            
+
             if (!unitNumber) {
                 select.innerHTML = '<option value="">-</option>';
                 return;
             }
-            
+
             const unit = units.find(u => u.number == unitNumber);
             if (!unit) return;
-            
+
             const unitCompetitors = competitors.filter(c => c.unitId === unit.id && !c.isPK).sort((a, b) => a.position - b.position);
-            
+
             select.innerHTML = '<option value="">-</option>' +
                 unitCompetitors.map(comp => `<option value="${comp.position}">${comp.position}</option>`).join('');
         }
-        
+
         function updateQuickPreview() {
             const leftUnit = document.getElementById('quickLeftUnit').value;
             const leftPos = document.getElementById('quickLeftPos').value;
             const rightUnit = document.getElementById('quickRightUnit').value;
             const rightPos = document.getElementById('quickRightPos').value;
-            
+
             let preview = 'Lewy: ';
             if (leftUnit && leftPos) {
                 const name = getCompetitorNameByCode(leftUnit, leftPos);
@@ -732,7 +830,7 @@
             } else {
                 preview += '-';
             }
-            
+
             preview += ' vs Prawy: ';
             if (rightUnit && rightPos) {
                 const name = getCompetitorNameByCode(rightUnit, rightPos);
@@ -740,89 +838,61 @@
             } else {
                 preview += '-';
             }
-            
+
             document.getElementById('quickPreview').textContent = preview;
         }
-        
+
         function getCompetitorNameByCode(unitNumber, position) {
             const unit = units.find(u => u.number == unitNumber);
             if (!unit) return 'Nieznany';
-            
+
             const competitor = competitors.find(c => c.unitId === unit.id && c.position == position && !c.isPK);
             return competitor ? `${competitor.firstName} ${competitor.lastName}` : 'Nieznany';
         }
-        
+
         function addQuickRace() {
             const leftUnit = document.getElementById('quickLeftUnit').value;
             const leftPos = document.getElementById('quickLeftPos').value;
             const rightUnit = document.getElementById('quickRightUnit').value;
             const rightPos = document.getElementById('quickRightPos').value;
-            
+
             if (!leftUnit && !rightUnit) {
                 alert('Wybierz przynajmniej jednego zawodnika');
                 return;
             }
-            
+
             quickAddRace(leftUnit, leftPos, rightUnit, rightPos);
-            
+
             document.getElementById('quickLeftUnit').value = '';
             document.getElementById('quickLeftPos').value = '';
             document.getElementById('quickRightUnit').value = '';
             document.getElementById('quickRightPos').value = '';
             updateQuickPreview();
         }
-        
-        function updatePositionSelects() {
-            const leftUnit = document.getElementById('editLeftUnit').value;
-            const rightUnit = document.getElementById('editRightUnit').value;
-            
-            updatePositionSelectForLane('editLeftPosition', 'editLeftName', leftUnit);
-            updatePositionSelectForLane('editRightPosition', 'editRightName', rightUnit);
-        }
-        
-        function updatePositionSelectForLane(positionSelectId, nameSpanId, unitNumber) {
-            const positionSelect = document.getElementById(positionSelectId);
-            
-            if (!unitNumber) {
-                positionSelect.innerHTML = '<option value="">-</option>';
-                document.getElementById(nameSpanId).textContent = '';
-                return;
-            }
-            
-            const unit = units.find(u => u.number == unitNumber);
-            if (!unit) return;
-            
-            const unitCompetitors = competitors.filter(c => c.unitId === unit.id && !c.isPK).sort((a, b) => a.position - b.position);
-            
-            positionSelect.innerHTML = '<option value="">-</option>' +
-                unitCompetitors.map(comp => `<option value="${comp.position}">${comp.position}</option>`).join('');
-            
-            positionSelect.onchange = () => updateCompetitorName(nameSpanId, unitNumber, positionSelect.value);
-        }
-        
+
         function updateCompetitorName(nameSpanId, unitNumber, position) {
             const nameSpan = document.getElementById(nameSpanId);
-            
+
             if (!unitNumber || !position) {
                 nameSpan.textContent = '';
                 return;
             }
-            
+
             const unit = units.find(u => u.number == unitNumber);
             if (!unit) return;
-            
+
             const competitor = competitors.find(c => c.unitId === unit.id && c.position == position && !c.isPK);
             nameSpan.textContent = competitor ? `(${competitor.firstName} ${competitor.lastName})` : '';
         }
-        
+
         function saveRaceEdit() {
             const leftUnit = document.getElementById('editLeftUnit').value;
             const leftPosition = document.getElementById('editLeftPosition').value;
             const rightUnit = document.getElementById('editRightUnit').value;
             const rightPosition = document.getElementById('editRightPosition').value;
-            
+
             const race = schema.find(r => r.id === editingRaceId);
-            
+
             if (leftUnit && leftPosition) {
                 const unit = units.find(u => u.number == leftUnit);
                 const competitor = competitors.find(c => c.unitId === unit.id && c.position == leftPosition && !c.isPK);
@@ -835,7 +905,7 @@
             } else {
                 race.leftLane = null;
             }
-            
+
             if (rightUnit && rightPosition) {
                 const unit = units.find(u => u.number == rightUnit);
                 const competitor = competitors.find(c => c.unitId === unit.id && c.position == rightPosition && !c.isPK);
@@ -848,35 +918,42 @@
             } else {
                 race.rightLane = null;
             }
-            
+
             updateSchemaList();
             closeEditModal();
         }
-        
+
         function closeEditModal() {
             document.getElementById('editRaceModal').classList.remove('active');
             editingRaceId = null;
         }
-        
+
+        // ==================== SERIES 1 ====================
+
         function startSeries1() {
             if (schema.length === 0) {
-                alert('Brak biegów w schemacie');
+                alert('Brak biegow w schemacie');
                 return;
             }
-            
+
             series1Results = schema.map(race => ({
                 ...race,
                 leftResult: race.leftLane ? { time: '', status: 'OK' } : null,
                 rightResult: race.rightLane ? { time: '', status: 'OK' } : null
             }));
-            
+
             updateSeries1List();
             showSection('series1');
         }
-        
+
+        function getUnitNameByNumber(unitNumber) {
+            const unit = units.find(u => u.number === unitNumber);
+            return unit ? unit.name : '';
+        }
+
         function updateSeries1List() {
             const container = document.getElementById('series1List');
-            
+
             container.innerHTML = `
                 <table>
                     <thead>
@@ -886,7 +963,7 @@
                         ${series1Results.map((race, index) => `
                             <tr>
                                 <td><strong>${index + 1}</strong></td>
-                                <td>${race.leftLane ? `<strong>${race.leftLane.unitNumber}/${race.leftLane.position}</strong><br><small>${race.leftLane.name}</small>` : '-'}</td>
+                                <td>${race.leftLane ? `<strong>${race.leftLane.unitNumber}/${race.leftLane.position}</strong><br><small>${race.leftLane.name}</small><br><small style="color:#718096;">${getUnitNameByNumber(race.leftLane.unitNumber)}</small>` : '-'}</td>
                                 <td>${race.leftLane ? `<input type="text" class="time-input" placeholder="MM:SS" value="${race.leftResult.time}" onchange="updateResult(1, ${race.id}, 'left', 'time', this.value)">` : '-'}</td>
                                 <td>${race.leftLane ? `
                                     <select class="status-select" onchange="updateResult(1, ${race.id}, 'left', 'status', this.value)">
@@ -894,7 +971,7 @@
                                         <option value="DDF" ${race.leftResult.status === 'DDF' ? 'selected' : ''}>DDF</option>
                                         <option value="DSQ" ${race.leftResult.status === 'DSQ' ? 'selected' : ''}>DSQ</option>
                                     </select>` : '-'}</td>
-                                <td>${race.rightLane ? `<strong>${race.rightLane.unitNumber}/${race.rightLane.position}</strong><br><small>${race.rightLane.name}</small>` : '-'}</td>
+                                <td>${race.rightLane ? `<strong>${race.rightLane.unitNumber}/${race.rightLane.position}</strong><br><small>${race.rightLane.name}</small><br><small style="color:#718096;">${getUnitNameByNumber(race.rightLane.unitNumber)}</small>` : '-'}</td>
                                 <td>${race.rightLane ? `<input type="text" class="time-input" placeholder="MM:SS" value="${race.rightResult.time}" onchange="updateResult(1, ${race.id}, 'right', 'time', this.value)">` : '-'}</td>
                                 <td>${race.rightLane ? `
                                     <select class="status-select" onchange="updateResult(1, ${race.id}, 'right', 'status', this.value)">
@@ -907,82 +984,118 @@
                     </tbody>
                 </table>
             `;
-            
+
             document.getElementById('startSeries2Btn').style.display = 'block';
         }
-        
+
         function updateResult(series, raceId, lane, field, value) {
             const results = series === 1 ? series1Results : series2Results;
             const race = results.find(r => r.id === raceId);
-            
+
             if (race) {
                 const laneKey = lane === 'left' ? 'leftResult' : 'rightResult';
                 if (race[laneKey]) {
                     race[laneKey][field] = value;
                 }
             }
+
+            // Update live results window if open
+            updateLiveResults();
         }
-        
+
+        // ==================== SERIES 2 ====================
+        // Separate brackets for men and women
+
         function startSeries2() {
             if (series1Results.length === 0) {
-                alert('Najpierw musisz zakończyć pierwszą serię');
+                alert('Najpierw musisz zakonczyc pierwsza serie');
                 return;
             }
-            
-            const leftLaneCompetitors = [];
-            const rightLaneCompetitors = [];
-            
+
+            // Collect all competitors from series 1 with their results
+            const allS1Competitors = [];
             series1Results.forEach(race => {
                 if (race.leftLane && race.leftResult) {
-                    rightLaneCompetitors.push({
-                        ...race.leftLane,
+                    allS1Competitors.push({
+                        lane: race.leftLane,
                         result: race.leftResult,
-                        timeInSeconds: timeToSeconds(race.leftResult.time)
+                        originalSide: 'left'
                     });
                 }
-                
                 if (race.rightLane && race.rightResult) {
-                    leftLaneCompetitors.push({
-                        ...race.rightLane,
+                    allS1Competitors.push({
+                        lane: race.rightLane,
                         result: race.rightResult,
-                        timeInSeconds: timeToSeconds(race.rightResult.time)
+                        originalSide: 'right'
                     });
                 }
             });
-            
-            const sortCompetitors = (competitors) => {
-                return competitors.sort((a, b) => {
+
+            // Separate by gender
+            const maleCompetitors = allS1Competitors.filter(c => getCompetitorGender(c.lane.competitorId) === 'M');
+            const femaleCompetitors = allS1Competitors.filter(c => getCompetitorGender(c.lane.competitorId) === 'K');
+
+            // Generate series 2 races for each gender separately
+            const maleRaces = generateSeries2Races(maleCompetitors);
+            const femaleRaces = generateSeries2Races(femaleCompetitors);
+
+            series2Results = [...maleRaces, ...femaleRaces];
+            updateSeries2List();
+            showSection('series2');
+        }
+
+        function generateSeries2Races(genderCompetitors) {
+            // In series 2, competitors switch lanes (left->right, right->left)
+            // Sort: DDF/DSQ first, then worst times, then best times
+            const leftLaneCompetitors = []; // Were on right in S1, go to left in S2
+            const rightLaneCompetitors = []; // Were on left in S1, go to right in S2
+
+            genderCompetitors.forEach(c => {
+                const entry = {
+                    ...c.lane,
+                    result: c.result,
+                    timeInSeconds: timeToSeconds(c.result.time)
+                };
+                if (c.originalSide === 'left') {
+                    rightLaneCompetitors.push(entry); // Switch to right
+                } else {
+                    leftLaneCompetitors.push(entry); // Switch to left
+                }
+            });
+
+            const sortCompetitors = (comps) => {
+                return comps.sort((a, b) => {
                     if (a.result.status !== 'OK') {
                         if (b.result.status !== 'OK') return 0;
                         return -1;
                     }
                     if (b.result.status !== 'OK') return 1;
-                    return b.timeInSeconds - a.timeInSeconds;
+                    return b.timeInSeconds - a.timeInSeconds; // Worst times first
                 });
             };
-            
-            const sortedLeftLane = sortCompetitors([...leftLaneCompetitors]);
-            const sortedRightLane = sortCompetitors([...rightLaneCompetitors]);
-            
-            const series2Races = [];
-            const leftCount = sortedLeftLane.length;
-            const rightCount = sortedRightLane.length;
+
+            const sortedLeft = sortCompetitors([...leftLaneCompetitors]);
+            const sortedRight = sortCompetitors([...rightLaneCompetitors]);
+
+            const races = [];
+            const leftCount = sortedLeft.length;
+            const rightCount = sortedRight.length;
             const diff = Math.abs(leftCount - rightCount);
-            
+
             if (diff > 0) {
-                const moreCompetitors = leftCount > rightCount ? sortedLeftLane : sortedRightLane;
+                const moreCompetitors = leftCount > rightCount ? sortedLeft : sortedRight;
                 const laneName = leftCount > rightCount ? 'left' : 'right';
-                
+
                 for (let i = 0; i < diff; i++) {
                     const competitor = moreCompetitors[i];
                     const raceItem = {
-                        id: Date.now() + series2Races.length + Math.random(),
+                        id: Date.now() + races.length + Math.random(),
                         leftLane: null,
                         rightLane: null,
                         leftResult: null,
                         rightResult: null
                     };
-                    
+
                     if (laneName === 'left') {
                         raceItem.leftLane = competitor;
                         raceItem.leftResult = { time: '', status: 'OK' };
@@ -990,47 +1103,81 @@
                         raceItem.rightLane = competitor;
                         raceItem.rightResult = { time: '', status: 'OK' };
                     }
-                    
-                    series2Races.push(raceItem);
+
+                    races.push(raceItem);
                 }
-                
+
                 if (leftCount > rightCount) {
-                    sortedLeftLane.splice(0, diff);
+                    sortedLeft.splice(0, diff);
                 } else {
-                    sortedRightLane.splice(0, diff);
+                    sortedRight.splice(0, diff);
                 }
             }
-            
-            const pairCount = Math.min(sortedLeftLane.length, sortedRightLane.length);
-            
+
+            const pairCount = Math.min(sortedLeft.length, sortedRight.length);
+
             for (let i = 0; i < pairCount; i++) {
-                series2Races.push({
-                    id: Date.now() + series2Races.length + Math.random(),
-                    leftLane: sortedLeftLane[i],
-                    rightLane: sortedRightLane[i],
+                races.push({
+                    id: Date.now() + races.length + Math.random(),
+                    leftLane: sortedLeft[i],
+                    rightLane: sortedRight[i],
                     leftResult: { time: '', status: 'OK' },
                     rightResult: { time: '', status: 'OK' }
                 });
             }
-            
-            series2Results = series2Races;
-            updateSeries2List();
-            showSection('series2');
+
+            return races;
         }
-        
+
         function updateSeries2List() {
             const container = document.getElementById('series2List');
-            
-            container.innerHTML = `
+
+            // Separate races by gender for display
+            const maleRaces = [];
+            const femaleRaces = [];
+
+            series2Results.forEach(race => {
+                const compId = (race.leftLane && race.leftLane.competitorId) || (race.rightLane && race.rightLane.competitorId);
+                if (compId && getCompetitorGender(compId) === 'K') {
+                    femaleRaces.push(race);
+                } else {
+                    maleRaces.push(race);
+                }
+            });
+
+            let html = '';
+
+            if (maleRaces.length > 0) {
+                html += `
+                <div class="gender-section gender-section-male">
+                    <h4>Mezczyzni - II Seria</h4>
+                    ${generateSeries2Table(maleRaces, 0)}
+                </div>`;
+            }
+
+            if (femaleRaces.length > 0) {
+                html += `
+                <div class="gender-section gender-section-female">
+                    <h4>Kobiety - II Seria</h4>
+                    ${generateSeries2Table(femaleRaces, maleRaces.length)}
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            document.getElementById('generateResultsBtn').style.display = 'block';
+        }
+
+        function generateSeries2Table(races, startIndex) {
+            return `
                 <table>
                     <thead>
                         <tr><th>Bieg</th><th>Tor Lewy</th><th>I Seria</th><th>Czas II (MM:SS)</th><th>Status</th><th>Tor Prawy</th><th>I Seria</th><th>Czas II (MM:SS)</th><th>Status</th></tr>
                     </thead>
                     <tbody>
-                        ${series2Results.map((race, index) => `
+                        ${races.map((race, index) => `
                             <tr>
-                                <td><strong>${index + 1}</strong></td>
-                                <td>${race.leftLane ? `<strong>${race.leftLane.unitNumber}/${race.leftLane.position}</strong><br><small>${race.leftLane.name}</small>` : '-'}</td>
+                                <td><strong>${startIndex + index + 1}</strong></td>
+                                <td>${race.leftLane ? `<strong>${race.leftLane.unitNumber}/${race.leftLane.position}</strong><br><small>${race.leftLane.name}</small><br><small style="color:#718096;">${getUnitNameByNumber(race.leftLane.unitNumber)}</small>` : '-'}</td>
                                 <td>${race.leftLane ? `${race.leftLane.result.time || '-'} (${race.leftLane.result.status})` : '-'}</td>
                                 <td>${race.leftLane ? `<input type="text" class="time-input" placeholder="MM:SS" value="${race.leftResult.time}" onchange="updateResult(2, ${race.id}, 'left', 'time', this.value)">` : '-'}</td>
                                 <td>${race.leftLane ? `
@@ -1039,7 +1186,7 @@
                                         <option value="DDF" ${race.leftResult.status === 'DDF' ? 'selected' : ''}>DDF</option>
                                         <option value="DSQ" ${race.leftResult.status === 'DSQ' ? 'selected' : ''}>DSQ</option>
                                     </select>` : '-'}</td>
-                                <td>${race.rightLane ? `<strong>${race.rightLane.unitNumber}/${race.rightLane.position}</strong><br><small>${race.rightLane.name}</small>` : '-'}</td>
+                                <td>${race.rightLane ? `<strong>${race.rightLane.unitNumber}/${race.rightLane.position}</strong><br><small>${race.rightLane.name}</small><br><small style="color:#718096;">${getUnitNameByNumber(race.rightLane.unitNumber)}</small>` : '-'}</td>
                                 <td>${race.rightLane ? `${race.rightLane.result.time || '-'} (${race.rightLane.result.status})` : '-'}</td>
                                 <td>${race.rightLane ? `<input type="text" class="time-input" placeholder="MM:SS" value="${race.rightResult.time}" onchange="updateResult(2, ${race.id}, 'right', 'time', this.value)">` : '-'}</td>
                                 <td>${race.rightLane ? `
@@ -1053,24 +1200,19 @@
                     </tbody>
                 </table>
             `;
-            
-            document.getElementById('generateResultsBtn').style.display = 'block';
         }
-        
+
+        // ==================== FINAL RESULTS ====================
+
         function generateFinalResults() {
-            if (series1Results.length === 0 || series2Results.length === 0) {
-                alert('Musisz przeprowadzić obie serie biegów');
-                return;
-            }
-            
             const finalResults = calculateFinalResults();
             updateFinalResultsList(finalResults);
             showSection('results');
         }
-        
+
         function calculateFinalResults() {
             const allCompetitors = new Map();
-            
+
             series1Results.forEach(race => {
                 if (race.leftLane && race.leftResult) {
                     allCompetitors.set(race.leftLane.competitorId, {
@@ -1087,7 +1229,7 @@
                     });
                 }
             });
-            
+
             series2Results.forEach(race => {
                 if (race.leftLane && race.leftResult) {
                     const competitor = allCompetitors.get(race.leftLane.competitorId);
@@ -1102,16 +1244,17 @@
                     }
                 }
             });
-            
+
             const results = [];
             allCompetitors.forEach(comp => {
                 const competitorData = competitors.find(c => c.id === comp.competitorId);
+                if (!competitorData) return;
                 const unit = units.find(u => u.id === competitorData.unitId);
-                
+
                 let bestTime = null;
                 let bestTimeSeries = null;
                 let bestTimeSeconds = 9999;
-                
+
                 if (comp.series1 && comp.series1.status === 'OK' && comp.series1.time) {
                     const time1 = timeToSeconds(comp.series1.time);
                     if (time1 < bestTimeSeconds) {
@@ -1120,7 +1263,7 @@
                         bestTimeSeconds = time1;
                     }
                 }
-                
+
                 if (comp.series2 && comp.series2.status === 'OK' && comp.series2.time) {
                     const time2 = timeToSeconds(comp.series2.time);
                     if (time2 < bestTimeSeconds) {
@@ -1129,10 +1272,10 @@
                         bestTimeSeconds = time2;
                     }
                 }
-                
+
                 results.push({
                     ...competitorData,
-                    unitName: unit.name,
+                    unitName: unit ? unit.name : '',
                     unitNumber: comp.unitNumber,
                     competitorPosition: comp.position,
                     series1: comp.series1,
@@ -1142,42 +1285,42 @@
                     bestTimeSeconds: bestTimeSeconds
                 });
             });
-            
+
             const regularResults = results.filter(r => !r.isPK);
             const pkResults = results.filter(r => r.isPK);
-            
+
             const maleResults = regularResults.filter(r => r.gender === 'M');
             const femaleResults = regularResults.filter(r => r.gender === 'K');
-            
+
             const sortResults = (results) => {
                 return results.sort((a, b) => {
                     const aTotalDQ = (!a.series1 || a.series1.status !== 'OK') && (!a.series2 || a.series2.status !== 'OK');
                     const bTotalDQ = (!b.series1 || b.series1.status !== 'OK') && (!b.series2 || b.series2.status !== 'OK');
-                    
+
                     if (aTotalDQ && !bTotalDQ) return 1;
                     if (!aTotalDQ && bTotalDQ) return -1;
                     if (aTotalDQ && bTotalDQ) return a.lastName.localeCompare(b.lastName);
-                    
+
                     if (a.bestTime && b.bestTime) {
                         return a.bestTimeSeconds - b.bestTimeSeconds;
                     }
-                    
+
                     if (a.bestTime) return -1;
                     if (b.bestTime) return 1;
-                    
+
                     return a.lastName.localeCompare(b.lastName);
                 });
             };
-            
+
             const sortedMale = sortResults([...maleResults]);
             const sortedFemale = sortResults([...femaleResults]);
             const sortedPK = sortResults([...pkResults]);
-            
+
             const addPositions = (results) => {
                 let position = 1;
                 results.forEach((result, index) => {
                     const hasTotalDQ = (!result.series1 || result.series1.status !== 'OK') && (!result.series2 || result.series2.status !== 'OK');
-                    
+
                     if (hasTotalDQ) {
                         result.finalPosition = 'DQ';
                     } else if (result.bestTime) {
@@ -1192,97 +1335,106 @@
                     position++;
                 });
             };
-            
+
             addPositions(sortedMale);
             addPositions(sortedFemale);
             addPositions(sortedPK);
-            
+
             return {
                 male: sortedMale,
                 female: sortedFemale,
-                pk: sortedPK,
-                all: [...sortedMale, ...sortedFemale]
+                pk: sortedPK
             };
         }
-        
+
         function showResults(category) {
             currentResultsView = category;
-            document.querySelectorAll('#results .nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`results${category.charAt(0).toUpperCase() + category.slice(1)}Btn`).classList.add('active');
-            
+            document.querySelectorAll('.results-nav .nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`results${category}Btn`).classList.add('active');
+
             const finalResults = calculateFinalResults();
             updateFinalResultsList(finalResults);
         }
-        
+
         function updateFinalResultsList(finalResults) {
             const container = document.getElementById('finalResultsList');
-            
-            let resultsToShow = [];
-            if (currentResultsView === 'all') {
-                resultsToShow = finalResults.all;
-            } else if (currentResultsView === 'M') {
-                resultsToShow = finalResults.male;
-            } else if (currentResultsView === 'K') {
-                resultsToShow = finalResults.female;
-            }
-            
-            container.innerHTML = `
-                <h4>Klasyfikacja ${currentResultsView === 'all' ? 'Ogólna' : currentResultsView === 'M' ? 'Mężczyzn' : 'Kobiet'}</h4>
-                <table>
-                    <thead>
-                        <tr><th>Miejsce</th><th>Zawodnik</th><th>Jednostka</th><th>I Seria</th><th>II Seria</th><th>Najlepszy czas</th><th>Seria</th></tr>
-                    </thead>
-                    <tbody>
-                        ${resultsToShow.map(result => `
-                            <tr>
-                                <td><strong>${result.finalPosition}</strong></td>
-                                <td><strong>${result.firstName} ${result.lastName}</strong><br><small>${result.unitNumber}/${result.competitorPosition}</small></td>
-                                <td>${result.unitName}</td>
-                                <td>${result.series1 ? `${result.series1.time || '-'} (${result.series1.status})` : '-'}</td>
-                                <td>${result.series2 ? `${result.series2.time || '-'} (${result.series2.status})` : '-'}</td>
-                                <td><strong style="color: #28a745;">${result.bestTime || '-'}</strong></td>
-                                <td>${result.bestTimeSeries || '-'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                
-                ${finalResults.pk.length > 0 && currentResultsView === 'all' ? `
-                    <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px;">
-                        <h4>🔸 Zawodnicy Poza Konkurencją (PK)</h4>
+            let html = '';
+
+            const renderTable = (title, results, cssClass) => {
+                if (results.length === 0) return '';
+                return `
+                    <div class="gender-section ${cssClass}">
+                        <h4>${title}</h4>
                         <table>
                             <thead>
-                                <tr><th>Lp.</th><th>Zawodnik</th><th>Jednostka</th><th>I Seria</th><th>II Seria</th><th>Najlepszy czas</th><th>Seria</th></tr>
+                                <tr><th>Miejsce</th><th>Imie i Nazwisko</th><th>Jednostka</th><th>I Seria</th><th>II Seria</th><th>Najlepszy czas</th></tr>
                             </thead>
                             <tbody>
-                                ${finalResults.pk.map((result, index) => `
+                                ${results.map(result => `
                                     <tr>
-                                        <td><strong>PK-${index + 1}</strong></td>
-                                        <td><strong>${result.firstName} ${result.lastName}</strong><br><small>${result.unitNumber}/${result.competitorPosition}</small></td>
+                                        <td><strong>${result.finalPosition}</strong></td>
+                                        <td><strong>${result.firstName} ${result.lastName}</strong></td>
                                         <td>${result.unitName}</td>
                                         <td>${result.series1 ? `${result.series1.time || '-'} (${result.series1.status})` : '-'}</td>
                                         <td>${result.series2 ? `${result.series2.time || '-'} (${result.series2.status})` : '-'}</td>
-                                        <td><strong style="color: #28a745;">${result.bestTime || '-'}</strong></td>
-                                        <td>${result.bestTimeSeries || '-'}</td>
+                                        <td><strong style="color: #38a169;">${result.bestTime || '-'}</strong></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
                     </div>
-                ` : ''}
-            `;
+                `;
+            };
+
+            if (currentResultsView === 'M') {
+                html += renderTable('Klasyfikacja Mezczyzn', finalResults.male, 'gender-section-male');
+            } else if (currentResultsView === 'K') {
+                html += renderTable('Klasyfikacja Kobiet', finalResults.female, 'gender-section-female');
+            }
+
+            if (finalResults.pk.length > 0) {
+                const pkGender = currentResultsView === 'K' ? finalResults.pk.filter(r => r.gender === 'K') :
+                                 currentResultsView === 'M' ? finalResults.pk.filter(r => r.gender === 'M') : finalResults.pk;
+                if (pkGender.length > 0) {
+                    html += `
+                    <div style="margin-top: 24px; padding: 16px; background: #fffff0; border: 1px solid #ecc94b; border-radius: 8px;">
+                        <h4 style="color: #975a16; margin-bottom: 12px;">Zawodnicy Poza Konkurencja (PK)</h4>
+                        <table>
+                            <thead>
+                                <tr><th>Lp.</th><th>Imie i Nazwisko</th><th>Jednostka</th><th>I Seria</th><th>II Seria</th><th>Najlepszy czas</th></tr>
+                            </thead>
+                            <tbody>
+                                ${pkGender.map((result, index) => `
+                                    <tr>
+                                        <td><strong>PK-${index + 1}</strong></td>
+                                        <td><strong>${result.firstName} ${result.lastName}</strong></td>
+                                        <td>${result.unitName}</td>
+                                        <td>${result.series1 ? `${result.series1.time || '-'} (${result.series1.status})` : '-'}</td>
+                                        <td>${result.series2 ? `${result.series2.time || '-'} (${result.series2.status})` : '-'}</td>
+                                        <td><strong style="color: #38a169;">${result.bestTime || '-'}</strong></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>`;
+                }
+            }
+
+            container.innerHTML = html;
         }
-        
+
+        // ==================== PRINTING ====================
+
         function printSection(sectionId) {
             const eventName = document.getElementById('eventName').value;
             const eventLocation = document.getElementById('eventLocation').value;
             const currentDate = new Date().toLocaleDateString('pl-PL');
-            
+
             let printContent = '';
             let title = '';
-            
+
             if (sectionId === 'schema') {
-                title = 'SCHEMAT BIEGÓW - I SERIA';
+                title = 'SCHEMAT BIEGOW - I SERIA';
                 printContent = generateSchemaPrint();
             } else if (sectionId === 'series1') {
                 title = 'LISTA STARTOWA - I SERIA';
@@ -1291,10 +1443,10 @@
                 title = 'LISTA STARTOWA - II SERIA';
                 printContent = generateSeries2Print();
             } else if (sectionId === 'results') {
-                title = 'WYNIKI KOŃCOWE';
+                title = 'WYNIKI KONCOWE';
                 printContent = generateResultsPrint();
             }
-            
+
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
                 <!DOCTYPE html>
@@ -1303,241 +1455,88 @@
                         <title>OSF - ${title}</title>
                         <meta charset="UTF-8">
                         <style>
-                            @page {
-                                size: A4;
-                                margin: 15mm;
-                            }
-                            
-                            body {
-                                font-family: 'Arial', sans-serif;
-                                font-size: 12px;
-                                line-height: 1.4;
-                                color: #000;
-                                margin: 0;
-                                padding: 0;
-                            }
-                            
-                            .header {
-                                text-align: center;
-                                margin-bottom: 25px;
-                                padding-bottom: 15px;
-                                border-bottom: 3px double #000;
-                            }
-                            
-                            .logo {
-                                font-size: 18px;
-                                font-weight: bold;
-                                color: #2c3e50;
-                                margin-bottom: 5px;
-                            }
-                            
-                            .title {
-                                font-size: 16px;
-                                font-weight: bold;
-                                margin: 10px 0;
-                                text-transform: uppercase;
-                                letter-spacing: 1px;
-                            }
-                            
-                            .event-info {
-                                margin: 15px 0;
-                                padding: 10px;
-                                background: #f8f9fa;
-                                border-left: 4px solid #007bff;
-                            }
-                            
-                            .event-info .name {
-                                font-size: 14px;
-                                font-weight: bold;
-                                margin-bottom: 5px;
-                            }
-                            
-                            .event-info .location {
-                                font-size: 12px;
-                                color: #666;
-                            }
-                            
-                            .meta-info {
-                                display: flex;
-                                justify-content: space-between;
-                                margin: 15px 0;
-                                font-size: 10px;
-                                color: #666;
-                            }
-                            
-                            table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin: 20px 0;
-                                font-size: 11px;
-                            }
-                            
-                            th {
-                                background: #2c3e50;
-                                color: white;
-                                padding: 8px 6px;
-                                text-align: center;
-                                font-weight: bold;
-                                border: 1px solid #000;
-                                font-size: 10px;
-                            }
-                            
-                            td {
-                                padding: 6px;
-                                border: 1px solid #666;
-                                text-align: center;
-                                vertical-align: middle;
-                            }
-                            
-                            tr:nth-child(even) {
-                                background: #f9f9f9;
-                            }
-                            
-                            .race-number {
-                                font-weight: bold;
-                                font-size: 12px;
-                                background: #e9ecef !important;
-                            }
-                            
-                            .competitor-info {
-                                text-align: left;
-                                padding-left: 8px;
-                            }
-                            
-                            .competitor-code {
-                                font-weight: bold;
-                                color: #007bff;
-                            }
-                            
-                            .competitor-name {
-                                font-size: 10px;
-                                color: #333;
-                                margin-top: 2px;
-                            }
-                            
-                            .unit-name {
-                                font-size: 9px;
-                                color: #666;
-                                font-style: italic;
-                            }
-                            
-                            .time-cell {
-                                min-width: 60px;
-                                background: #fff;
-                            }
-                            
-                            .status-cell {
-                                min-width: 45px;
-                            }
-                            
-                            .result-position {
-                                font-weight: bold;
-                                font-size: 14px;
-                                color: #007bff;
-                            }
-                            
-                            .best-time {
-                                font-weight: bold;
-                                color: #28a745;
-                                font-size: 12px;
-                            }
-                            
-                            .pk-section {
-                                margin-top: 30px;
-                                padding: 15px;
-                                background: #fff3cd;
-                                border: 2px solid #ffc107;
-                                border-radius: 5px;
-                            }
-                            
-                            .pk-title {
-                                font-weight: bold;
-                                color: #856404;
-                                text-align: center;
-                                margin-bottom: 10px;
-                                font-size: 12px;
-                            }
-                            
-                            .footer {
-                                margin-top: 30px;
-                                padding-top: 15px;
-                                border-top: 2px solid #dee2e6;
-                                text-align: center;
-                                font-size: 10px;
-                                color: #666;
-                            }
-                            
-                            .signature-area {
-                                margin-top: 40px;
-                                display: flex;
-                                justify-content: space-between;
-                            }
-                            
-                            .signature-box {
-                                width: 200px;
-                                text-align: center;
-                            }
-                            
-                            .signature-line {
-                                border-top: 1px solid #000;
-                                margin-top: 40px;
-                                padding-top: 5px;
-                                font-size: 10px;
-                            }
-                            
-                            @media print {
-                                body { print-color-adjust: exact; }
-                                .no-print { display: none; }
-                            }
+                            @page { size: A4; margin: 15mm; }
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.4; color: #1a202c; margin: 0; padding: 0; }
+                            .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 3px double #2d3748; }
+                            .logo { font-size: 18px; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+                            .title { font-size: 16px; font-weight: bold; margin: 10px 0; text-transform: uppercase; letter-spacing: 1px; color: #2d3748; }
+                            .event-info { margin: 15px 0; padding: 10px; background: #f7fafc; border-left: 4px solid #3182ce; }
+                            .event-info .name { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+                            .event-info .location { font-size: 12px; color: #718096; }
+                            .meta-info { display: flex; justify-content: space-between; margin: 15px 0; font-size: 10px; color: #718096; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 11px; }
+                            th { background: #2d3748; color: white; padding: 8px 6px; text-align: center; font-weight: bold; border: 1px solid #2d3748; font-size: 10px; }
+                            td { padding: 6px; border: 1px solid #cbd5e0; text-align: center; vertical-align: middle; }
+                            tr:nth-child(even) { background: #f7fafc; }
+                            .race-number { font-weight: bold; font-size: 12px; background: #edf2f7 !important; }
+                            .competitor-info { text-align: left; padding-left: 8px; }
+                            .competitor-code { font-weight: bold; color: #3182ce; }
+                            .competitor-name { font-size: 10px; color: #2d3748; margin-top: 2px; }
+                            .unit-name { font-size: 9px; color: #718096; font-style: italic; }
+                            .time-cell { min-width: 60px; }
+                            .time-filled { font-weight: bold; color: #2d3748; }
+                            .status-cell { min-width: 45px; }
+                            .result-position { font-weight: bold; font-size: 14px; color: #3182ce; }
+                            .best-time { font-weight: bold; color: #38a169; font-size: 12px; }
+                            .section-title { color: #2d3748; font-size: 14px; font-weight: bold; padding: 8px 12px; margin-top: 24px; margin-bottom: 0; }
+                            .section-title-male { background: #ebf4ff; border-left: 4px solid #3182ce; }
+                            .section-title-female { background: #fff5f5; border-left: 4px solid #e53e3e; }
+                            .pk-section { margin-top: 30px; padding: 15px; background: #fffff0; border: 2px solid #ecc94b; border-radius: 5px; }
+                            .pk-title { font-weight: bold; color: #975a16; text-align: center; margin-bottom: 10px; font-size: 12px; }
+                            .footer { margin-top: 30px; padding-top: 15px; border-top: 2px solid #e2e8f0; text-align: center; font-size: 10px; color: #718096; }
+                            .signature-area { margin-top: 40px; display: flex; justify-content: space-between; }
+                            .signature-box { width: 200px; text-align: center; }
+                            .signature-line { border-top: 1px solid #2d3748; margin-top: 40px; padding-top: 5px; font-size: 10px; }
+                            @media print { body { print-color-adjust: exact; } .no-print { display: none; } }
                         </style>
                     </head>
                     <body>
                         <div class="header">
-                            <div class="logo">🏆 OSF - OŚRODEK SPRAWNOŚCI FIZYCZNEJ</div>
+                            <div class="logo">OSF - OSRODEK SPRAWNOSCI FIZYCZNEJ</div>
                             <div class="title">${title}</div>
                             ${(eventName || eventLocation) ? `
                                 <div class="event-info">
                                     ${eventName ? `<div class="name">${eventName}</div>` : ''}
-                                    ${eventLocation ? `<div class="location">Miejscowość: ${eventLocation}</div>` : ''}
+                                    ${eventLocation ? `<div class="location">Miejscowosc: ${eventLocation}</div>` : ''}
                                 </div>
                             ` : ''}
                             <div class="meta-info">
                                 <span>Data wydruku: ${currentDate}</span>
-                                <span>System OSF v1.0</span>
+                                <span>System OSF v2.0</span>
                             </div>
                         </div>
-                        
+
                         ${printContent}
-                        
+
                         <div class="signature-area">
                             <div class="signature-box">
-                                <div class="signature-line">Sędzia Główny</div>
+                                <div class="signature-line">Sedzia Glowny</div>
                             </div>
                             <div class="signature-box">
                                 <div class="signature-line">Organizator</div>
                             </div>
                         </div>
-                        
+
                         <div class="footer">
                             <div>Opracowanie: YO&GO Events | System OSF</div>
                             <div style="margin-top: 5px;">Wydrukowano: ${new Date().toLocaleString('pl-PL')}</div>
                         </div>
-                        
+
                         <div class="no-print" style="position: fixed; top: 10px; right: 10px;">
-                            <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">🖨️ Drukuj</button>
-                            <button onclick="window.close()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">✖️ Zamknij</button>
+                            <button onclick="window.print()" style="padding: 10px 20px; background: #3182ce; color: white; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">Drukuj</button>
+                            <button onclick="window.close()" style="padding: 10px 20px; background: #e53e3e; color: white; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">Zamknij</button>
                         </div>
                     </body>
                 </html>
             `);
             printWindow.document.close();
         }
-        
+
         function generateSchemaPrint() {
             if (schema.length === 0) {
-                return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak zdefiniowanych biegów w schemacie.</p>';
+                return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak zdefiniowanych biegow w schemacie.</p>';
             }
-            
+
             return `
                 <table>
                     <thead>
@@ -1556,36 +1555,35 @@
                                     ${race.leftLane ? `
                                         <div class="competitor-code">${race.leftLane.unitNumber}/${race.leftLane.position}</div>
                                         <div class="competitor-name">${race.leftLane.name}</div>
-                                        <div class="unit-name">${units.find(u => u.number === race.leftLane.unitNumber)?.name || ''}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.leftLane.unitNumber)}</div>
                                     ` : '<span style="color: #999;">-</span>'}
                                 </td>
                                 <td class="competitor-info">
                                     ${race.rightLane ? `
                                         <div class="competitor-code">${race.rightLane.unitNumber}/${race.rightLane.position}</div>
                                         <div class="competitor-name">${race.rightLane.name}</div>
-                                        <div class="unit-name">${units.find(u => u.number === race.rightLane.unitNumber)?.name || ''}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.rightLane.unitNumber)}</div>
                                     ` : '<span style="color: #999;">-</span>'}
                                 </td>
-                                <td style="background: #f8f9fa;"></td>
+                                <td style="background: #f7fafc;"></td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
-                
-                <div style="margin-top: 30px; padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3;">
+
+                <div style="margin-top: 30px; padding: 15px; background: #ebf8ff; border-left: 4px solid #3182ce;">
                     <strong>Informacje:</strong><br>
-                    • Liczba biegów: ${schema.length}<br>
-                    • Zawodnicy PK nie biorą udziału w I serii<br>
-                    • W II serii nastąpi bezwzględna zmiana torów
+                    Liczba biegow: ${schema.length}<br>
+                    W II serii nastapi bezwzgledna zmiana torow
                 </div>
             `;
         }
-        
+
         function generateSeries1Print() {
             if (series1Results.length === 0) {
                 return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak listy startowej I serii.</p>';
             }
-            
+
             return `
                 <table>
                     <thead>
@@ -1600,51 +1598,83 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${series1Results.map((race, index) => `
+                        ${series1Results.map((race, index) => {
+                            const leftHasResult = race.leftResult && race.leftResult.time;
+                            const rightHasResult = race.rightResult && race.rightResult.time;
+                            return `
                             <tr>
                                 <td class="race-number">${index + 1}</td>
                                 <td class="competitor-info">
                                     ${race.leftLane ? `
                                         <div class="competitor-code">${race.leftLane.unitNumber}/${race.leftLane.position}</div>
                                         <div class="competitor-name">${race.leftLane.name}</div>
-                                        <div class="unit-name">${units.find(u => u.number === race.leftLane.unitNumber)?.name || ''}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.leftLane.unitNumber)}</div>
                                     ` : '-'}
                                 </td>
-                                <td class="time-cell">_____:_____</td>
-                                <td class="status-cell">_____</td>
+                                <td class="time-cell">${leftHasResult ? `<span class="time-filled">${race.leftResult.time}</span>` : '_____:_____'}</td>
+                                <td class="status-cell">${leftHasResult ? race.leftResult.status : '_____'}</td>
                                 <td class="competitor-info">
                                     ${race.rightLane ? `
                                         <div class="competitor-code">${race.rightLane.unitNumber}/${race.rightLane.position}</div>
                                         <div class="competitor-name">${race.rightLane.name}</div>
-                                        <div class="unit-name">${units.find(u => u.number === race.rightLane.unitNumber)?.name || ''}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.rightLane.unitNumber)}</div>
                                     ` : '-'}
                                 </td>
-                                <td class="time-cell">_____:_____</td>
-                                <td class="status-cell">_____</td>
+                                <td class="time-cell">${rightHasResult ? `<span class="time-filled">${race.rightResult.time}</span>` : '_____:_____'}</td>
+                                <td class="status-cell">${rightHasResult ? race.rightResult.status : '_____'}</td>
                             </tr>
-                        `).join('')}
+                        `}).join('')}
                     </tbody>
                 </table>
-                
-                <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6;">
-                    <strong>Oznaczenia statusów:</strong> OK - ukończył, DDF - nie ukończył, DSQ - dyskwalifikacja
+
+                <div style="margin-top: 20px; padding: 10px; background: #f7fafc; border: 1px solid #e2e8f0;">
+                    <strong>Oznaczenia statusow:</strong> OK - ukonczyl, DDF - nie ukonczyl, DSQ - dyskwalifikacja
                 </div>
             `;
         }
-        
+
         function generateSeries2Print() {
             if (series2Results.length === 0) {
                 return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak listy startowej II serii.</p>';
             }
-            
-            return `
-                <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107;">
+
+            // Separate by gender
+            const maleRaces = [];
+            const femaleRaces = [];
+
+            series2Results.forEach(race => {
+                const compId = (race.leftLane && race.leftLane.competitorId) || (race.rightLane && race.rightLane.competitorId);
+                if (compId && getCompetitorGender(compId) === 'K') {
+                    femaleRaces.push(race);
+                } else {
+                    maleRaces.push(race);
+                }
+            });
+
+            let content = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #fffff0; border-left: 4px solid #ecc94b;">
                     <strong>ZASADY II SERII:</strong><br>
-                    • Bezwzględna zmiana torów (lewy ↔ prawy)<br>
-                    • Kolejność: DDF/DSQ → najgorsze czasy → najlepsze czasy<br>
-                    • Pierwsze biegi mogą być pojedyncze przy nierównej liczbie zawodników
+                    Bezwzgledna zmiana torow (lewy - prawy)<br>
+                    Kolejnosc: DDF/DSQ - najgorsze czasy - najlepsze czasy<br>
+                    Oddzielne drabinki dla kobiet i mezczyzn
                 </div>
-                
+            `;
+
+            if (maleRaces.length > 0) {
+                content += `<div class="section-title section-title-male">MEZCZYZNI</div>`;
+                content += generateSeries2PrintTable(maleRaces, 0);
+            }
+
+            if (femaleRaces.length > 0) {
+                content += `<div class="section-title section-title-female" style="margin-top: 24px;">KOBIETY</div>`;
+                content += generateSeries2PrintTable(femaleRaces, maleRaces.length);
+            }
+
+            return content;
+        }
+
+        function generateSeries2PrintTable(races, startIndex) {
+            return `
                 <table>
                     <thead>
                         <tr>
@@ -1660,205 +1690,424 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${series2Results.map((race, index) => `
+                        ${races.map((race, index) => {
+                            const leftHasResult = race.leftResult && race.leftResult.time;
+                            const rightHasResult = race.rightResult && race.rightResult.time;
+                            return `
                             <tr>
-                                <td class="race-number">${index + 1}</td>
+                                <td class="race-number">${startIndex + index + 1}</td>
                                 <td class="competitor-info">
                                     ${race.leftLane ? `
                                         <div class="competitor-code">${race.leftLane.unitNumber}/${race.leftLane.position}</div>
                                         <div class="competitor-name">${race.leftLane.name}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.leftLane.unitNumber)}</div>
                                     ` : '-'}
                                 </td>
                                 <td style="font-size: 9px;">
                                     ${race.leftLane ? `${race.leftLane.result.time || '-'}<br>(${race.leftLane.result.status})` : '-'}
                                 </td>
-                                <td class="time-cell">_____:_____</td>
-                                <td class="status-cell">_____</td>
+                                <td class="time-cell">${leftHasResult ? `<span class="time-filled">${race.leftResult.time}</span>` : '_____:_____'}</td>
+                                <td class="status-cell">${leftHasResult ? race.leftResult.status : '_____'}</td>
                                 <td class="competitor-info">
                                     ${race.rightLane ? `
                                         <div class="competitor-code">${race.rightLane.unitNumber}/${race.rightLane.position}</div>
                                         <div class="competitor-name">${race.rightLane.name}</div>
+                                        <div class="unit-name">${getUnitNameByNumber(race.rightLane.unitNumber)}</div>
                                     ` : '-'}
                                 </td>
                                 <td style="font-size: 9px;">
                                     ${race.rightLane ? `${race.rightLane.result.time || '-'}<br>(${race.rightLane.result.status})` : '-'}
                                 </td>
-                                <td class="time-cell">_____:_____</td>
-                                <td class="status-cell">_____</td>
+                                <td class="time-cell">${rightHasResult ? `<span class="time-filled">${race.rightResult.time}</span>` : '_____:_____'}</td>
+                                <td class="status-cell">${rightHasResult ? race.rightResult.status : '_____'}</td>
                             </tr>
-                        `).join('')}
+                        `}).join('')}
                     </tbody>
                 </table>
             `;
         }
-        
+
         function generateResultsPrint() {
-            if (series1Results.length === 0 || series2Results.length === 0) {
-                return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak wyników do wyświetlenia.</p>';
+            if (series1Results.length === 0) {
+                return '<p style="text-align: center; font-style: italic; margin: 50px;">Brak wynikow do wyswietlenia.</p>';
             }
-            
+
             const finalResults = calculateFinalResults();
             let content = '';
-            
+
+            const renderResultTable = (results) => {
+                return `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">MIEJSCE</th>
+                                <th style="width: 30%;">ZAWODNIK</th>
+                                <th style="width: 20%;">JEDNOSTKA</th>
+                                <th style="width: 80px;">I SERIA</th>
+                                <th style="width: 80px;">II SERIA</th>
+                                <th style="width: 80px;">NAJLEPSZY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.map(result => `
+                                <tr>
+                                    <td class="result-position">${result.finalPosition}</td>
+                                    <td class="competitor-info">
+                                        <div class="competitor-name" style="font-weight: bold;">${result.firstName} ${result.lastName}</div>
+                                    </td>
+                                    <td style="text-align: left; padding-left: 8px;">${result.unitName}</td>
+                                    <td style="font-size: 10px;">
+                                        ${result.series1 ? `${result.series1.time || '-'}<br><span style="color: #718096;">(${result.series1.status})</span>` : '-'}
+                                    </td>
+                                    <td style="font-size: 10px;">
+                                        ${result.series2 ? `${result.series2.time || '-'}<br><span style="color: #718096;">(${result.series2.status})</span>` : '-'}
+                                    </td>
+                                    <td class="best-time">${result.bestTime || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            };
+
             if (finalResults.male.length > 0) {
-                content += `
-                    <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 20px;">KLASYFIKACJA MĘŻCZYZN</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 60px;">MIEJSCE</th>
-                                <th style="width: 30%;">ZAWODNIK</th>
-                                <th style="width: 20%;">JEDNOSTKA</th>
-                                <th style="width: 80px;">I SERIA</th>
-                                <th style="width: 80px;">II SERIA</th>
-                                <th style="width: 80px;">NAJLEPSZY</th>
-                                <th style="width: 50px;">SERIA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${finalResults.male.map(result => `
-                                <tr>
-                                    <td class="result-position">${result.finalPosition}</td>
-                                    <td class="competitor-info">
-                                        <div class="competitor-name" style="font-weight: bold;">${result.firstName} ${result.lastName}</div>
-                                        <div class="competitor-code">${result.unitNumber}/${result.competitorPosition}</div>
-                                    </td>
-                                    <td style="text-align: left; padding-left: 8px;">${result.unitName}</td>
-                                    <td style="font-size: 10px;">
-                                        ${result.series1 ? `${result.series1.time || '-'}<br><span style="color: #666;">(${result.series1.status})</span>` : '-'}
-                                    </td>
-                                    <td style="font-size: 10px;">
-                                        ${result.series2 ? `${result.series2.time || '-'}<br><span style="color: #666;">(${result.series2.status})</span>` : '-'}
-                                    </td>
-                                    <td class="best-time">${result.bestTime || '-'}</td>
-                                    <td>${result.bestTimeSeries || '-'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+                content += `<div class="section-title section-title-male">KLASYFIKACJA MEZCZYZN</div>`;
+                content += renderResultTable(finalResults.male);
             }
-            
+
             if (finalResults.female.length > 0) {
-                content += `
-                    <h3 style="color: #2c3e50; border-bottom: 2px solid #e91e63; padding-bottom: 5px; margin-top: 30px;">KLASYFIKACJA KOBIET</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 60px;">MIEJSCE</th>
-                                <th style="width: 30%;">ZAWODNIK</th>
-                                <th style="width: 20%;">JEDNOSTKA</th>
-                                <th style="width: 80px;">I SERIA</th>
-                                <th style="width: 80px;">II SERIA</th>
-                                <th style="width: 80px;">NAJLEPSZY</th>
-                                <th style="width: 50px;">SERIA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${finalResults.female.map(result => `
-                                <tr>
-                                    <td class="result-position">${result.finalPosition}</td>
-                                    <td class="competitor-info">
-                                        <div class="competitor-name" style="font-weight: bold;">${result.firstName} ${result.lastName}</div>
-                                        <div class="competitor-code">${result.unitNumber}/${result.competitorPosition}</div>
-                                    </td>
-                                    <td style="text-align: left; padding-left: 8px;">${result.unitName}</td>
-                                    <td style="font-size: 10px;">
-                                        ${result.series1 ? `${result.series1.time || '-'}<br><span style="color: #666;">(${result.series1.status})</span>` : '-'}
-                                    </td>
-                                    <td style="font-size: 10px;">
-                                        ${result.series2 ? `${result.series2.time || '-'}<br><span style="color: #666;">(${result.series2.status})</span>` : '-'}
-                                    </td>
-                                    <td class="best-time">${result.bestTime || '-'}</td>
-                                    <td>${result.bestTimeSeries || '-'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+                content += `<div class="section-title section-title-female" style="margin-top: 24px;">KLASYFIKACJA KOBIET</div>`;
+                content += renderResultTable(finalResults.female);
             }
-            
+
             if (finalResults.pk.length > 0) {
                 content += `
                     <div class="pk-section">
-                        <div class="pk-title">🔸 ZAWODNICY POZA KONKURENCJĄ (PK) 🔸</div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 60px;">LP.</th>
-                                    <th style="width: 30%;">ZAWODNIK</th>
-                                    <th style="width: 20%;">JEDNOSTKA</th>
-                                    <th style="width: 80px;">I SERIA</th>
-                                    <th style="width: 80px;">II SERIA</th>
-                                    <th style="width: 80px;">NAJLEPSZY</th>
-                                    <th style="width: 50px;">SERIA</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${finalResults.pk.map((result, index) => `
-                                    <tr style="background: #fff3cd;">
-                                        <td style="font-weight: bold; color: #856404;">PK-${index + 1}</td>
-                                        <td class="competitor-info">
-                                            <div class="competitor-name" style="font-weight: bold;">${result.firstName} ${result.lastName}</div>
-                                            <div class="competitor-code">${result.unitNumber}/${result.competitorPosition}</div>
-                                        </td>
-                                        <td style="text-align: left; padding-left: 8px;">${result.unitName}</td>
-                                        <td style="font-size: 10px;">
-                                            ${result.series1 ? `${result.series1.time || '-'}<br><span style="color: #666;">(${result.series1.status})</span>` : '-'}
-                                        </td>
-                                        <td style="font-size: 10px;">
-                                            ${result.series2 ? `${result.series2.time || '-'}<br><span style="color: #666;">(${result.series2.status})</span>` : '-'}
-                                        </td>
-                                        <td class="best-time">${result.bestTime || '-'}</td>
-                                        <td>${result.bestTimeSeries || '-'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                        <div class="pk-title">ZAWODNICY POZA KONKURENCJA (PK)</div>
+                        ${renderResultTable(finalResults.pk)}
                     </div>
                 `;
             }
-            
+
             const totalCompetitors = finalResults.male.length + finalResults.female.length;
             const totalPK = finalResults.pk.length;
             const totalDQ = [...finalResults.male, ...finalResults.female].filter(r => r.finalPosition === 'DQ').length;
-            
+
             content += `
-                <div style="margin-top: 30px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50;">
-                    <h4 style="margin-bottom: 10px; color: #2e7d32;">PODSUMOWANIE ZAWODÓW</h4>
+                <div style="margin-top: 30px; padding: 15px; background: #f0fff4; border-left: 4px solid #38a169;">
+                    <h4 style="margin-bottom: 10px; color: #276749;">PODSUMOWANIE ZAWODOW</h4>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 11px;">
                         <div><strong>Zawodnicy w konkurencji:</strong> ${totalCompetitors}</div>
                         <div><strong>Zawodnicy PK:</strong> ${totalPK}</div>
-                        <div><strong>Mężczyźni:</strong> ${finalResults.male.length}</div>
+                        <div><strong>Mezczyzni:</strong> ${finalResults.male.length}</div>
                         <div><strong>Kobiety:</strong> ${finalResults.female.length}</div>
                         <div><strong>Dyskwalifikacje:</strong> ${totalDQ}</div>
-                        <div><strong>Łączna liczba biegów:</strong> ${series1Results.length + series2Results.length}</div>
+                        <div><strong>Laczna liczba biegow:</strong> ${series1Results.length + series2Results.length}</div>
                     </div>
                 </div>
             `;
-            
+
             return content;
         }
-        
-        // Event listeners
+
+        // ==================== LIVE RESULTS (SECOND SCREEN) ====================
+
+        function openLiveResults() {
+            if (liveResultsWindow && !liveResultsWindow.closed) {
+                liveResultsWindow.focus();
+                updateLiveResults();
+                return;
+            }
+
+            liveResultsWindow = window.open('', 'liveResults', 'width=1200,height=800');
+
+            liveResultsWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>OSF - Wyniki na zywo</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Inter', 'Segoe UI', sans-serif;
+                            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                            color: #e2e8f0;
+                            min-height: 100vh;
+                            overflow-x: hidden;
+                        }
+                        .live-header {
+                            background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+                            padding: 20px 40px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-bottom: 2px solid #334155;
+                        }
+                        .live-header-left h1 {
+                            font-size: 24px;
+                            font-weight: 800;
+                            color: #f1f5f9;
+                            letter-spacing: 2px;
+                            text-transform: uppercase;
+                        }
+                        .live-header-left p {
+                            font-size: 13px;
+                            color: #94a3b8;
+                            margin-top: 2px;
+                        }
+                        .live-indicator {
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            background: rgba(239, 68, 68, 0.15);
+                            padding: 8px 16px;
+                            border-radius: 20px;
+                            border: 1px solid rgba(239, 68, 68, 0.3);
+                        }
+                        .live-dot {
+                            width: 10px;
+                            height: 10px;
+                            background: #ef4444;
+                            border-radius: 50%;
+                            animation: pulse 1.5s ease-in-out infinite;
+                        }
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+                            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+                        }
+                        .live-indicator span {
+                            font-size: 12px;
+                            font-weight: 700;
+                            color: #ef4444;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                        }
+                        .live-content {
+                            display: flex;
+                            gap: 24px;
+                            padding: 24px;
+                            min-height: calc(100vh - 80px);
+                        }
+                        .live-section {
+                            background: rgba(30, 41, 59, 0.8);
+                            border-radius: 12px;
+                            border: 1px solid #334155;
+                            overflow: hidden;
+                            display: flex;
+                            flex-direction: column;
+                        }
+                        .live-section-header {
+                            padding: 14px 20px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            text-transform: uppercase;
+                            letter-spacing: 1.5px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        }
+                        .live-section-male .live-section-header {
+                            background: linear-gradient(90deg, #1e40af, #1d4ed8);
+                            color: #bfdbfe;
+                        }
+                        .live-section-female .live-section-header {
+                            background: linear-gradient(90deg, #9f1239, #be123c);
+                            color: #fecdd3;
+                        }
+                        .live-section-header .count {
+                            font-size: 11px;
+                            opacity: 0.8;
+                            font-weight: 500;
+                        }
+                        .live-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            flex: 1;
+                        }
+                        .live-table thead th {
+                            background: rgba(15, 23, 42, 0.6);
+                            padding: 10px 12px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                            color: #94a3b8;
+                            text-align: left;
+                            border-bottom: 1px solid #334155;
+                            position: sticky;
+                            top: 0;
+                        }
+                        .live-table tbody td {
+                            padding: 8px 12px;
+                            font-size: 13px;
+                            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+                        }
+                        .live-table tbody tr:hover {
+                            background: rgba(51, 65, 85, 0.3);
+                        }
+                        .live-table tbody tr.top-3 td:first-child {
+                            font-weight: 800;
+                        }
+                        .live-table tbody tr.rank-1 { background: rgba(234, 179, 8, 0.08); }
+                        .live-table tbody tr.rank-1 td:first-child { color: #fbbf24; }
+                        .live-table tbody tr.rank-2 { background: rgba(148, 163, 184, 0.08); }
+                        .live-table tbody tr.rank-2 td:first-child { color: #94a3b8; }
+                        .live-table tbody tr.rank-3 { background: rgba(180, 83, 9, 0.08); }
+                        .live-table tbody tr.rank-3 td:first-child { color: #d97706; }
+                        .live-pos { font-weight: 700; font-size: 15px; text-align: center; min-width: 36px; }
+                        .live-name { font-weight: 600; color: #f1f5f9; }
+                        .live-team { color: #94a3b8; font-size: 12px; }
+                        .live-time { font-family: 'Courier New', monospace; font-size: 13px; color: #cbd5e0; }
+                        .live-best { font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px; color: #4ade80; }
+                        .live-dq { color: #f87171; font-weight: 600; }
+                        .live-no-data { text-align: center; padding: 40px; color: #64748b; font-style: italic; }
+                        .live-timestamp {
+                            text-align: center;
+                            padding: 8px;
+                            font-size: 11px;
+                            color: #475569;
+                            background: #0f172a;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="live-header">
+                        <div class="live-header-left">
+                            <h1>OSF - Klasyfikacja</h1>
+                            <p id="liveEventName"></p>
+                        </div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            <span>Na zywo</span>
+                        </div>
+                    </div>
+                    <div class="live-content" id="liveContent">
+                        <div class="live-no-data" style="width:100%; padding: 80px;">Oczekiwanie na wyniki...</div>
+                    </div>
+                    <div class="live-timestamp" id="liveTimestamp"></div>
+                </body>
+                </html>
+            `);
+            liveResultsWindow.document.close();
+
+            updateLiveResults();
+        }
+
+        function updateLiveResults() {
+            if (!liveResultsWindow || liveResultsWindow.closed) return;
+
+            const finalResults = calculateFinalResults();
+            const maleResults = finalResults.male.filter(r => r.bestTime || r.finalPosition === 'DQ');
+            const femaleResults = finalResults.female.filter(r => r.bestTime || r.finalPosition === 'DQ');
+
+            const eventName = document.getElementById('eventName').value;
+            const eventLocation = document.getElementById('eventLocation').value;
+
+            const liveEventNameEl = liveResultsWindow.document.getElementById('liveEventName');
+            if (liveEventNameEl) {
+                liveEventNameEl.textContent = [eventName, eventLocation].filter(Boolean).join(' | ');
+            }
+
+            const container = liveResultsWindow.document.getElementById('liveContent');
+            if (!container) return;
+
+            if (maleResults.length === 0 && femaleResults.length === 0) {
+                container.innerHTML = '<div class="live-no-data" style="width:100%; padding: 80px;">Oczekiwanie na wyniki...</div>';
+                return;
+            }
+
+            // Proportional sizing based on participant count
+            const totalCount = maleResults.length + femaleResults.length;
+            const maleFlex = totalCount > 0 ? Math.max(maleResults.length / totalCount, 0.2) : 0.5;
+            const femaleFlex = totalCount > 0 ? Math.max(femaleResults.length / totalCount, 0.2) : 0.5;
+
+            const renderLiveTable = (results) => {
+                if (results.length === 0) return '<div class="live-no-data">Brak wynikow</div>';
+                return `
+                    <table class="live-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px; text-align:center;">#</th>
+                                <th>Zawodnik</th>
+                                <th>Jednostka</th>
+                                <th style="text-align:center;">I Seria</th>
+                                <th style="text-align:center;">II Seria</th>
+                                <th style="text-align:center;">Najlepszy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.map(r => {
+                                const rankClass = r.finalPosition === 1 ? 'rank-1 top-3' : r.finalPosition === 2 ? 'rank-2 top-3' : r.finalPosition === 3 ? 'rank-3 top-3' : '';
+                                return `
+                                <tr class="${rankClass}">
+                                    <td class="live-pos">${r.finalPosition === 'DQ' ? '<span class="live-dq">DQ</span>' : r.finalPosition}</td>
+                                    <td class="live-name">${r.firstName} ${r.lastName}</td>
+                                    <td class="live-team">${r.unitName}</td>
+                                    <td class="live-time" style="text-align:center;">${r.series1 && r.series1.time ? (r.series1.status !== 'OK' ? `<span class="live-dq">${r.series1.status}</span>` : r.series1.time) : '-'}</td>
+                                    <td class="live-time" style="text-align:center;">${r.series2 && r.series2.time ? (r.series2.status !== 'OK' ? `<span class="live-dq">${r.series2.status}</span>` : r.series2.time) : '-'}</td>
+                                    <td style="text-align:center;" class="live-best">${r.bestTime || '-'}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            };
+
+            let html = '';
+
+            if (maleResults.length > 0) {
+                html += `
+                <div class="live-section live-section-male" style="flex: ${maleFlex};">
+                    <div class="live-section-header">
+                        <span>Mezczyzni</span>
+                        <span class="count">${maleResults.length} zawodnikow</span>
+                    </div>
+                    ${renderLiveTable(maleResults)}
+                </div>`;
+            }
+
+            if (femaleResults.length > 0) {
+                html += `
+                <div class="live-section live-section-female" style="flex: ${femaleFlex};">
+                    <div class="live-section-header">
+                        <span>Kobiety</span>
+                        <span class="count">${femaleResults.length} zawodniczek</span>
+                    </div>
+                    ${renderLiveTable(femaleResults)}
+                </div>`;
+            }
+
+            container.innerHTML = html;
+
+            const timestamp = liveResultsWindow.document.getElementById('liveTimestamp');
+            if (timestamp) {
+                timestamp.textContent = 'Ostatnia aktualizacja: ' + new Date().toLocaleTimeString('pl-PL');
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+
         document.getElementById('editRaceModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeEditModal();
             }
         });
-        
+
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && document.getElementById('editRaceModal').classList.contains('active')) {
                 closeEditModal();
             }
         });
-        
+
         // Initialize
         updateUnitsTable();
         updateCompetitorUnitSelect();
         updateCompetitorsList();
         updateEditModalsSelects();
-        
+
         setTimeout(() => {
             updateQuickPreview();
         }, 100);
