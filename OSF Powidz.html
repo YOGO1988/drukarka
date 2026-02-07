@@ -1273,6 +1273,20 @@
                     }
                 }
 
+                // Determine display result when no valid time
+                let displayResult = bestTime || '-';
+                if (!bestTime) {
+                    const s1status = comp.series1 ? comp.series1.status : null;
+                    const s2status = comp.series2 ? comp.series2.status : null;
+                    const hasDSQ = s1status === 'DSQ' || s2status === 'DSQ';
+                    const hasDDF = s1status === 'DDF' || s2status === 'DDF';
+                    if (hasDSQ) {
+                        displayResult = 'DSQ';
+                    } else if (hasDDF) {
+                        displayResult = 'DDF';
+                    }
+                }
+
                 results.push({
                     ...competitorData,
                     unitName: unit ? unit.name : '',
@@ -1282,7 +1296,8 @@
                     series2: comp.series2,
                     bestTime: bestTime,
                     bestTimeSeries: bestTimeSeries,
-                    bestTimeSeconds: bestTimeSeconds
+                    bestTimeSeconds: bestTimeSeconds,
+                    displayResult: displayResult
                 });
             });
 
@@ -1377,7 +1392,7 @@
                                         <td>${result.unitName}</td>
                                         <td>${result.series1 ? `${result.series1.time || '-'} (${result.series1.status})` : '-'}</td>
                                         <td>${result.series2 ? `${result.series2.time || '-'} (${result.series2.status})` : '-'}</td>
-                                        <td><strong style="color: #38a169;">${result.bestTime || '-'}</strong></td>
+                                        <td><strong style="color: #38a169;">${result.displayResult}</strong></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1411,7 +1426,7 @@
                                         <td>${result.unitName}</td>
                                         <td>${result.series1 ? `${result.series1.time || '-'} (${result.series1.status})` : '-'}</td>
                                         <td>${result.series2 ? `${result.series2.time || '-'} (${result.series2.status})` : '-'}</td>
-                                        <td><strong style="color: #38a169;">${result.bestTime || '-'}</strong></td>
+                                        <td><strong style="color: #38a169;">${result.displayResult}</strong></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1455,29 +1470,29 @@
                         <title>OSF - ${title}</title>
                         <meta charset="UTF-8">
                         <style>
-                            @page { size: A4; margin: 15mm; }
-                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.4; color: #1a202c; margin: 0; padding: 0; }
+                            @page { size: A4 portrait; margin: 15mm; }
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; line-height: 1.4; color: #1a202c; margin: 0; padding: 0; }
                             .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 3px double #2d3748; }
-                            .logo { font-size: 18px; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
-                            .title { font-size: 16px; font-weight: bold; margin: 10px 0; text-transform: uppercase; letter-spacing: 1px; color: #2d3748; }
+                            .logo { font-size: 20px; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+                            .title { font-size: 18px; font-weight: bold; margin: 10px 0; text-transform: uppercase; letter-spacing: 1px; color: #2d3748; }
                             .event-info { margin: 15px 0; padding: 10px; background: #f7fafc; border-left: 4px solid #3182ce; }
-                            .event-info .name { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
-                            .event-info .location { font-size: 12px; color: #718096; }
-                            .meta-info { display: flex; justify-content: space-between; margin: 15px 0; font-size: 10px; color: #718096; }
-                            table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 11px; }
-                            th { background: #2d3748; color: white; padding: 8px 6px; text-align: center; font-weight: bold; border: 1px solid #2d3748; font-size: 10px; }
-                            td { padding: 6px; border: 1px solid #cbd5e0; text-align: center; vertical-align: middle; }
+                            .event-info .name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+                            .event-info .location { font-size: 14px; color: #718096; }
+                            .meta-info { display: flex; justify-content: space-between; margin: 15px 0; font-size: 11px; color: #718096; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; }
+                            th { background: #2d3748; color: white; padding: 8px 6px; text-align: center; font-weight: bold; border: 1px solid #2d3748; font-size: 12px; }
+                            td { padding: 8px 6px; border: 1px solid #cbd5e0; text-align: center; vertical-align: middle; }
                             tr:nth-child(even) { background: #f7fafc; }
-                            .race-number { font-weight: bold; font-size: 12px; background: #edf2f7 !important; }
+                            .race-number { font-weight: bold; font-size: 14px; background: #edf2f7 !important; }
                             .competitor-info { text-align: left; padding-left: 8px; }
-                            .competitor-code { font-weight: bold; color: #3182ce; }
-                            .competitor-name { font-size: 10px; color: #2d3748; margin-top: 2px; }
-                            .unit-name { font-size: 9px; color: #718096; font-style: italic; }
+                            .competitor-code { font-weight: bold; color: #3182ce; font-size: 14px; }
+                            .competitor-name { font-size: 13px; color: #2d3748; margin-top: 2px; }
+                            .unit-name { font-size: 11px; color: #718096; font-style: italic; }
                             .time-cell { min-width: 60px; }
                             .time-filled { font-weight: bold; color: #2d3748; }
                             .status-cell { min-width: 45px; }
-                            .result-position { font-weight: bold; font-size: 14px; color: #3182ce; }
-                            .best-time { font-weight: bold; color: #38a169; font-size: 12px; }
+                            .result-position { font-weight: bold; font-size: 16px; color: #3182ce; }
+                            .best-time { font-weight: bold; color: #38a169; font-size: 14px; }
                             .section-title { color: #2d3748; font-size: 14px; font-weight: bold; padding: 8px 12px; margin-top: 24px; margin-bottom: 0; }
                             .section-title-male { background: #ebf4ff; border-left: 4px solid #3182ce; }
                             .section-title-female { background: #fff5f5; border-left: 4px solid #e53e3e; }
@@ -1513,7 +1528,7 @@
                                 <div class="signature-line">Sedzia Glowny</div>
                             </div>
                             <div class="signature-box">
-                                <div class="signature-line">Organizator</div>
+                                <div class="signature-line">Sedzia techniczny</div>
                             </div>
                         </div>
 
@@ -1762,7 +1777,7 @@
                                     <td style="font-size: 10px;">
                                         ${result.series2 ? `${result.series2.time || '-'}<br><span style="color: #718096;">(${result.series2.status})</span>` : '-'}
                                     </td>
-                                    <td class="best-time">${result.bestTime || '-'}</td>
+                                    <td class="best-time">${result.displayResult}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -2031,7 +2046,7 @@
                                 <th>Jednostka</th>
                                 <th style="text-align:center;">I Seria</th>
                                 <th style="text-align:center;">II Seria</th>
-                                <th style="text-align:center;">Najlepszy</th>
+                                <th style="text-align:center;">Wynik</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2044,7 +2059,7 @@
                                     <td class="live-team">${r.unitName}</td>
                                     <td class="live-time" style="text-align:center;">${r.series1 && r.series1.time ? (r.series1.status !== 'OK' ? `<span class="live-dq">${r.series1.status}</span>` : r.series1.time) : '-'}</td>
                                     <td class="live-time" style="text-align:center;">${r.series2 && r.series2.time ? (r.series2.status !== 'OK' ? `<span class="live-dq">${r.series2.status}</span>` : r.series2.time) : '-'}</td>
-                                    <td style="text-align:center;" class="live-best">${r.bestTime || '-'}</td>
+                                    <td style="text-align:center;" class="live-best">${r.displayResult}</td>
                                 </tr>`;
                             }).join('')}
                         </tbody>
