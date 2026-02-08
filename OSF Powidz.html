@@ -88,6 +88,12 @@
                     <input type="text" id="eventName" placeholder="Nazwa zawodow" style="flex: 1;">
                     <input type="text" id="eventLocation" placeholder="Miejscowosc" style="flex: 1;">
                 </div>
+                <div class="flex mt-20">
+                    <button onclick="saveAllData()" class="btn-success">Zapisz dane</button>
+                    <button onclick="loadAllData()" class="btn-secondary">Wczytaj dane</button>
+                    <button onclick="clearAllData()" class="btn-danger">Wyczysc wszystko</button>
+                    <span id="saveStatus" style="color: #38a169; font-size: 12px;"></span>
+                </div>
             </div>
 
             <!-- Jednostki -->
@@ -134,6 +140,15 @@
                         <label><input type="checkbox" id="competitorPK"> PK (Poza Konkurencja)</label>
                         <button onclick="addCompetitor()" class="btn-success">Dodaj Zawodnika</button>
                     </div>
+                </div>
+                <div class="card">
+                    <h3>Import z CSV</h3>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 8px;">Format CSV: <code>imie;nazwisko;jednostka;plec;stopien</code> (stopien opcjonalny, plec: M lub K, separator: srednik lub przecinek)</p>
+                    <div class="flex">
+                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="flex:1;">
+                        <button onclick="importCSV()" class="btn-success">Importuj CSV</button>
+                    </div>
+                    <div id="csvImportStatus" style="margin-top: 8px; font-size: 12px;"></div>
                 </div>
                 <div class="card">
                     <h3>Lista Zawodnikow</h3>
@@ -1835,6 +1850,9 @@
             }
 
             liveResultsWindow = window.open('', 'liveResults', 'width=1200,height=800');
+            liveShowWomen = true;
+            liveScrollDirection = 1;
+            liveScrollPos = 0;
 
             liveResultsWindow.document.write(`
                 <!DOCTYPE html>
@@ -1844,144 +1862,62 @@
                     <meta charset="UTF-8">
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body {
                             font-family: 'Inter', 'Segoe UI', sans-serif;
                             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
                             color: #e2e8f0;
-                            min-height: 100vh;
-                            overflow-x: hidden;
+                            height: 100vh;
+                            overflow: hidden;
+                            display: flex;
+                            flex-direction: column;
                         }
                         .live-header {
                             background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
-                            padding: 20px 40px;
+                            padding: 12px 40px;
                             display: flex;
                             justify-content: space-between;
                             align-items: center;
                             border-bottom: 2px solid #334155;
+                            flex-shrink: 0;
                         }
-                        .live-header-left h1 {
-                            font-size: 24px;
-                            font-weight: 800;
-                            color: #f1f5f9;
-                            letter-spacing: 2px;
-                            text-transform: uppercase;
-                        }
-                        .live-header-left p {
-                            font-size: 13px;
-                            color: #94a3b8;
-                            margin-top: 2px;
-                        }
-                        .live-indicator {
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                            background: rgba(239, 68, 68, 0.15);
-                            padding: 8px 16px;
-                            border-radius: 20px;
-                            border: 1px solid rgba(239, 68, 68, 0.3);
-                        }
-                        .live-dot {
-                            width: 10px;
-                            height: 10px;
-                            background: #ef4444;
-                            border-radius: 50%;
-                            animation: pulse 1.5s ease-in-out infinite;
-                        }
-                        @keyframes pulse {
-                            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-                            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-                        }
-                        .live-indicator span {
-                            font-size: 12px;
-                            font-weight: 700;
-                            color: #ef4444;
-                            text-transform: uppercase;
-                            letter-spacing: 2px;
-                        }
-                        .live-content {
-                            display: flex;
-                            gap: 24px;
-                            padding: 24px;
-                            align-items: flex-start;
-                        }
-                        .live-section {
-                            background: rgba(30, 41, 59, 0.8);
-                            border-radius: 12px;
-                            border: 1px solid #334155;
-                            overflow: hidden;
-                        }
-                        .live-section-header {
-                            padding: 10px 20px;
-                            font-size: 13px;
-                            font-weight: 700;
-                            text-transform: uppercase;
-                            letter-spacing: 1.5px;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                        }
-                        .live-section-male .live-section-header {
-                            background: linear-gradient(90deg, #1e40af, #1d4ed8);
-                            color: #bfdbfe;
-                        }
-                        .live-section-female .live-section-header {
-                            background: linear-gradient(90deg, #9f1239, #be123c);
-                            color: #fecdd3;
-                        }
-                        .live-section-header .count {
-                            font-size: 11px;
-                            opacity: 0.8;
-                            font-weight: 500;
-                        }
-                        .live-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                        }
-                        .live-table thead th {
-                            background: rgba(15, 23, 42, 0.6);
-                            padding: 6px 12px;
-                            font-size: 10px;
-                            font-weight: 600;
-                            text-transform: uppercase;
-                            letter-spacing: 1px;
-                            color: #94a3b8;
-                            text-align: left;
-                            border-bottom: 1px solid #334155;
-                        }
-                        .live-table tbody td {
-                            padding: 5px 12px;
-                            font-size: 13px;
-                            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-                            line-height: 1.3;
-                        }
-                        .live-table tbody tr:hover {
-                            background: rgba(51, 65, 85, 0.3);
-                        }
-                        .live-table tbody tr.top-3 td:first-child {
-                            font-weight: 800;
-                        }
-                        .live-table tbody tr.rank-1 { background: rgba(234, 179, 8, 0.08); }
+                        .live-header-left h1 { font-size: 20px; font-weight: 800; color: #f1f5f9; letter-spacing: 2px; text-transform: uppercase; }
+                        .live-header-left p { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+                        .live-header-right { display: flex; align-items: center; gap: 16px; }
+                        .live-indicator { display: flex; align-items: center; gap: 8px; background: rgba(239,68,68,0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(239,68,68,0.3); }
+                        .live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+                        @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,0.7)} 50%{opacity:0.7;box-shadow:0 0 0 6px rgba(239,68,68,0)} }
+                        .live-indicator span { font-size: 11px; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 2px; }
+                        .toggle-btn { background: rgba(159,18,57,0.3); border: 1px solid rgba(159,18,57,0.5); color: #fecdd3; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 600; font-family: inherit; transition: all 0.2s; }
+                        .toggle-btn:hover { background: rgba(159,18,57,0.5); }
+                        .toggle-btn.active { background: rgba(159,18,57,0.6); border-color: #be123c; }
+                        .live-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 16px 24px; gap: 12px; }
+                        .live-section { background: rgba(30,41,59,0.8); border-radius: 10px; border: 1px solid #334155; overflow: hidden; flex-shrink: 0; }
+                        .live-section-scrollable { overflow: hidden; position: relative; }
+                        .live-section-inner { transition: transform 0.5s ease; }
+                        .live-section-header { padding: 8px 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; display: flex; justify-content: space-between; align-items: center; }
+                        .live-section-male .live-section-header { background: linear-gradient(90deg, #1e40af, #1d4ed8); color: #bfdbfe; }
+                        .live-section-female .live-section-header { background: linear-gradient(90deg, #9f1239, #be123c); color: #fecdd3; }
+                        .live-section-header .count { font-size: 10px; opacity: 0.8; font-weight: 500; }
+                        .live-table { width: 100%; border-collapse: collapse; }
+                        .live-table thead th { background: rgba(15,23,42,0.6); padding: 5px 12px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; text-align: left; border-bottom: 1px solid #334155; }
+                        .live-table tbody td { padding: 4px 12px; font-size: 13px; border-bottom: 1px solid rgba(51,65,85,0.5); line-height: 1.2; white-space: nowrap; }
+                        .live-table tbody tr:hover { background: rgba(51,65,85,0.3); }
+                        .live-table tbody tr.top-3 td:first-child { font-weight: 800; }
+                        .live-table tbody tr.rank-1 { background: rgba(234,179,8,0.08); }
                         .live-table tbody tr.rank-1 td:first-child { color: #fbbf24; }
-                        .live-table tbody tr.rank-2 { background: rgba(148, 163, 184, 0.08); }
+                        .live-table tbody tr.rank-2 { background: rgba(148,163,184,0.08); }
                         .live-table tbody tr.rank-2 td:first-child { color: #94a3b8; }
-                        .live-table tbody tr.rank-3 { background: rgba(180, 83, 9, 0.08); }
+                        .live-table tbody tr.rank-3 { background: rgba(180,83,9,0.08); }
                         .live-table tbody tr.rank-3 td:first-child { color: #d97706; }
-                        .live-pos { font-weight: 700; font-size: 15px; text-align: center; min-width: 36px; }
+                        .live-pos { font-weight: 700; font-size: 14px; text-align: center; min-width: 32px; }
                         .live-name { font-weight: 600; color: #f1f5f9; }
                         .live-team { color: #94a3b8; font-size: 12px; }
                         .live-time { font-family: 'Courier New', monospace; font-size: 13px; color: #cbd5e0; }
                         .live-best { font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px; color: #4ade80; }
                         .live-dq { color: #f87171; font-weight: 600; }
                         .live-no-data { text-align: center; padding: 40px; color: #64748b; font-style: italic; }
-                        .live-timestamp {
-                            text-align: center;
-                            padding: 8px;
-                            font-size: 11px;
-                            color: #475569;
-                            background: #0f172a;
-                        }
+                        .live-timestamp { text-align: center; padding: 4px; font-size: 10px; color: #475569; background: #0f172a; flex-shrink: 0; }
                     </style>
                 </head>
                 <body>
@@ -1990,15 +1926,56 @@
                             <h1>OSF - Klasyfikacja</h1>
                             <p id="liveEventName"></p>
                         </div>
-                        <div class="live-indicator">
-                            <div class="live-dot"></div>
-                            <span>Na zywo</span>
+                        <div class="live-header-right">
+                            <button class="toggle-btn active" id="toggleWomen" onclick="toggleWomenSection()">Kobiety</button>
+                            <div class="live-indicator">
+                                <div class="live-dot"></div>
+                                <span>Na zywo</span>
+                            </div>
                         </div>
                     </div>
                     <div class="live-content" id="liveContent">
-                        <div class="live-no-data" style="width:100%; padding: 80px;">Oczekiwanie na wyniki...</div>
+                        <div class="live-no-data" style="padding: 80px;">Oczekiwanie na wyniki...</div>
                     </div>
                     <div class="live-timestamp" id="liveTimestamp"></div>
+                    <script>
+                        let showWomen = true;
+                        function toggleWomenSection() {
+                            showWomen = !showWomen;
+                            const btn = document.getElementById('toggleWomen');
+                            btn.classList.toggle('active', showWomen);
+                            const femaleSection = document.getElementById('femaleLiveSection');
+                            if (femaleSection) {
+                                femaleSection.style.display = showWomen ? '' : 'none';
+                            }
+                            recalcMaleHeight();
+                        }
+                        function recalcMaleHeight() {
+                            const maleSection = document.getElementById('maleLiveSection');
+                            if (!maleSection) return;
+                            const content = document.getElementById('liveContent');
+                            const femaleSection = document.getElementById('femaleLiveSection');
+                            const contentH = content.clientHeight - 24;
+                            if (showWomen && femaleSection) {
+                                const femaleH = femaleSection.offsetHeight;
+                                maleSection.style.maxHeight = (contentH - femaleH - 12) + 'px';
+                            } else {
+                                maleSection.style.maxHeight = contentH + 'px';
+                            }
+                        }
+                        // Auto-scroll for male section
+                        let scrollDir = 1;
+                        setInterval(() => {
+                            const scrollable = document.getElementById('maleScrollable');
+                            if (!scrollable) return;
+                            const maxScroll = scrollable.scrollHeight - scrollable.clientHeight;
+                            if (maxScroll <= 0) return;
+                            scrollable.scrollTop += scrollDir * 1;
+                            if (scrollable.scrollTop >= maxScroll) { scrollDir = -1; }
+                            if (scrollable.scrollTop <= 0) { scrollDir = 1; }
+                        }, 50);
+                        window.addEventListener('resize', recalcMaleHeight);
+                    <\/script>
                 </body>
                 </html>
             `);
@@ -2026,14 +2003,9 @@
             if (!container) return;
 
             if (maleResults.length === 0 && femaleResults.length === 0) {
-                container.innerHTML = '<div class="live-no-data" style="width:100%; padding: 80px;">Oczekiwanie na wyniki...</div>';
+                container.innerHTML = '<div class="live-no-data" style="padding: 80px;">Oczekiwanie na wyniki...</div>';
                 return;
             }
-
-            // Proportional sizing based on participant count
-            const totalCount = maleResults.length + femaleResults.length;
-            const maleFlex = totalCount > 0 ? Math.max(maleResults.length / totalCount, 0.2) : 0.5;
-            const femaleFlex = totalCount > 0 ? Math.max(femaleResults.length / totalCount, 0.2) : 0.5;
 
             const renderLiveTable = (results) => {
                 if (results.length === 0) return '<div class="live-no-data">Brak wynikow</div>';
@@ -2041,7 +2013,7 @@
                     <table class="live-table">
                         <thead>
                             <tr>
-                                <th style="width:40px; text-align:center;">#</th>
+                                <th style="width:36px; text-align:center;">#</th>
                                 <th>Zawodnik</th>
                                 <th>Jednostka</th>
                                 <th style="text-align:center;">I Seria</th>
@@ -2067,22 +2039,27 @@
                 `;
             };
 
+            // Check if women are currently shown
+            const showWomen = liveResultsWindow.showWomen !== undefined ? liveResultsWindow.showWomen : true;
+
             let html = '';
 
             if (maleResults.length > 0) {
                 html += `
-                <div class="live-section live-section-male" style="flex: ${maleFlex};">
+                <div class="live-section live-section-male" id="maleLiveSection" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <div class="live-section-header">
                         <span>Mezczyzni</span>
                         <span class="count">${maleResults.length} zawodnikow</span>
                     </div>
-                    ${renderLiveTable(maleResults)}
+                    <div id="maleScrollable" style="overflow: hidden; flex: 1;">
+                        ${renderLiveTable(maleResults)}
+                    </div>
                 </div>`;
             }
 
             if (femaleResults.length > 0) {
                 html += `
-                <div class="live-section live-section-female" style="flex: ${femaleFlex};">
+                <div class="live-section live-section-female" id="femaleLiveSection" style="flex-shrink: 0; ${showWomen ? '' : 'display:none;'}">
                     <div class="live-section-header">
                         <span>Kobiety</span>
                         <span class="count">${femaleResults.length} zawodniczek</span>
@@ -2093,11 +2070,248 @@
 
             container.innerHTML = html;
 
+            // Recalculate male section height
+            setTimeout(() => {
+                if (liveResultsWindow && !liveResultsWindow.closed && liveResultsWindow.recalcMaleHeight) {
+                    liveResultsWindow.recalcMaleHeight();
+                }
+            }, 50);
+
             const timestamp = liveResultsWindow.document.getElementById('liveTimestamp');
             if (timestamp) {
                 timestamp.textContent = 'Ostatnia aktualizacja: ' + new Date().toLocaleTimeString('pl-PL');
             }
         }
+
+        // ==================== CSV IMPORT ====================
+
+        function importCSV() {
+            const fileInput = document.getElementById('csvFileInput');
+            const statusDiv = document.getElementById('csvImportStatus');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                statusDiv.innerHTML = '<span style="color: #e53e3e;">Wybierz plik CSV</span>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(l => l.trim());
+
+                let imported = 0;
+                let skipped = 0;
+                let errors = [];
+
+                // Skip header if first line looks like a header
+                let startLine = 0;
+                const firstLine = lines[0].toLowerCase();
+                if (firstLine.includes('imie') || firstLine.includes('nazwisko') || firstLine.includes('name')) {
+                    startLine = 1;
+                }
+
+                for (let i = startLine; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    // Support both ; and , as separator
+                    const sep = line.includes(';') ? ';' : ',';
+                    const parts = line.split(sep).map(p => p.trim());
+
+                    if (parts.length < 4) {
+                        errors.push(`Wiersz ${i + 1}: za malo kolumn (${parts.length}), potrzeba min 4`);
+                        skipped++;
+                        continue;
+                    }
+
+                    const firstName = parts[0];
+                    const lastName = parts[1];
+                    const unitName = parts[2];
+                    const gender = parts[3].toUpperCase();
+                    const rank = parts.length > 4 ? parts[4] : ''; // optional rank/stopien
+
+                    if (!firstName || !lastName || !unitName) {
+                        errors.push(`Wiersz ${i + 1}: brakuje imienia, nazwiska lub jednostki`);
+                        skipped++;
+                        continue;
+                    }
+
+                    if (gender !== 'M' && gender !== 'K') {
+                        errors.push(`Wiersz ${i + 1}: plec musi byc M lub K (podano: ${parts[3]})`);
+                        skipped++;
+                        continue;
+                    }
+
+                    // Find or create unit
+                    let unit = units.find(u => u.name.toLowerCase() === unitName.toLowerCase());
+                    if (!unit) {
+                        unit = {
+                            id: Date.now() + Math.random(),
+                            name: unitName,
+                            number: null
+                        };
+                        units.push(unit);
+                    }
+
+                    const unitCompetitors = competitors.filter(c => c.unitId === unit.id);
+                    if (unitCompetitors.length >= 12) {
+                        errors.push(`Wiersz ${i + 1}: jednostka ${unitName} ma juz 12 zawodnikow`);
+                        skipped++;
+                        continue;
+                    }
+
+                    competitors.push({
+                        id: Date.now() + Math.random(),
+                        firstName: firstName,
+                        lastName: lastName,
+                        unitId: unit.id,
+                        gender: gender,
+                        isPK: false,
+                        position: unitCompetitors.length + 1,
+                        rank: rank || ''
+                    });
+
+                    imported++;
+                }
+
+                updateUnitsTable();
+                updateCompetitorsList();
+                updateCompetitorUnitSelect();
+                updateEditModalsSelects();
+
+                let statusMsg = `<span style="color: #38a169;">Zaimportowano: ${imported} zawodnikow</span>`;
+                if (skipped > 0) {
+                    statusMsg += `<br><span style="color: #d69e2e;">Pominieto: ${skipped}</span>`;
+                }
+                if (errors.length > 0) {
+                    statusMsg += '<br><small style="color: #e53e3e;">' + errors.slice(0, 5).join('<br>') + '</small>';
+                    if (errors.length > 5) {
+                        statusMsg += `<br><small style="color: #e53e3e;">...i ${errors.length - 5} wiecej bledow</small>`;
+                    }
+                }
+                statusDiv.innerHTML = statusMsg;
+                fileInput.value = '';
+            };
+
+            reader.readAsText(fileInput.files[0], 'UTF-8');
+        }
+
+        // ==================== SAVE / LOAD ====================
+
+        function saveAllData() {
+            const data = {
+                eventName: document.getElementById('eventName').value,
+                eventLocation: document.getElementById('eventLocation').value,
+                units: units,
+                competitors: competitors,
+                schema: schema,
+                series1Results: series1Results,
+                series2Results: series2Results,
+                savedAt: new Date().toLocaleString('pl-PL')
+            };
+
+            try {
+                localStorage.setItem('osf_data', JSON.stringify(data));
+                const statusEl = document.getElementById('saveStatus');
+                statusEl.textContent = 'Zapisano! (' + data.savedAt + ')';
+                setTimeout(() => { statusEl.textContent = ''; }, 5000);
+            } catch (e) {
+                alert('Blad zapisu: ' + e.message);
+            }
+        }
+
+        function loadAllData() {
+            try {
+                const raw = localStorage.getItem('osf_data');
+                if (!raw) {
+                    alert('Brak zapisanych danych');
+                    return;
+                }
+
+                const data = JSON.parse(raw);
+
+                if (!confirm('Wczytac dane z: ' + (data.savedAt || 'nieznana data') + '? Obecne dane zostana nadpisane.')) {
+                    return;
+                }
+
+                document.getElementById('eventName').value = data.eventName || '';
+                document.getElementById('eventLocation').value = data.eventLocation || '';
+                units = data.units || [];
+                competitors = data.competitors || [];
+                schema = data.schema || [];
+                series1Results = data.series1Results || [];
+                series2Results = data.series2Results || [];
+
+                updateUnitsTable();
+                updateCompetitorUnitSelect();
+                updateCompetitorsList();
+                updateEditModalsSelects();
+
+                if (schema.length > 0) updateSchemaList();
+                if (series1Results.length > 0) updateSeries1List();
+                if (series2Results.length > 0) updateSeries2List();
+
+                const statusEl = document.getElementById('saveStatus');
+                statusEl.textContent = 'Wczytano dane z: ' + (data.savedAt || '');
+                setTimeout(() => { statusEl.textContent = ''; }, 5000);
+            } catch (e) {
+                alert('Blad wczytywania: ' + e.message);
+            }
+        }
+
+        function clearAllData() {
+            if (!confirm('Czy na pewno wyczyscic WSZYSTKIE dane? Ta operacja jest nieodwracalna!')) return;
+            if (!confirm('Na pewno? Wszystkie jednostki, zawodnicy, schematy i wyniki zostana usuniete.')) return;
+
+            localStorage.removeItem('osf_data');
+            units = [];
+            competitors = [];
+            schema = [];
+            series1Results = [];
+            series2Results = [];
+
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventLocation').value = '';
+
+            updateUnitsTable();
+            updateCompetitorUnitSelect();
+            updateCompetitorsList();
+            updateEditModalsSelects();
+
+            document.getElementById('schemaList').innerHTML = '<p class="text-center" style="color: #718096;">Brak biegow w schemacie</p>';
+            document.getElementById('startSeries1Btn').style.display = 'none';
+            document.getElementById('series1List').innerHTML = '';
+            document.getElementById('startSeries2Btn').style.display = 'none';
+            document.getElementById('series2List').innerHTML = '';
+            document.getElementById('generateResultsBtn').style.display = 'none';
+            document.getElementById('finalResultsList').innerHTML = '';
+        }
+
+        // Auto-save on any change (debounced)
+        let autoSaveTimer = null;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                const data = {
+                    eventName: document.getElementById('eventName').value,
+                    eventLocation: document.getElementById('eventLocation').value,
+                    units: units,
+                    competitors: competitors,
+                    schema: schema,
+                    series1Results: series1Results,
+                    series2Results: series2Results,
+                    savedAt: new Date().toLocaleString('pl-PL')
+                };
+                try { localStorage.setItem('osf_data', JSON.stringify(data)); } catch(e) {}
+            }, 2000);
+        }
+
+        // Hook auto-save into result updates
+        const origUpdateResult = updateResult;
+        updateResult = function(series, raceId, lane, field, value) {
+            origUpdateResult(series, raceId, lane, field, value);
+            scheduleAutoSave();
+        };
 
         // ==================== EVENT LISTENERS ====================
 
@@ -2113,11 +2327,32 @@
             }
         });
 
+        // Auto-load on startup
+        function autoLoadOnStartup() {
+            try {
+                const raw = localStorage.getItem('osf_data');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    document.getElementById('eventName').value = data.eventName || '';
+                    document.getElementById('eventLocation').value = data.eventLocation || '';
+                    units = data.units || [];
+                    competitors = data.competitors || [];
+                    schema = data.schema || [];
+                    series1Results = data.series1Results || [];
+                    series2Results = data.series2Results || [];
+                }
+            } catch(e) {}
+        }
+
         // Initialize
+        autoLoadOnStartup();
         updateUnitsTable();
         updateCompetitorUnitSelect();
         updateCompetitorsList();
         updateEditModalsSelects();
+        if (schema.length > 0) updateSchemaList();
+        if (series1Results.length > 0) updateSeries1List();
+        if (series2Results.length > 0) updateSeries2List();
 
         setTimeout(() => {
             updateQuickPreview();
