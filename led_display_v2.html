@@ -940,6 +940,14 @@
                                 ...athlete
                             };
 
+                            // KRYTYCZNE: Przywróć bracket_positions jeśli został nadpisany przez undefined
+                            // enrichAthleteWithCategoryPositions() buduje bracket_positions ręcznie
+                            // i nie może być niszczony przez refresh który zwraca undefined
+                            if (cache.athletes[athlete.entry_bib]?.bracket_positions &&
+                                (!athleteData.bracket_positions || Object.keys(athleteData.bracket_positions).length === 0)) {
+                                athleteData.bracket_positions = cache.athletes[athlete.entry_bib].bracket_positions;
+                            }
+
                             // Przywróć dane o kategorii i płci, jeśli zostały zapisane
                             if (savedDivisionPlace) {
                                 athleteData.division_place = savedDivisionPlace;
