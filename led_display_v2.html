@@ -866,6 +866,13 @@
         }
 
         function mapAthleteData(result) {
+            console.log(`🔧 mapAthleteData for BIB ${result.results_bib}:`, {
+                bracket_positions: result.bracket_positions,
+                results_rank: result.results_rank,
+                results_rank_in_bracket: result.results_rank_in_bracket,
+                results_bracket_rank: result.results_bracket_rank
+            });
+
             const mapped = {
                 entry_bib: result.results_bib,
                 athlete_first_name: result.results_first_name,
@@ -884,24 +891,36 @@
                 formatted_gun_time: formatTime(result.results_gun_time)
             };
 
+            console.log(`   Initial division_place: ${mapped.division_place} (from results_rank_in_bracket/bracket_rank/rank fallback)`);
+
             // Parsuj bracket_positions jeśli istnieje
             if (result.bracket_positions) {
+                console.log(`   bracket_positions exists, parsing...`);
                 if (typeof result.bracket_positions === 'string') {
                     try {
                         mapped.bracket_positions = JSON.parse(result.bracket_positions);
+                        console.log(`   Parsed bracket_positions:`, mapped.bracket_positions);
                     } catch (e) {
+                        console.warn(`   Failed to parse bracket_positions:`, e);
                         mapped.bracket_positions = result.bracket_positions;
                     }
                 } else {
                     mapped.bracket_positions = result.bracket_positions;
+                    console.log(`   bracket_positions already object:`, mapped.bracket_positions);
                 }
 
                 // Wybierz najlepszą kategorię według priorytetu
                 const bestCategory = selectBestCategory(mapped);
+                console.log(`   selectBestCategory returned:`, bestCategory);
                 if (bestCategory) {
                     mapped.bracket_name = bestCategory.name;
                     mapped.division_place = bestCategory.position;
+                    console.log(`   ✅ Updated division_place to ${mapped.division_place} from category ${mapped.bracket_name}`);
+                } else {
+                    console.log(`   ❌ No bestCategory selected, keeping division_place = ${mapped.division_place}`);
                 }
+            } else {
+                console.log(`   ❌ No bracket_positions in API response`);
             }
 
             // Add club from cache if available
@@ -909,6 +928,7 @@
                 mapped.club = cache.clubs[mapped.entry_bib];
             }
 
+            console.log(`   Final mapped athlete:`, mapped);
             return mapped;
         }
 
