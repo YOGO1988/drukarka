@@ -1392,6 +1392,66 @@
             }, 30000); // 30 seconds
         }
 
+        /**
+         * Pobiera miejsca w kategoriach dla zawodnika z osobnych zapytań API
+         * Używane gdy API nie zwraca bracket_positions
+         */
+        async function enrichAthleteWithCategoryPositions(athlete) {
+            try {
+                if (!athlete.bracket_positions) {
+                    athlete.bracket_positions = {};
+                }
+
+                console.log(`🔄 Enriching athlete ${athlete.entry_bib} with category positions...`);
+
+                // Pobierz miejsce w kategorii płci (SEX)
+                if (athlete.athlete_sex && (athlete.athlete_sex === 'M' || athlete.athlete_sex === 'F')) {
+                    try {
+                        const sexResponse = await makeApiRequest(`/api/event/${config.api.eventId}/results`, {
+                            bracket: 'sex',
+                            sex: athlete.athlete_sex,
+                            bib: athlete.entry_bib
+                        });
+                        if (sexResponse && sexResponse.event_results && sexResponse.event_results.length > 0) {
+                            const result = sexResponse.event_results[0];
+                            const sexPlace = result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank;
+                            if (sexPlace) {
+                                const sexLabel = athlete.athlete_sex === 'M' ? 'Mężczyźni' : 'Kobiety';
+                                athlete.bracket_positions[sexLabel] = parseInt(sexPlace);
+                                athlete.gender_place = sexPlace;
+                                console.log(`  ✅ SEX (${sexLabel}): ${sexPlace}`);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`  ❌ Failed to fetch SEX position:`, e);
+                    }
+                }
+
+                // Pobierz miejsce w kategorii wiekowej (AGE)
+                try {
+                    const ageResponse = await makeApiRequest(`/api/event/${config.api.eventId}/results`, {
+                        bracket: 'age',
+                        bib: athlete.entry_bib
+                    });
+                    if (ageResponse && ageResponse.event_results && ageResponse.event_results.length > 0) {
+                        const result = ageResponse.event_results[0];
+                        const agePlace = result.results_rank_in_bracket || result.results_bracket_rank;
+                        const ageBracket = result.results_primary_bracket_name;
+                        if (agePlace && ageBracket && isAgeBracket(ageBracket)) {
+                            athlete.bracket_positions[ageBracket] = parseInt(agePlace);
+                            console.log(`  ✅ AGE (${ageBracket}): ${agePlace}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`  ❌ Failed to fetch AGE position:`, e);
+                }
+
+                console.log(`✅ Final bracket_positions for ${athlete.entry_bib}:`, athlete.bracket_positions);
+            } catch (error) {
+                console.error(`Error enriching athlete with categories:`, error);
+            }
+        }
+
         async function findAthleteByBib(bib) {
             // Check cache first
             if (cache.athletes[bib]) {
@@ -1410,6 +1470,13 @@
 
                     if (athlete) {
                         const mappedAthlete = mapAthleteData(athlete);
+
+                        // Jeśli API nie zwraca bracket_positions, pobierz miejsca z osobnych zapytań
+                        if (!mappedAthlete.bracket_positions || Object.keys(mappedAthlete.bracket_positions).length === 0) {
+                            console.log(`🔄 No bracket_positions for BIB ${bib}, fetching from separate API calls...`);
+                            await enrichAthleteWithCategoryPositions(mappedAthlete);
+                        }
+
                         cache.athletes[mappedAthlete.entry_bib] = mappedAthlete;
                         return mappedAthlete;
                     }
