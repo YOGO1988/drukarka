@@ -928,24 +928,28 @@
                     cache.openResults = mappedResults;
                     cache.lastUpdate.open = new Date();
 
-                    // ⚠️ KRYTYCZNE: NIE używaj spread operator - aktualizuj TYLKO czasy i overall_place!
-                    // division_place, bracket_name - ustawiane przez getAthleteAgeGroupResult()
-                    // gender_place - ustawiane przez cache.sexResults lookup
+                    // Aktualizuj cache zawodników - DOKŁADNIE JAK W drukarka_wynikowv2.html
                     mappedResults.forEach(athlete => {
                         if (athlete.entry_bib) {
-                            if (cache.athletes[athlete.entry_bib]) {
-                                // Zawodnik już jest w cache - aktualizuj TYLKO czasy i miejsce OPEN
-                                cache.athletes[athlete.entry_bib].net_time = athlete.net_time;
-                                cache.athletes[athlete.entry_bib].gun_time = athlete.gun_time;
-                                cache.athletes[athlete.entry_bib].formatted_net_time = athlete.formatted_net_time;
-                                cache.athletes[athlete.entry_bib].formatted_gun_time = athlete.formatted_gun_time;
-                                cache.athletes[athlete.entry_bib].overall_place = athlete.overall_place;
-                                cache.athletes[athlete.entry_bib].pace = athlete.pace;
-                                // NIE dotykamy: division_place, bracket_name, gender_place!
-                            } else {
-                                // Nowy zawodnik - dodaj do cache
-                                cache.athletes[athlete.entry_bib] = athlete;
+                            // Sprawdź czy mamy zapisane dane o kategorii i płci
+                            const savedDivisionPlace = cache.persistentData.divisionPlaces[athlete.entry_bib];
+                            const savedGenderPlace = cache.persistentData.genderPlaces[athlete.entry_bib];
+
+                            const athleteData = {
+                                ...cache.athletes[athlete.entry_bib],
+                                ...athlete
+                            };
+
+                            // Przywróć dane o kategorii i płci, jeśli zostały zapisane
+                            if (savedDivisionPlace) {
+                                athleteData.division_place = savedDivisionPlace;
                             }
+
+                            if (savedGenderPlace) {
+                                athleteData.gender_place = savedGenderPlace;
+                            }
+
+                            cache.athletes[athlete.entry_bib] = athleteData;
                         }
                     });
 
@@ -1004,10 +1008,19 @@
 
                         results[sexType] = mappedResults;
 
-                        // Zapisz do persistentData (dla przywracania później) - TYLKO DO LOOKUP, NIE AKTUALIZUJ cache.athletes!
+                        // Aktualizuj cache zawodników z poprawionym miejscem w płci - DOKŁADNIE JAK W drukarka_wynikowv2.html
                         mappedResults.forEach(athlete => {
-                            if (athlete.gender_place && athlete.entry_bib) {
+                            if (athlete.entry_bib) {
+                                // Zapisz miejsce w płci do trwałego cache
                                 cache.persistentData.genderPlaces[athlete.entry_bib] = athlete.gender_place;
+
+                                if (cache.athletes[athlete.entry_bib]) {
+                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w płci
+                                    cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
+                                } else {
+                                    // Dodaj nowego zawodnika do cache
+                                    cache.athletes[athlete.entry_bib] = athlete;
+                                }
                             }
                         });
                     }
@@ -1063,14 +1076,23 @@
                         return mapped;
                     });
 
-                    // Grupuj według kategorii wiekowej - TYLKO DO LOOKUP, NIE AKTUALIZUJ cache.athletes!
+                    // Grupuj według kategorii wiekowej - DOKŁADNIE JAK W drukarka_wynikowv2.html
                     mappedResults.forEach(athlete => {
-                        // Zapisz miejsce w kategorii do persistentData (dla przywracania później)
-                        if (athlete.division_place && athlete.entry_bib) {
-                            cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
+                        if (athlete.entry_bib) {
+                            // Zapisz miejsce w kategorii do trwałego cache
+                            if (athlete.division_place) {
+                                cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
+                            }
+
+                            if (cache.athletes[athlete.entry_bib]) {
+                                // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
+                                cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                            } else {
+                                // Dodaj nowego zawodnika do cache
+                                cache.athletes[athlete.entry_bib] = athlete;
+                            }
                         }
 
-                        // Grupuj do cache.ageResults (używane przez getAthleteAgeGroupResult)
                         if (athlete.bracket_name) {
                             if (!ageCategories[athlete.bracket_name]) {
                                 ageCategories[athlete.bracket_name] = [];
