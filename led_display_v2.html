@@ -1087,54 +1087,32 @@
 
                     if (categoryResults.length > 0) {
                         const mappedResults = categoryResults.map(result => {
-                            const mapped = mapAthleteData(result);
+                            const mapped = {
+                                entry_bib: result.results_bib,
+                                athlete_first_name: result.results_first_name,
+                                athlete_last_name: result.results_last_name,
+                                athlete_sex: result.results_sex,
+                                entry_race_age: result.results_age,
+                                bracket_name: result.results_primary_bracket_name,
+                                race_distance: result.results_race_name,
+                                net_time: result.results_time,
+                                gun_time: result.results_gun_time,
+                                overall_place: result.results_rank,
+                                division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
+                                pace: result.results_pace,
+                                formatted_net_time: formatTime(result.results_time),
+                                formatted_gun_time: formatTime(result.results_gun_time)
+                            };
 
-                            if (result.bracket_positions) {
-                                try {
-                                    const positions = typeof result.bracket_positions === 'string'
-                                        ? JSON.parse(result.bracket_positions)
-                                        : result.bracket_positions;
-
-                                    if (positions[categoryName]) {
-                                        mapped.division_place = positions[categoryName];
-                                    }
-                                } catch (e) {
-                                    console.warn(`Cannot parse bracket_positions for ${result.results_bib}:`, e);
-                                }
+                            if (cache.clubs && cache.clubs[mapped.entry_bib]) {
+                                mapped.club = cache.clubs[mapped.entry_bib];
                             }
 
                             return mapped;
                         });
 
+                        // TYLKO cache.customResults - NIE mieszamy w cache.athletes!
                         allCustomResults[categoryName] = mappedResults;
-
-                        // Aktualizuj cache zawodników z miejscem w kategorii custom
-                        mappedResults.forEach(athlete => {
-                            if (athlete.entry_bib) {
-                                // Zapisz miejsce w kategorii customowej do trwałego cache
-                                if (athlete.division_place) {
-                                    cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
-                                }
-
-                                if (cache.athletes[athlete.entry_bib]) {
-                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
-                                    cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                                    // MERGUJ bracket_positions zamiast nadpisywać (żeby nie zgubić innych kategorii)
-                                    if (athlete.bracket_positions) {
-                                        if (!cache.athletes[athlete.entry_bib].bracket_positions) {
-                                            cache.athletes[athlete.entry_bib].bracket_positions = {};
-                                        }
-                                        cache.athletes[athlete.entry_bib].bracket_positions = {
-                                            ...cache.athletes[athlete.entry_bib].bracket_positions,
-                                            ...athlete.bracket_positions
-                                        };
-                                    }
-                                } else {
-                                    // Dodaj nowego zawodnika do cache
-                                    cache.athletes[athlete.entry_bib] = athlete;
-                                }
-                            }
-                        });
 
                         console.log(`Category ${categoryName}: ${mappedResults.length} athletes`);
                     }
@@ -1461,19 +1439,36 @@
             // Mamy podstawowe dane - teraz zbieramy miejsca w kategoriach
             const finalAthlete = { ...athlete };
 
-            // KROK 2: Pobierz division_place z cache.ageResults
-            if (finalAthlete.bracket_name && isAgeBracket(finalAthlete.bracket_name)) {
-                const ageCategory = cache.ageResults[finalAthlete.bracket_name];
-                if (ageCategory) {
-                    const athleteInAge = ageCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
-                    if (athleteInAge && athleteInAge.division_place) {
-                        finalAthlete.division_place = athleteInAge.division_place;
-                        console.log(`✅ Division place z cache.ageResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+            // KROK 2: Pobierz division_place z odpowiedniego cache
+            if (finalAthlete.bracket_name) {
+                if (isAgeBracket(finalAthlete.bracket_name)) {
+                    // Kategoria wiekowa (M30, K40, etc.)
+                    const ageCategory = cache.ageResults[finalAthlete.bracket_name];
+                    if (ageCategory) {
+                        const athleteInAge = ageCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                        if (athleteInAge && athleteInAge.division_place) {
+                            finalAthlete.division_place = athleteInAge.division_place;
+                            console.log(`✅ Division place z cache.ageResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+                        }
+                    } else {
+                        // Brak w cache - wywołaj getAthleteAgeGroupResult
+                        console.log(`Kategoria ${finalAthlete.bracket_name} nie w cache.ageResults, wywołuję getAthleteAgeGroupResult...`);
+                        await getAthleteAgeGroupResult(finalAthlete);
                     }
-                } else {
-                    // Brak w cache - wywołaj getAthleteAgeGroupResult
-                    console.log(`Kategoria ${finalAthlete.bracket_name} nie w cache.ageResults, wywołuję getAthleteAgeGroupResult...`);
-                    await getAthleteAgeGroupResult(finalAthlete);
+                } else if (!isSexBracket(finalAthlete.bracket_name)) {
+                    // Kategoria custom (WOJSKO, POLICJA, Konin-M, etc.)
+                    const customCategory = cache.customResults[finalAthlete.bracket_name];
+                    if (customCategory) {
+                        const athleteInCustom = customCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                        if (athleteInCustom && athleteInCustom.division_place) {
+                            finalAthlete.division_place = athleteInCustom.division_place;
+                            console.log(`✅ Division place z cache.customResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+                        }
+                    } else {
+                        // Brak w cache - wywołaj getAthleteAgeGroupResult (obsługuje też custom)
+                        console.log(`Kategoria custom ${finalAthlete.bracket_name} nie w cache.customResults, wywołuję getAthleteAgeGroupResult...`);
+                        await getAthleteAgeGroupResult(finalAthlete);
+                    }
                 }
             }
 
