@@ -917,7 +917,7 @@
             try {
                 const params = {
                     size: 100,
-                    include_all_fields: '1'  // POTRZEBNE dla bracket_positions (kategorie dodatkowe)
+                    include_all_fields: '1'
                 };
                 console.log("Fetching OPEN results...");
 
@@ -925,33 +925,10 @@
 
                 if (allResults.length > 0) {
                     const mappedResults = allResults.map(mapAthleteData);
+
+                    // TYLKO cache.openResults - NIE mieszamy w cache.athletes!
                     cache.openResults = mappedResults;
                     cache.lastUpdate.open = new Date();
-
-                    // Aktualizuj cache zawodników - DOKŁADNIE JAK W drukarka_wynikowv2.html
-                    mappedResults.forEach(athlete => {
-                        if (athlete.entry_bib) {
-                            // Sprawdź czy mamy zapisane dane o kategorii i płci
-                            const savedDivisionPlace = cache.persistentData.divisionPlaces[athlete.entry_bib];
-                            const savedGenderPlace = cache.persistentData.genderPlaces[athlete.entry_bib];
-
-                            const athleteData = {
-                                ...cache.athletes[athlete.entry_bib],
-                                ...athlete
-                            };
-
-                            // Przywróć dane o kategorii i płci, jeśli zostały zapisane
-                            if (savedDivisionPlace) {
-                                athleteData.division_place = savedDivisionPlace;
-                            }
-
-                            if (savedGenderPlace) {
-                                athleteData.gender_place = savedGenderPlace;
-                            }
-
-                            cache.athletes[athlete.entry_bib] = athleteData;
-                        }
-                    });
 
                     console.log(`OPEN results updated: ${mappedResults.length} athletes`);
                     return mappedResults;
@@ -979,7 +956,6 @@
                     const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                     if (genderResults.length > 0) {
-                        // Zmapuj do standardowego formatu - DOKŁADNIE JAK W drukarka_wynikowv2.html
                         const mappedResults = genderResults.map(result => {
                             const mapped = {
                                 entry_bib: result.results_bib,
@@ -992,13 +968,12 @@
                                 net_time: result.results_time,
                                 gun_time: result.results_gun_time,
                                 overall_place: result.results_rank,
-                                gender_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,  // To jest MIEJSCE W PŁCI!
+                                gender_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
                                 pace: result.results_pace,
                                 formatted_net_time: formatTime(result.results_time),
                                 formatted_gun_time: formatTime(result.results_gun_time)
                             };
 
-                            // Add club if available
                             if (cache.clubs && cache.clubs[mapped.entry_bib]) {
                                 mapped.club = cache.clubs[mapped.entry_bib];
                             }
@@ -1007,25 +982,10 @@
                         });
 
                         results[sexType] = mappedResults;
-
-                        // Aktualizuj cache zawodników z poprawionym miejscem w płci - DOKŁADNIE JAK W drukarka_wynikowv2.html
-                        mappedResults.forEach(athlete => {
-                            if (athlete.entry_bib) {
-                                // Zapisz miejsce w płci do trwałego cache
-                                cache.persistentData.genderPlaces[athlete.entry_bib] = athlete.gender_place;
-
-                                if (cache.athletes[athlete.entry_bib]) {
-                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w płci
-                                    cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
-                                } else {
-                                    // Dodaj nowego zawodnika do cache
-                                    cache.athletes[athlete.entry_bib] = athlete;
-                                }
-                            }
-                        });
                     }
                 }
 
+                // TYLKO cache.sexResults - NIE mieszamy w cache.athletes!
                 cache.sexResults = results;
                 cache.lastUpdate.sex = new Date();
                 console.log(`SEX results updated: M=${results.M.length}, F=${results.F.length}`);
@@ -1049,7 +1009,6 @@
                 if (allResults.length > 0) {
                     const ageCategories = {};
 
-                    // Zmapuj do standardowego formatu - DOKŁADNIE JAK W drukarka_wynikowv2.html
                     const mappedResults = allResults.map(result => {
                         const mapped = {
                             entry_bib: result.results_bib,
@@ -1062,13 +1021,12 @@
                             net_time: result.results_time,
                             gun_time: result.results_gun_time,
                             overall_place: result.results_rank,
-                            division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,  // To jest MIEJSCE W KATEGORII!
+                            division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
                             pace: result.results_pace,
                             formatted_net_time: formatTime(result.results_time),
                             formatted_gun_time: formatTime(result.results_gun_time)
                         };
 
-                        // Add club if available
                         if (cache.clubs && cache.clubs[mapped.entry_bib]) {
                             mapped.club = cache.clubs[mapped.entry_bib];
                         }
@@ -1076,23 +1034,8 @@
                         return mapped;
                     });
 
-                    // Grupuj według kategorii wiekowej - DOKŁADNIE JAK W drukarka_wynikowv2.html
+                    // Grupuj według kategorii wiekowej
                     mappedResults.forEach(athlete => {
-                        if (athlete.entry_bib) {
-                            // Zapisz miejsce w kategorii do trwałego cache
-                            if (athlete.division_place) {
-                                cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
-                            }
-
-                            if (cache.athletes[athlete.entry_bib]) {
-                                // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
-                                cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                            } else {
-                                // Dodaj nowego zawodnika do cache
-                                cache.athletes[athlete.entry_bib] = athlete;
-                            }
-                        }
-
                         if (athlete.bracket_name) {
                             if (!ageCategories[athlete.bracket_name]) {
                                 ageCategories[athlete.bracket_name] = [];
@@ -1101,6 +1044,7 @@
                         }
                     });
 
+                    // TYLKO cache.ageResults - NIE mieszamy w cache.athletes!
                     cache.ageResults = ageCategories;
                     cache.lastUpdate.age = new Date();
                     console.log(`AGE results updated: ${Object.keys(ageCategories).length} categories`);
@@ -1485,59 +1429,75 @@
         }
 
         async function findAthleteByBib(bib) {
-            // Check cache first
-            if (cache.athletes[bib]) {
-                console.log(`Found athlete in cache: ${bib}`);
-                return cache.athletes[bib];
+            console.log(`Finding athlete BIB: ${bib}`);
+
+            // KROK 1: Szukaj w cache.openResults (czasy, overall_place)
+            let athlete = cache.openResults.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+
+            if (!athlete) {
+                // Nie ma w cache - pobierz z API
+                console.log(`BIB ${bib} nie ma w cache.openResults, pobieranie z API...`);
+                try {
+                    const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, { bib });
+                    if (response && response.event_results && response.event_results.length > 0) {
+                        const result = response.event_results.find(r =>
+                            r.results_bib === bib || String(r.results_bib) === String(bib)
+                        );
+                        if (result) {
+                            athlete = mapAthleteData(result);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Błąd API dla BIB ${bib}:`, error);
+                    return null;
+                }
             }
 
-            // Fetch from API
-            try {
-                const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, { bib });
+            if (!athlete) {
+                console.log(`BIB ${bib} nie znaleziony`);
+                return null;
+            }
 
-                if (response && response.event_results && response.event_results.length > 0) {
-                    const athlete = response.event_results.find(result =>
-                        result.results_bib === bib || String(result.results_bib) === String(bib)
-                    );
+            // Mamy podstawowe dane - teraz zbieramy miejsca w kategoriach
+            const finalAthlete = { ...athlete };
 
-                    if (athlete) {
-                        const mappedAthlete = mapAthleteData(athlete);
+            // KROK 2: Pobierz division_place z cache.ageResults
+            if (finalAthlete.bracket_name && isAgeBracket(finalAthlete.bracket_name)) {
+                const ageCategory = cache.ageResults[finalAthlete.bracket_name];
+                if (ageCategory) {
+                    const athleteInAge = ageCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                    if (athleteInAge && athleteInAge.division_place) {
+                        finalAthlete.division_place = athleteInAge.division_place;
+                        console.log(`✅ Division place z cache.ageResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+                    }
+                } else {
+                    // Brak w cache - wywołaj getAthleteAgeGroupResult
+                    console.log(`Kategoria ${finalAthlete.bracket_name} nie w cache.ageResults, wywołuję getAthleteAgeGroupResult...`);
+                    await getAthleteAgeGroupResult(finalAthlete);
+                }
+            }
 
-                        // Sprawdź czy mamy zapisane dane o kategorii i płci
-                        const savedDivisionPlace = cache.persistentData.divisionPlaces[mappedAthlete.entry_bib];
-                        const savedGenderPlace = cache.persistentData.genderPlaces[mappedAthlete.entry_bib];
-
-                        // Przywróć dane o kategorii i płci, jeśli zostały zapisane
-                        if (savedDivisionPlace && !mappedAthlete.division_place) {
-                            mappedAthlete.division_place = savedDivisionPlace;
-                        }
-
-                        if (savedGenderPlace && !mappedAthlete.gender_place) {
-                            mappedAthlete.gender_place = savedGenderPlace;
-                        }
-
-                        // Sprawdź czy mamy miejsce w kategorii - pobierz z API jeśli brak lub puste
-                        const hasDivisionPlace = mappedAthlete.division_place &&
-                                                 mappedAthlete.division_place !== '' &&
-                                                 mappedAthlete.division_place !== '-' &&
-                                                 mappedAthlete.division_place !== '0';
-
-                        if (!hasDivisionPlace && mappedAthlete.bracket_name) {
-                            // Próbuj pobrać dane o kategorii z API
-                            console.log(`Brak miejsca w kategorii dla ${mappedAthlete.entry_bib} (${mappedAthlete.bracket_name}), pobieranie z API...`);
-                            await getAthleteAgeGroupResult(mappedAthlete);
-                        }
-
-                        // Dodaj do cache
-                        cache.athletes[mappedAthlete.entry_bib] = mappedAthlete;
-                        return mappedAthlete;
+            // KROK 3: Pobierz gender_place z cache.sexResults
+            if (finalAthlete.athlete_sex && (finalAthlete.athlete_sex === 'M' || finalAthlete.athlete_sex === 'F')) {
+                const sexResults = cache.sexResults[finalAthlete.athlete_sex];
+                if (sexResults) {
+                    const athleteInSex = sexResults.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                    if (athleteInSex && athleteInSex.gender_place) {
+                        finalAthlete.gender_place = athleteInSex.gender_place;
+                        console.log(`✅ Gender place z cache.sexResults[${finalAthlete.athlete_sex}]: ${finalAthlete.gender_place}`);
                     }
                 }
-                return null;
-            } catch (error) {
-                console.error(`Find athlete error: ${error.message}`);
-                return null;
             }
+
+            console.log(`Final athlete data:`, {
+                bib: finalAthlete.entry_bib,
+                overall_place: finalAthlete.overall_place,
+                bracket_name: finalAthlete.bracket_name,
+                division_place: finalAthlete.division_place,
+                gender_place: finalAthlete.gender_place
+            });
+
+            return finalAthlete;
         }
 
         // =====================================
