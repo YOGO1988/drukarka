@@ -467,17 +467,23 @@
 
                 <!-- RFID Config -->
                 <div class="panel">
-                    <h2>📡 RFID Czytnik</h2>
+                    <h2>📡 RFID Czytnik (Keyboard Mode)</h2>
                     <div class="connection-status">
-                        <span class="status-indicator" id="admin-rfid-indicator"></span>
-                        <span id="admin-rfid-status">Czytnik: nie podłączony</span>
+                        <span class="status-indicator active" id="admin-rfid-indicator"></span>
+                        <span id="admin-rfid-status">Gotowy: Podłącz czytnik USB</span>
                     </div>
-                    <button id="connect-rfid-btn" class="btn-full">🔌 Połącz czytnik USB</button>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>Zasięg czytnika:</label>
-                        <input type="range" id="rfid-power" min="1" max="10" value="3">
-                        <span id="rfid-power-label">~15cm</span>
+                    <div class="info-box" style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #4CAF50;">
+                        <strong>📋 Instrukcja:</strong><br>
+                        1. Podłącz czytnik USB RFID do komputera<br>
+                        2. Kliknij w pole wyszukiwania na ekranie LED<br>
+                        3. Zbliż chipującą opaskę - wynik pojawi się automatycznie<br>
+                        <br>
+                        <strong>✅ Kompatybilność:</strong> Działa z większością czytników USB (tryb HID/klawiatura)
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ostatnio odczytany TAG:</label>
+                        <input type="text" id="last-rfid-tag" readonly placeholder="Oczekiwanie na TAG..." style="background: #f5f5f5;">
                     </div>
                 </div>
 
@@ -562,9 +568,7 @@
                 port: localStorage.getItem('led-port') || '80'
             },
             rfid: {
-                connected: false,
-                device: null,
-                power: parseInt(localStorage.getItem('led-rfid-power') || '3')
+                connected: false  // Keyboard mode - always ready when initialized
             },
             refreshInterval: 90000  // 90 seconds
         };
@@ -638,9 +642,6 @@
             saveDisplayBtn: document.getElementById('save-display-btn'),
 
             // Admin screen - RFID
-            connectRfidBtn: document.getElementById('connect-rfid-btn'),
-            rfidPower: document.getElementById('rfid-power'),
-            rfidPowerLabel: document.getElementById('rfid-power-label'),
             adminRfidIndicator: document.getElementById('admin-rfid-indicator'),
             adminRfidStatus: document.getElementById('admin-rfid-status'),
 
@@ -2025,87 +2026,84 @@
         }
 
         // =====================================
-        // RFID FUNCTIONS
+        // RFID FUNCTIONS (KEYBOARD EMULATION MODE)
         // =====================================
+        // Czytniki USB RFID w trybie HID zachowują się jak klawiatura:
+        // 1. Klikasz w pole input
+        // 2. Zbliżasz opaskę do czytnika
+        // 3. Czytnik "wpisuje" TAG i naciska Enter
+        // 4. Aplikacja łapie Enter i wyświetla wynik
 
-        async function connectRFID() {
-            try {
-                if (!navigator.usb) {
-                    throw new Error('Web USB API nie jest obsługiwane w tej przeglądarce');
+        let rfidBuffer = '';
+        let rfidTimeout = null;
+
+        function initRFIDKeyboardMode() {
+            console.log('RFID Keyboard Mode: Initialized');
+
+            // Status jako gotowy
+            config.rfid.connected = true;
+            updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
+            updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG');
+
+            // Nasłuchuj na klawiaturę gdy focus na search input
+            ui.searchInput.addEventListener('keydown', handleRFIDKeydown);
+
+            // Nasłuchuj na input (zbiera TAG znak po znaku)
+            ui.searchInput.addEventListener('input', handleRFIDInput);
+        }
+
+        function handleRFIDKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tagId = ui.searchInput.value.trim();
+
+                if (tagId.length > 0) {
+                    console.log(`🏷️ RFID TAG detected: ${tagId}`);
+                    handleRFIDTag(tagId);
                 }
-
-                const device = await navigator.usb.requestDevice({
-                    filters: [
-                        { vendorId: 0xffff },  // Common RFID reader vendor ID
-                        { vendorId: 0x08ff }   // Another common one
-                    ]
-                });
-
-                console.log("RFID device detected:", device);
-
-                await device.open();
-                if (device.configuration === null) {
-                    await device.selectConfiguration(1);
-                }
-                await device.claimInterface(0);
-
-                config.rfid.device = device;
-                config.rfid.connected = true;
-
-                updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Połączony');
-                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Czytnik: Połączony');
-
-                // Start reading RFID tags
-                startRFIDReading();
-
-                return true;
-            } catch (error) {
-                console.error('RFID connection error:', error);
-                updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Błąd połączenia');
-                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', false, 'Czytnik: Błąd');
-                return false;
             }
         }
 
-        function startRFIDReading() {
-            if (!config.rfid.device || !config.rfid.connected) return;
+        function handleRFIDInput(e) {
+            // Czytnik USB wpisuje TAG bardzo szybko (< 100ms)
+            // Człowiek pisze wolniej - możemy to rozpoznać
+            clearTimeout(rfidTimeout);
 
-            // Read RFID tags continuously
-            const readLoop = async () => {
-                try {
-                    const result = await config.rfid.device.transferIn(1, 64);
-
-                    if (result.data && result.data.byteLength > 0) {
-                        const decoder = new TextDecoder();
-                        const tagId = decoder.decode(result.data).trim();
-
-                        if (tagId) {
-                            console.log(`RFID tag read: ${tagId}`);
-                            handleRFIDTag(tagId);
-                        }
-                    }
-
-                    if (config.rfid.connected) {
-                        setTimeout(readLoop, 100);
-                    }
-                } catch (error) {
-                    console.error('RFID read error:', error);
-                    config.rfid.connected = false;
-                    updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Rozłączony');
+            rfidTimeout = setTimeout(() => {
+                // Jeśli input jest dłuższy niż 8 znaków i był wpisany szybko,
+                // prawdopodobnie to RFID (nie człowiek)
+                const value = ui.searchInput.value.trim();
+                if (value.length >= 8) {
+                    console.log(`⚡ Fast input detected (likely RFID): ${value}`);
+                    // Możemy tu dodać auto-submit po wykryciu szybkiego inputu
                 }
-            };
-
-            readLoop();
+            }, 150);
         }
 
         async function handleRFIDTag(tagId) {
+            // Zapisz ostatnio odczytany TAG
+            const lastTagInput = document.getElementById('last-rfid-tag');
+            if (lastTagInput) {
+                lastTagInput.value = tagId;
+            }
+
+            // Zmień status na "Odczytano"
+            updateIndicator('rfid-indicator', 'rfid-status', true, `RFID: Odczytano ${tagId}`);
+            updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, `Odczytano: ${tagId}`);
+
             // Find BIB for this TAG
             const bib = cache.tags[tagId];
 
             if (bib) {
-                console.log(`TAG ${tagId} -> BIB ${bib}`);
+                console.log(`✅ TAG ${tagId} -> BIB ${bib}`);
                 ui.searchInput.value = bib;
                 await searchAndDisplay(bib);
+
+                // Po 2 sekundach wróć do statusu "Gotowy"
+                setTimeout(() => {
+                    updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
+                    updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG');
+                }, 2000);
             } else {
                 console.log(`TAG ${tagId} not found in cache`);
                 showStatus('search-status', `TAG ${tagId} nie znaleziony`, 'error');
@@ -2343,9 +2341,7 @@
             ui.ledConnectionType.value = config.led.connectionType;
             ui.ledIp.value = config.led.ip;
             ui.ledPort.value = config.led.port;
-            ui.rfidPower.value = config.rfid.power;
 
-            updateRfidPowerLabel();
             updateLedConnectionUI();
         }
 
@@ -2357,11 +2353,6 @@
             }
         }
 
-        function updateRfidPowerLabel() {
-            const power = ui.rfidPower.value;
-            const distance = Math.round(power * 5);  // Rough estimation: power 3 = ~15cm
-            ui.rfidPowerLabel.textContent = `~${distance}cm`;
-        }
 
         // =====================================
         // API INITIALIZATION
@@ -2477,11 +2468,9 @@
         ui.saveDisplayBtn.addEventListener('click', saveDisplayConfig);
         ui.saveLedBtn.addEventListener('click', saveLedConfig);
         ui.testLedBtn.addEventListener('click', testLedConnection);
-        ui.connectRfidBtn.addEventListener('click', connectRFID);
         ui.openLedWindowBtn.addEventListener('click', openLEDWindow);
 
         ui.ledConnectionType.addEventListener('change', updateLedConnectionUI);
-        ui.rfidPower.addEventListener('input', updateRfidPowerLabel);
 
         // Password modal
         ui.submitPasswordBtn.addEventListener('click', checkPassword);
@@ -2506,7 +2495,8 @@
             updateIndicator('api-indicator', 'api-status', false, 'API: Skonfiguruj ID wydarzenia');
         }
 
-        updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Nie podłączony');
+        // Initialize RFID Keyboard Mode
+        initRFIDKeyboardMode();
         updateIndicator('led-indicator', 'led-status', true, 'LED: Gotowy');
 
         // Focus search input
