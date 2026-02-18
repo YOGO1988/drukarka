@@ -108,6 +108,51 @@
                     </div>
                 </div>
                 <div class="card">
+                    <h3>Import druzyn i zawodnikow z CSV</h3>
+                    <p style="font-size: 12px; color: #718096; margin-bottom: 4px;">Format: <code>nr_druzyny;nazwa_druzyny;nr_zawodnika;imie;nazwisko;plec;stopien</code></p>
+                    <p style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">stopien - opcjonalny | plec: M lub K | separator: srednik lub przecinek</p>
+                    <div class="flex">
+                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="flex:1;">
+                        <button onclick="importCSV()" class="btn-success">Importuj CSV</button>
+                        <button onclick="downloadDemoCSV('zawodnicy')" class="btn-secondary" style="font-size: 12px;">Pobierz demo</button>
+                    </div>
+                    <div id="csvImportStatus" style="margin-top: 8px; font-size: 12px;"></div>
+                </div>
+                <div class="card" style="background: #f7fafc; border: 1px dashed #cbd5e0;">
+                    <h3 style="cursor: pointer;" onclick="toggleInstructions()">Instrukcja importu CSV <span id="instrToggle" style="font-size: 12px; color: #718096;">(kliknij aby rozwinac)</span></h3>
+                    <div id="instructionsPanel" style="display: none; margin-top: 12px; font-size: 13px; line-height: 1.6; color: #4a5568;">
+                        <h4 style="margin-bottom: 8px;">1. Plik zawodnikow (druzyny + zawodnicy)</h4>
+                        <p>Kazdy wiersz = jeden zawodnik. Druzyny tworza sie automatycznie.</p>
+                        <table style="font-size: 12px; margin: 8px 0;">
+                            <thead><tr><th>Kolumna</th><th>Opis</th><th>Wymagana</th><th>Przyklad</th></tr></thead>
+                            <tbody>
+                                <tr><td>nr_druzyny</td><td>Numer druzyny (tor)</td><td>TAK</td><td>1</td></tr>
+                                <tr><td>nazwa_druzyny</td><td>Nazwa jednostki</td><td>TAK</td><td>OSP Powidz</td></tr>
+                                <tr><td>nr_zawodnika</td><td>Pozycja zawodnika w druzynie</td><td>TAK</td><td>3</td></tr>
+                                <tr><td>imie</td><td>Imie</td><td>TAK</td><td>Jan</td></tr>
+                                <tr><td>nazwisko</td><td>Nazwisko</td><td>TAK</td><td>Kowalski</td></tr>
+                                <tr><td>plec</td><td>M lub K</td><td>TAK</td><td>M</td></tr>
+                                <tr><td>stopien</td><td>Stopien sluzbowy</td><td>NIE</td><td>mł. ogn.</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Przyklad wiersza:</strong> <code>1;OSP Powidz;3;Jan;Kowalski;M;mł. ogn.</code></p>
+
+                        <h4 style="margin: 16px 0 8px;">2. Plik schematu biegow</h4>
+                        <p>Kazdy wiersz = jeden bieg. Podajesz numer druzyny i numer zawodnika dla lewego i prawego toru.</p>
+                        <table style="font-size: 12px; margin: 8px 0;">
+                            <thead><tr><th>Kolumna</th><th>Opis</th><th>Przyklad</th></tr></thead>
+                            <tbody>
+                                <tr><td>lewy_druzyna</td><td>Nr druzyny - tor lewy</td><td>1</td></tr>
+                                <tr><td>lewy_zawodnik</td><td>Nr zawodnika - tor lewy</td><td>1</td></tr>
+                                <tr><td>prawy_druzyna</td><td>Nr druzyny - tor prawy</td><td>2</td></tr>
+                                <tr><td>prawy_zawodnik</td><td>Nr zawodnika - tor prawy</td><td>1</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Przyklad wiersza:</strong> <code>1;1;2;1</code> (druzyna 1 zaw. 1 vs druzyna 2 zaw. 1)</p>
+                        <p style="margin-top: 4px;">Mozna tez wpisac puste pole jesli bieg jest pojedynczy: <code>1;3;;</code></p>
+                    </div>
+                </div>
+                <div class="card">
                     <h3>Lista Jednostek</h3>
                     <table>
                         <thead>
@@ -142,15 +187,6 @@
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Import z CSV</h3>
-                    <p style="font-size: 12px; color: #718096; margin-bottom: 8px;">Format CSV: <code>imie;nazwisko;jednostka;plec;stopien</code> (stopien opcjonalny, plec: M lub K, separator: srednik lub przecinek)</p>
-                    <div class="flex">
-                        <input type="file" id="csvFileInput" accept=".csv,.txt" style="flex:1;">
-                        <button onclick="importCSV()" class="btn-success">Importuj CSV</button>
-                    </div>
-                    <div id="csvImportStatus" style="margin-top: 8px; font-size: 12px;"></div>
-                </div>
-                <div class="card">
                     <h3>Lista Zawodnikow</h3>
                     <div id="competitorsList"></div>
                 </div>
@@ -160,11 +196,21 @@
             <div id="schema" class="section">
                 <h2>Schemat Biegow - I Seria</h2>
                 <div class="card">
-                    <div class="flex">
+                    <div class="flex" style="flex-wrap: wrap;">
                         <button onclick="generateAutoSchema()" class="btn-success">Generuj Automatycznie</button>
                         <button onclick="addManualRace()">Dodaj Bieg Recznie</button>
                         <button onclick="clearSchema()" class="btn-danger">Wyczysc</button>
                         <button onclick="printSection('schema')" class="btn-warning">Drukuj</button>
+                    </div>
+                    <div style="margin-top: 16px; padding: 12px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-bottom: 8px; color: #4a5568; font-size: 14px;">Import schematu z CSV</h4>
+                        <p style="font-size: 12px; color: #718096; margin-bottom: 8px;">Format: <code>lewy_druzyna;lewy_zawodnik;prawy_druzyna;prawy_zawodnik</code> (puste = brak na torze)</p>
+                        <div class="flex">
+                            <input type="file" id="csvSchemaInput" accept=".csv,.txt" style="flex:1;">
+                            <button onclick="importSchemaCSV()" class="btn-success">Importuj schemat</button>
+                            <button onclick="downloadDemoCSV('schemat')" class="btn-secondary" style="font-size: 12px;">Pobierz demo</button>
+                        </div>
+                        <div id="schemaImportStatus" style="margin-top: 8px; font-size: 12px;"></div>
                     </div>
 
                     <div style="margin-top: 20px; padding: 15px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
@@ -2085,6 +2131,30 @@
 
         // ==================== CSV IMPORT ====================
 
+        function toggleInstructions() {
+            const panel = document.getElementById('instructionsPanel');
+            const toggle = document.getElementById('instrToggle');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                toggle.textContent = '(kliknij aby zwinac)';
+            } else {
+                panel.style.display = 'none';
+                toggle.textContent = '(kliknij aby rozwinac)';
+            }
+        }
+
+        function parseCsvLine(line) {
+            const sep = line.includes(';') ? ';' : ',';
+            return line.split(sep).map(p => p.trim());
+        }
+
+        function isHeaderLine(line) {
+            const lower = line.toLowerCase();
+            return lower.includes('imie') || lower.includes('nazwisko') || lower.includes('name')
+                || lower.includes('druzyn') || lower.includes('jednostk') || lower.includes('lewy')
+                || lower.includes('nr_') || lower.includes('numer');
+        }
+
         function importCSV() {
             const fileInput = document.getElementById('csvFileInput');
             const statusDiv = document.getElementById('csvImportStatus');
@@ -2101,61 +2171,78 @@
 
                 let imported = 0;
                 let skipped = 0;
+                let unitsCreated = 0;
                 let errors = [];
 
-                // Skip header if first line looks like a header
                 let startLine = 0;
-                const firstLine = lines[0].toLowerCase();
-                if (firstLine.includes('imie') || firstLine.includes('nazwisko') || firstLine.includes('name')) {
-                    startLine = 1;
-                }
+                if (lines.length > 0 && isHeaderLine(lines[0])) startLine = 1;
 
                 for (let i = startLine; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
 
-                    // Support both ; and , as separator
-                    const sep = line.includes(';') ? ';' : ',';
-                    const parts = line.split(sep).map(p => p.trim());
+                    const parts = parseCsvLine(line);
 
-                    if (parts.length < 4) {
-                        errors.push(`Wiersz ${i + 1}: za malo kolumn (${parts.length}), potrzeba min 4`);
+                    // Format: nr_druzyny;nazwa_druzyny;nr_zawodnika;imie;nazwisko;plec;stopien
+                    if (parts.length < 6) {
+                        errors.push(`Wiersz ${i + 1}: za malo kolumn (${parts.length}), potrzeba min 6`);
                         skipped++;
                         continue;
                     }
 
-                    const firstName = parts[0];
-                    const lastName = parts[1];
-                    const unitName = parts[2];
-                    const gender = parts[3].toUpperCase();
-                    const rank = parts.length > 4 ? parts[4] : ''; // optional rank/stopien
+                    const unitNumber = parseInt(parts[0]);
+                    const unitName = parts[1];
+                    const position = parseInt(parts[2]);
+                    const firstName = parts[3];
+                    const lastName = parts[4];
+                    const gender = parts[5].toUpperCase();
+                    const rank = parts.length > 6 ? parts[6] : '';
 
-                    if (!firstName || !lastName || !unitName) {
-                        errors.push(`Wiersz ${i + 1}: brakuje imienia, nazwiska lub jednostki`);
+                    if (!unitNumber || !unitName) {
+                        errors.push(`Wiersz ${i + 1}: brakuje numeru lub nazwy druzyny`);
                         skipped++;
                         continue;
                     }
-
+                    if (!position || !firstName || !lastName) {
+                        errors.push(`Wiersz ${i + 1}: brakuje nr zawodnika, imienia lub nazwiska`);
+                        skipped++;
+                        continue;
+                    }
                     if (gender !== 'M' && gender !== 'K') {
-                        errors.push(`Wiersz ${i + 1}: plec musi byc M lub K (podano: ${parts[3]})`);
+                        errors.push(`Wiersz ${i + 1}: plec musi byc M lub K (podano: ${parts[5]})`);
                         skipped++;
                         continue;
                     }
 
-                    // Find or create unit
-                    let unit = units.find(u => u.name.toLowerCase() === unitName.toLowerCase());
+                    // Find or create unit by number
+                    let unit = units.find(u => u.number === unitNumber);
                     if (!unit) {
-                        unit = {
-                            id: Date.now() + Math.random(),
-                            name: unitName,
-                            number: null
-                        };
-                        units.push(unit);
+                        // Check by name too
+                        unit = units.find(u => u.name.toLowerCase() === unitName.toLowerCase());
+                        if (unit) {
+                            unit.number = unitNumber;
+                        } else {
+                            unit = {
+                                id: Date.now() + Math.random(),
+                                name: unitName,
+                                number: unitNumber
+                            };
+                            units.push(unit);
+                            unitsCreated++;
+                        }
+                    }
+
+                    // Check duplicate position
+                    const existingPos = competitors.find(c => c.unitId === unit.id && c.position === position);
+                    if (existingPos) {
+                        errors.push(`Wiersz ${i + 1}: pozycja ${position} w druzynie ${unitName} juz zajeta`);
+                        skipped++;
+                        continue;
                     }
 
                     const unitCompetitors = competitors.filter(c => c.unitId === unit.id);
                     if (unitCompetitors.length >= 12) {
-                        errors.push(`Wiersz ${i + 1}: jednostka ${unitName} ma juz 12 zawodnikow`);
+                        errors.push(`Wiersz ${i + 1}: druzyna ${unitName} ma juz 12 zawodnikow`);
                         skipped++;
                         continue;
                     }
@@ -2167,7 +2254,7 @@
                         unitId: unit.id,
                         gender: gender,
                         isPK: false,
-                        position: unitCompetitors.length + 1,
+                        position: position,
                         rank: rank || ''
                     });
 
@@ -2178,22 +2265,171 @@
                 updateCompetitorsList();
                 updateCompetitorUnitSelect();
                 updateEditModalsSelects();
+                scheduleAutoSave();
 
-                let statusMsg = `<span style="color: #38a169;">Zaimportowano: ${imported} zawodnikow</span>`;
+                let statusMsg = `<span style="color: #38a169;">Zaimportowano: ${imported} zawodnikow`;
+                if (unitsCreated > 0) statusMsg += `, utworzono ${unitsCreated} druzyn`;
+                statusMsg += '</span>';
                 if (skipped > 0) {
                     statusMsg += `<br><span style="color: #d69e2e;">Pominieto: ${skipped}</span>`;
                 }
                 if (errors.length > 0) {
                     statusMsg += '<br><small style="color: #e53e3e;">' + errors.slice(0, 5).join('<br>') + '</small>';
-                    if (errors.length > 5) {
-                        statusMsg += `<br><small style="color: #e53e3e;">...i ${errors.length - 5} wiecej bledow</small>`;
-                    }
+                    if (errors.length > 5) statusMsg += `<br><small style="color: #e53e3e;">...i ${errors.length - 5} wiecej</small>`;
                 }
                 statusDiv.innerHTML = statusMsg;
                 fileInput.value = '';
             };
 
             reader.readAsText(fileInput.files[0], 'UTF-8');
+        }
+
+        function importSchemaCSV() {
+            const fileInput = document.getElementById('csvSchemaInput');
+            const statusDiv = document.getElementById('schemaImportStatus');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                statusDiv.innerHTML = '<span style="color: #e53e3e;">Wybierz plik CSV</span>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(l => l.trim());
+
+                let imported = 0;
+                let errors = [];
+
+                let startLine = 0;
+                if (lines.length > 0 && isHeaderLine(lines[0])) startLine = 1;
+
+                for (let i = startLine; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const parts = parseCsvLine(line);
+
+                    if (parts.length < 4) {
+                        errors.push(`Wiersz ${i + 1}: za malo kolumn`);
+                        continue;
+                    }
+
+                    const leftUnitNum = parts[0] ? parseInt(parts[0]) : null;
+                    const leftPos = parts[1] ? parseInt(parts[1]) : null;
+                    const rightUnitNum = parts[2] ? parseInt(parts[2]) : null;
+                    const rightPos = parts[3] ? parseInt(parts[3]) : null;
+
+                    if (!leftUnitNum && !rightUnitNum) {
+                        errors.push(`Wiersz ${i + 1}: oba tory puste`);
+                        continue;
+                    }
+
+                    const race = {
+                        id: Date.now() + schema.length + Math.random(),
+                        leftLane: null,
+                        rightLane: null
+                    };
+
+                    if (leftUnitNum && leftPos) {
+                        const unit = units.find(u => u.number === leftUnitNum);
+                        if (!unit) {
+                            errors.push(`Wiersz ${i + 1}: druzyna nr ${leftUnitNum} nie istnieje`);
+                            continue;
+                        }
+                        const comp = competitors.find(c => c.unitId === unit.id && c.position === leftPos && !c.isPK);
+                        if (!comp) {
+                            errors.push(`Wiersz ${i + 1}: zawodnik ${leftUnitNum}/${leftPos} nie istnieje`);
+                            continue;
+                        }
+                        race.leftLane = {
+                            unitNumber: leftUnitNum,
+                            position: leftPos,
+                            competitorId: comp.id,
+                            name: `${comp.firstName} ${comp.lastName}`
+                        };
+                    }
+
+                    if (rightUnitNum && rightPos) {
+                        const unit = units.find(u => u.number === rightUnitNum);
+                        if (!unit) {
+                            errors.push(`Wiersz ${i + 1}: druzyna nr ${rightUnitNum} nie istnieje`);
+                            continue;
+                        }
+                        const comp = competitors.find(c => c.unitId === unit.id && c.position === rightPos && !c.isPK);
+                        if (!comp) {
+                            errors.push(`Wiersz ${i + 1}: zawodnik ${rightUnitNum}/${rightPos} nie istnieje`);
+                            continue;
+                        }
+                        race.rightLane = {
+                            unitNumber: rightUnitNum,
+                            position: rightPos,
+                            competitorId: comp.id,
+                            name: `${comp.firstName} ${comp.lastName}`
+                        };
+                    }
+
+                    schema.push(race);
+                    imported++;
+                }
+
+                updateSchemaList();
+                scheduleAutoSave();
+
+                let statusMsg = `<span style="color: #38a169;">Zaimportowano: ${imported} biegow</span>`;
+                if (errors.length > 0) {
+                    statusMsg += '<br><small style="color: #e53e3e;">' + errors.slice(0, 5).join('<br>') + '</small>';
+                    if (errors.length > 5) statusMsg += `<br><small style="color: #e53e3e;">...i ${errors.length - 5} wiecej</small>`;
+                }
+                statusDiv.innerHTML = statusMsg;
+                fileInput.value = '';
+            };
+
+            reader.readAsText(fileInput.files[0], 'UTF-8');
+        }
+
+        function downloadDemoCSV(type) {
+            let content = '';
+            let filename = '';
+
+            if (type === 'zawodnicy') {
+                filename = 'demo_zawodnicy.csv';
+                content = 'nr_druzyny;nazwa_druzyny;nr_zawodnika;imie;nazwisko;plec;stopien\n';
+                content += '1;OSP Powidz;1;Jan;Kowalski;M;ml. ogn.\n';
+                content += '1;OSP Powidz;2;Piotr;Nowak;M;ogn.\n';
+                content += '1;OSP Powidz;3;Adam;Wisniewski;M;str.\n';
+                content += '1;OSP Powidz;4;Anna;Kowalczyk;K;\n';
+                content += '1;OSP Powidz;5;Maria;Kaminska;K;\n';
+                content += '2;OSP Slupca;1;Tomasz;Lewandowski;M;asp.\n';
+                content += '2;OSP Slupca;2;Marek;Wojcik;M;str.\n';
+                content += '2;OSP Slupca;3;Kamil;Zielinski;M;\n';
+                content += '2;OSP Slupca;4;Ewa;Szymanska;K;\n';
+                content += '3;OSP Koszalin;1;Robert;Dabrowski;M;ogn.\n';
+                content += '3;OSP Koszalin;2;Lukasz;Kozlowski;M;\n';
+                content += '3;OSP Koszalin;3;Monika;Jankowska;K;\n';
+                content += '4;OSP Zdunska Wola;1;Pawel;Mazur;M;ml. ogn.\n';
+                content += '4;OSP Zdunska Wola;2;Krzysztof;Krawczyk;M;\n';
+                content += '4;OSP Zdunska Wola;3;Agnieszka;Wojciechowska;K;\n';
+            } else if (type === 'schemat') {
+                filename = 'demo_schemat.csv';
+                content = 'lewy_druzyna;lewy_zawodnik;prawy_druzyna;prawy_zawodnik\n';
+                content += '1;1;2;1\n';
+                content += '1;2;2;2\n';
+                content += '1;3;2;3\n';
+                content += '1;4;2;4\n';
+                content += '1;5;;\n';
+                content += '3;1;4;1\n';
+                content += '3;2;4;2\n';
+                content += '3;3;4;3\n';
+            }
+
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // ==================== SAVE / LOAD ====================
