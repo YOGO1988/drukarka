@@ -149,53 +149,51 @@
             border-color: #4CAF50;
         }
 
-        /* === PASEK STATUSU (kompaktowy) === */
-        .status-strip {
+        /* === PASEK STATUSU + PODGLĄD LED obok === */
+        .bottom-section {
             width: 100%;
             max-width: 900px;
             display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .status-strip {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .status-strip .connection-status {
             background: #f8f8f8;
             border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 13px;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        /* === MAŁY PODGLĄD LED NA DOLE === */
+        /* === MAŁY PODGLĄD LED NA PRAWO === */
         .led-preview {
-            width: 100%;
-            max-width: 900px;
+            flex: 0 0 auto;
             background: #f8f8f8;
             border: 1px solid #ddd;
             border-radius: 10px;
-            padding: 16px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .led-preview-label {
-            font-size: 12px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-
-        .led-preview-canvas-wrap {
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 8px;
+        }
+
+        .led-preview-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         #led-canvas {
@@ -208,22 +206,37 @@
         }
 
         .led-preview-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            width: 100%;
+            text-align: center;
         }
 
         .display-status {
             color: #FF3333;
             font-weight: bold;
-            font-size: 13px;
-            padding: 6px 12px;
+            font-size: 11px;
+            padding: 4px 8px;
             background: rgba(0, 0, 0, 0.85);
             border-radius: 4px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .unofficial-notice {
+            font-size: 10px;
+            color: #FF8C00;
+            margin: 2px 0;
+        }
+
+        .results-link {
+            font-size: 9px;
+            color: #888;
+        }
+
+        .results-link a {
+            color: #2196F3;
+            text-decoration: none;
         }
 
         .unofficial-notice {
@@ -447,32 +460,33 @@
                 <div id="search-status" class="status-box"></div>
             </div>
 
-            <!-- PASEK STATUSU (kompaktowy) -->
-            <div class="status-strip">
-                <div class="connection-status">
-                    <span class="status-indicator" id="api-indicator"></span>
-                    <span id="api-status">API: nie połączono</span>
+            <!-- STATUS + PODGLĄD LED obok siebie -->
+            <div class="bottom-section">
+                <!-- PASEK STATUSU (po lewej) -->
+                <div class="status-strip">
+                    <div class="connection-status">
+                        <span class="status-indicator" id="api-indicator"></span>
+                        <span id="api-status">API: nie połączono</span>
+                    </div>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="rfid-indicator"></span>
+                        <span id="rfid-status">RFID: nie aktywny</span>
+                    </div>
+                    <div class="connection-status">
+                        <span class="status-indicator" id="led-indicator"></span>
+                        <span id="led-status">LED: gotowy</span>
+                    </div>
                 </div>
-                <div class="connection-status">
-                    <span class="status-indicator" id="rfid-indicator"></span>
-                    <span id="rfid-status">RFID: nie aktywny</span>
-                </div>
-                <div class="connection-status">
-                    <span class="status-indicator" id="led-indicator"></span>
-                    <span id="led-status">LED: gotowy</span>
-                </div>
-            </div>
 
-            <!-- MAŁY PODGLĄD LED (na dole) -->
-            <div class="led-preview">
-                <div class="led-preview-canvas-wrap">
-                    <div class="led-preview-label">Podgląd LED</div>
+                <!-- MAŁY PODGLĄD LED (po prawej) -->
+                <div class="led-preview">
+                    <div class="led-preview-label">PODGLĄD LED</div>
                     <canvas id="led-canvas" width="240" height="240"></canvas>
-                </div>
-                <div class="led-preview-info">
-                    <div class="display-status" id="display-status"></div>
-                    <div class="unofficial-notice">Wyniki nieoficjalne</div>
-                    <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+                    <div class="led-preview-info">
+                        <div class="display-status" id="display-status"></div>
+                        <div class="unofficial-notice">Wyniki nieoficjalne</div>
+                        <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+                    </div>
                 </div>
             </div>
 
@@ -2155,11 +2169,12 @@
         function handleRFIDKeydown(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const tagId = ui.searchInput.value.trim();
+                const inputValue = ui.searchInput.value.trim();
 
-                if (tagId.length > 0) {
-                    console.log(`🏷️ RFID TAG detected: ${tagId}`);
-                    handleRFIDTag(tagId);
+                if (inputValue.length > 0) {
+                    console.log(`🔍 Input detected (Enter pressed): ${inputValue}`);
+                    // Sprawdź czy to TAG z cache.tags, czy bezpośredni numer BIB
+                    handleRFIDTag(inputValue);
                 }
             }
         }
@@ -2180,34 +2195,35 @@
             }, 150);
         }
 
-        async function handleRFIDTag(tagId) {
-            // Zapisz ostatnio odczytany TAG
+        async function handleRFIDTag(inputValue) {
+            // Zapisz ostatnio odczytany TAG/BIB
             const lastTagInput = document.getElementById('last-rfid-tag');
             if (lastTagInput) {
-                lastTagInput.value = tagId;
+                lastTagInput.value = inputValue;
             }
 
-            // Zmień status na "Odczytano"
-            updateIndicator('rfid-indicator', 'rfid-status', true, `RFID: Odczytano ${tagId}`);
-            updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, `Odczytano: ${tagId}`);
+            // Sprawdź czy input to TAG (w cache.tags), czy bezpośredni numer BIB
+            const bib = cache.tags[inputValue] || inputValue;
 
-            // Find BIB for this TAG
-            const bib = cache.tags[tagId];
-
-            if (bib) {
-                console.log(`✅ TAG ${tagId} -> BIB ${bib}`);
-                ui.searchInput.value = bib;
-                await searchAndDisplay(bib);
-
-                // Po 2 sekundach wróć do statusu "Gotowy"
-                setTimeout(() => {
-                    updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
-                    updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG');
-                }, 2000);
+            if (cache.tags[inputValue]) {
+                // Input był TAGiem - znaleziono mapowanie TAG -> BIB
+                console.log(`✅ TAG ${inputValue} -> BIB ${bib}`);
+                updateIndicator('rfid-indicator', 'rfid-status', true, `RFID: Odczytano TAG ${inputValue}`);
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, `Odczytano: ${inputValue} -> BIB ${bib}`);
             } else {
-                console.log(`TAG ${tagId} not found in cache`);
-                showStatus('search-status', `TAG ${tagId} nie znaleziony`, 'error');
+                // Input był bezpośrednio numerem BIB
+                console.log(`🔢 Bezpośredni numer BIB: ${bib}`);
+                updateIndicator('rfid-indicator', 'rfid-status', true, `Szukam BIB: ${bib}`);
             }
+
+            // Szukaj i wyświetl zawodnika po BIB
+            await searchAndDisplay(bib);
+
+            // Po 2 sekundach wróć do statusu "Gotowy"
+            setTimeout(() => {
+                updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG/BIB');
+            }, 2000);
         }
 
         // =====================================
@@ -2223,18 +2239,29 @@
             showStatus('search-status', 'Szukam...', '');
 
             try {
+                // Szukaj po BIB (numerze startowym)
                 const athlete = await findAthleteByBib(bib);
 
                 if (athlete) {
                     showStatus('search-status', `Znaleziono: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
                     renderLEDDisplay(athlete);
+
+                    // Wyczyść input po udanym wyszukiwaniu - gotowy na kolejny numer
+                    ui.searchInput.value = '';
+                    ui.searchInput.focus();
                 } else {
-                    showStatus('search-status', 'Nie znaleziono zawodnika', 'error');
+                    showStatus('search-status', 'Nie znaleziono zawodnika o numerze BIB: ' + bib, 'error');
                     clearLEDDisplay();
+                    // Wyczyść input również przy błędzie
+                    ui.searchInput.value = '';
+                    ui.searchInput.focus();
                 }
             } catch (error) {
                 showStatus('search-status', `Błąd: ${error.message}`, 'error');
                 clearLEDDisplay();
+                // Wyczyść input również przy wyjątku
+                ui.searchInput.value = '';
+                ui.searchInput.focus();
             }
         }
 
