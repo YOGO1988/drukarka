@@ -65,45 +65,48 @@
 
         /* DISPLAY SCREEN - Simple for athletes */
         #display-screen {
-            padding: 20px;
+            padding: 15px;
             background: #fff;
-            overflow-y: auto;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         #display-screen.active {
             display: flex !important;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            justify-content: center;
+            gap: 12px;
         }
 
         /* === GŁÓWNY ELEMENT: BIB INPUT === */
         .bib-main-panel {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
             background: #f8f8f8;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 2px solid #ddd;
-            padding: 30px 40px;
+            padding: 20px 30px;
         }
 
         .bib-main-panel h2 {
             color: #FF8C00;
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin: 0 0 15px 0;
             text-align: center;
         }
 
         #search-input {
             width: 100%;
             box-sizing: border-box;
-            padding: 30px 20px;
-            font-size: 72px;
+            padding: 20px 15px;
+            font-size: 64px;
             font-weight: bold;
             text-align: center;
             border: 3px solid #ddd;
             border-radius: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             letter-spacing: 12px;
             color: #333;
             background: #fff;
@@ -117,8 +120,8 @@
 
         #search-btn {
             width: 100%;
-            padding: 22px;
-            font-size: 22px;
+            padding: 18px;
+            font-size: 20px;
             font-weight: bold;
             letter-spacing: 4px;
             background: #FF8C00;
@@ -131,69 +134,56 @@
         #search-btn:hover { background: #FF7000; }
 
         .status-box {
-            background: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            padding: 12px 15px;
-            border-radius: 4px;
-            margin-top: 12px;
-            display: none;
+            display: none !important; /* Ukryj "Szukam..." całkowicie */
         }
 
-        .status-box.error {
-            background: #ffe7e7;
-            border-color: #f44336;
-        }
-
-        .status-box.success {
-            background: #e7ffe7;
-            border-color: #4CAF50;
-        }
-
-        /* === PASEK STATUSU + PODGLĄD LED obok === */
+        /* === STATUS + LED w jednej linii === */
         .bottom-section {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .status-strip {
-            flex: 1;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            gap: 20px;
+            align-items: center;
         }
 
         .status-strip .connection-status {
-            background: #f8f8f8;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 13px;
+            min-width: 120px; /* Stała szerokość - nie przeskakuje */
         }
 
-        /* === MAŁY PODGLĄD LED NA PRAWO === */
+        /* Kropki - tylko te będą widoczne */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .status-indicator.active {
+            background: #4CAF50; /* Zielona */
+        }
+
+        .status-indicator.inactive {
+            background: #f44336; /* Czerwona */
+        }
+
+        /* === MAŁY PODGLĄD LED - tylko canvas === */
         .led-preview {
-            flex: 0 0 auto;
-            background: #f8f8f8;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 12px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 8px;
-        }
-
-        .led-preview-label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            justify-content: center;
         }
 
         #led-canvas {
@@ -201,42 +191,32 @@
             background: #000;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
         }
 
-        .led-preview-info {
+        /* === INFO POD STATUSAMI === */
+        .footer-info {
             width: 100%;
+            max-width: 800px;
             text-align: center;
-        }
-
-        .display-status {
-            color: #FF3333;
-            font-weight: bold;
             font-size: 11px;
-            padding: 4px 8px;
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: inline-block;
-            margin-bottom: 4px;
-        }
-
-        .unofficial-notice {
-            font-size: 10px;
-            color: #FF8C00;
-            margin: 2px 0;
-        }
-
-        .results-link {
-            font-size: 9px;
             color: #888;
+            margin-top: 5px;
         }
 
-        .results-link a {
+        .footer-info a {
             color: #2196F3;
             text-decoration: none;
+        }
+
+        /* Ukryj te elementy całkowicie */
+        .led-preview-label,
+        .led-preview-info,
+        .display-status,
+        .unofficial-notice,
+        .results-link {
+            display: none !important;
         }
 
         .unofficial-notice {
@@ -460,34 +440,28 @@
                 <div id="search-status" class="status-box"></div>
             </div>
 
-            <!-- STATUS + PODGLĄD LED obok siebie -->
+            <!-- STATUS + LED w jednej linii -->
             <div class="bottom-section">
-                <!-- PASEK STATUSU (po lewej) -->
                 <div class="status-strip">
                     <div class="connection-status">
                         <span class="status-indicator" id="api-indicator"></span>
-                        <span id="api-status">API: nie połączono</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="rfid-indicator"></span>
-                        <span id="rfid-status">RFID: nie aktywny</span>
+                        <span id="api-status">API</span>
                     </div>
                     <div class="connection-status">
                         <span class="status-indicator" id="led-indicator"></span>
-                        <span id="led-status">LED: gotowy</span>
+                        <span id="led-status">LED</span>
                     </div>
                 </div>
 
-                <!-- MAŁY PODGLĄD LED (po prawej) -->
+                <!-- MAŁY PODGLĄD LED - tylko canvas -->
                 <div class="led-preview">
-                    <div class="led-preview-label">PODGLĄD LED</div>
                     <canvas id="led-canvas" width="240" height="240"></canvas>
-                    <div class="led-preview-info">
-                        <div class="display-status" id="display-status"></div>
-                        <div class="unofficial-notice">Wyniki nieoficjalne</div>
-                        <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
-                    </div>
                 </div>
+            </div>
+
+            <!-- INFO o wynikach pod statusami -->
+            <div class="footer-info">
+                Wyniki nieoficjalne &nbsp;&nbsp;&nbsp; wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a>
             </div>
 
         </div>
