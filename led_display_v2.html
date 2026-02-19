@@ -65,91 +65,137 @@
 
         /* DISPLAY SCREEN - Simple for athletes */
         #display-screen {
-            padding: 10px;
+            padding: 20px;
             background: #fff;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         #display-screen.active {
             display: flex !important;
-            flex-direction: row;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .search-panel {
-            flex: 0 0 550px; /* Zwiększone z 400px - większy focus na wpisywanie */
-            display: flex;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            gap: 16px;
         }
-        
-        .search-box {
+
+        /* === GŁÓWNY ELEMENT: BIB INPUT === */
+        .bib-main-panel {
+            width: 100%;
+            max-width: 900px;
             background: #f8f8f8;
-            padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 2px solid #ddd;
+            padding: 30px 40px;
         }
-        
-        .search-box h2 {
+
+        .bib-main-panel h2 {
             color: #FF8C00;
+            font-size: 28px;
             margin-bottom: 20px;
-            font-size: 24px; /* Zwiększone z 20px - większa widoczność */
+            text-align: center;
         }
-        
+
         #search-input {
             width: 100%;
-            padding: 25px;
-            font-size: 42px; /* Zwiększone z 32px - większy focus na wpisywanie */
+            box-sizing: border-box;
+            padding: 30px 20px;
+            font-size: 72px;
             font-weight: bold;
             text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            letter-spacing: 12px;
+            color: #333;
+            background: #fff;
         }
-        
+
+        #search-input:focus {
+            border-color: #FF8C00;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+        }
+
         #search-btn {
             width: 100%;
-            padding: 20px;
-            font-size: 20px;
+            padding: 22px;
+            font-size: 22px;
             font-weight: bold;
+            letter-spacing: 4px;
             background: #FF8C00;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
         }
-        
+
         #search-btn:hover { background: #FF7000; }
-        
+
         .status-box {
             background: #e7f3ff;
             border-left: 4px solid #2196F3;
-            padding: 15px;
+            padding: 12px 15px;
             border-radius: 4px;
+            margin-top: 12px;
             display: none;
         }
-        
+
         .status-box.error {
             background: #ffe7e7;
             border-color: #f44336;
         }
-        
+
         .status-box.success {
             background: #e7ffe7;
             border-color: #4CAF50;
         }
-        
+
+        /* === PASEK STATUSU (kompaktowy) === */
+        .status-strip {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-strip .connection-status {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* === MAŁY PODGLĄD LED NA DOLE === */
         .led-preview {
-            flex: 1;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
+            width: 100%;
+            max-width: 900px;
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .led-preview-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .led-preview-canvas-wrap {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
         }
 
         #led-canvas {
@@ -157,21 +203,27 @@
             background: #000;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
+            width: 120px;
+            height: 120px;
+        }
+
+        .led-preview-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .display-status {
             color: #FF3333;
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
-            text-align: center;
-            min-height: 20px;
-            padding: 8px 16px;
+            font-size: 13px;
+            padding: 6px 12px;
             background: rgba(0, 0, 0, 0.85);
-            border-radius: 6px;
+            border-radius: 4px;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            box-shadow: 0 2px 8px rgba(255, 51, 51, 0.3);
+            letter-spacing: 2px;
+            display: inline-block;
         }
 
         .unofficial-notice {
@@ -386,37 +438,44 @@
 
         <!-- DISPLAY SCREEN (for athletes) -->
         <div class="screen" id="display-screen">
-            <div class="search-panel">
-                <div class="search-box">
-                    <h2>Wprowadź numer startowy</h2>
-                    <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
-                    <button id="search-btn" class="btn-full">ENTER ↵</button>
-                    <div id="search-status" class="status-box"></div>
+
+            <!-- GŁÓWNY ELEMENT: BIB Input -->
+            <div class="bib-main-panel">
+                <h2>Wprowadź numer startowy</h2>
+                <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
+                <button id="search-btn">ENTER ↵</button>
+                <div id="search-status" class="status-box"></div>
+            </div>
+
+            <!-- PASEK STATUSU (kompaktowy) -->
+            <div class="status-strip">
+                <div class="connection-status">
+                    <span class="status-indicator" id="api-indicator"></span>
+                    <span id="api-status">API: nie połączono</span>
                 </div>
-                
-                <div class="search-box">
-                    <h2>📊 Status systemu</h2>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="api-indicator"></span>
-                        <span id="api-status">API: nie połączono</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="rfid-indicator"></span>
-                        <span id="rfid-status">RFID: nie aktywny</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="led-indicator"></span>
-                        <span id="led-status">LED: gotowy</span>
-                    </div>
+                <div class="connection-status">
+                    <span class="status-indicator" id="rfid-indicator"></span>
+                    <span id="rfid-status">RFID: nie aktywny</span>
+                </div>
+                <div class="connection-status">
+                    <span class="status-indicator" id="led-indicator"></span>
+                    <span id="led-status">LED: gotowy</span>
                 </div>
             </div>
-            
+
+            <!-- MAŁY PODGLĄD LED (na dole) -->
             <div class="led-preview">
-                <div class="display-status" id="display-status"></div>
-                <canvas id="led-canvas" width="240" height="240"></canvas>
-                <div class="unofficial-notice">Wyniki nieoficjalne</div>
-                <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+                <div class="led-preview-canvas-wrap">
+                    <div class="led-preview-label">Podgląd LED</div>
+                    <canvas id="led-canvas" width="240" height="240"></canvas>
+                </div>
+                <div class="led-preview-info">
+                    <div class="display-status" id="display-status"></div>
+                    <div class="unofficial-notice">Wyniki nieoficjalne</div>
+                    <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+                </div>
             </div>
+
         </div>
 
         <!-- ADMIN SCREEN -->
@@ -1485,12 +1544,53 @@
                 }
             }
 
+            // KROK 4: Pobierz klub - jeśli nie ma w cache.clubs, zapytaj API bezpośrednio
+            // (fetchCustomQuestions() jest wolne bo pobiera wszystkich - nie czekamy na nie)
+            if (cache.clubs && cache.clubs[bib]) {
+                finalAthlete.club = cache.clubs[bib];
+                console.log(`✅ Klub z cache.clubs: ${finalAthlete.club}`);
+            } else {
+                // cache.clubs jeszcze nie gotowy - pobierz bezpośrednio dla tego BIBu
+                try {
+                    const entryResponse = await makeApiRequest(`/api/event/${config.api.eventId}/entry`, {
+                        bib,
+                        include_all_fields: 'true',
+                        elide_json: 'false'
+                    });
+                    const entries = entryResponse?.event_entry || entryResponse?.entries || [];
+                    const entry = entries.find(e => e.entry_bib === bib || String(e.entry_bib) === String(bib));
+                    if (entry) {
+                        let club = '';
+                        if (entry.club && entry.club !== 'Tak') club = entry.club;
+                        else if (entry.athlete_club && entry.athlete_club !== 'Tak') club = entry.athlete_club;
+                        else {
+                            for (const [key, value] of Object.entries(entry)) {
+                                if (key.startsWith('custom_element') && value && value !== 'Tak') {
+                                    club = value;
+                                    break;
+                                }
+                            }
+                        }
+                        if (club) {
+                            finalAthlete.club = club.toString().trim();
+                            // Zapisz do cache na przyszłość
+                            if (!cache.clubs) cache.clubs = {};
+                            cache.clubs[bib] = finalAthlete.club;
+                            console.log(`✅ Klub z bezpośredniego API: ${finalAthlete.club}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Nie udało się pobrać klubu dla BIB ${bib}:`, e);
+                }
+            }
+
             console.log(`Final athlete data:`, {
                 bib: finalAthlete.entry_bib,
                 overall_place: finalAthlete.overall_place,
                 bracket_name: finalAthlete.bracket_name,
                 division_place: finalAthlete.division_place,
-                gender_place: finalAthlete.gender_place
+                gender_place: finalAthlete.gender_place,
+                club: finalAthlete.club
             });
 
             return finalAthlete;
