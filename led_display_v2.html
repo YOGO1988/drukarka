@@ -65,7 +65,6 @@
 
         /* DISPLAY SCREEN - Simple for athletes */
         #display-screen {
-            padding: 15px;
             background: #fff;
             height: 100vh;
             box-sizing: border-box;
@@ -75,38 +74,44 @@
         #display-screen.active {
             display: flex !important;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch;
+        }
+
+        /* === GŁÓWNY WIERSZ: BIB (4/5) + LED (1/5) === */
+        .main-row {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* === LEWA SEKCJA: BIB INPUT (4/5) === */
+        .bib-main-panel {
+            flex: 4;
+            background: #f8f8f8;
+            border-right: 2px solid #ddd;
+            padding: 25px 40px;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             gap: 12px;
         }
 
-        /* === GŁÓWNY ELEMENT: BIB INPUT === */
-        .bib-main-panel {
-            width: 100%;
-            max-width: 800px;
-            background: #f8f8f8;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            padding: 20px 30px;
-        }
-
         .bib-main-panel h2 {
             color: #FF8C00;
-            font-size: 24px;
-            margin: 0 0 15px 0;
-            text-align: center;
+            font-size: 20px;
+            margin: 0;
         }
 
         #search-input {
             width: 100%;
             box-sizing: border-box;
-            padding: 20px 15px;
-            font-size: 64px;
+            padding: 15px 15px;
+            font-size: 72px;
             font-weight: bold;
             text-align: center;
             border: 3px solid #ddd;
             border-radius: 8px;
-            margin-bottom: 12px;
             letter-spacing: 12px;
             color: #333;
             background: #fff;
@@ -120,8 +125,8 @@
 
         #search-btn {
             width: 100%;
-            padding: 18px;
-            font-size: 20px;
+            padding: 14px;
+            font-size: 18px;
             font-weight: bold;
             letter-spacing: 4px;
             background: #FF8C00;
@@ -134,19 +139,10 @@
         #search-btn:hover { background: #FF7000; }
 
         .status-box {
-            display: none !important; /* Ukryj "Szukam..." całkowicie */
+            display: none !important;
         }
 
-        /* === STATUS + LED w jednej linii === */
-        .bottom-section {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
+        /* Statusy w lewym panelu */
         .status-strip {
             display: flex;
             gap: 20px;
@@ -158,10 +154,10 @@
             align-items: center;
             gap: 6px;
             font-size: 13px;
-            min-width: 120px; /* Stała szerokość - nie przeskakuje */
+            min-width: 60px;
         }
 
-        /* Kropki - tylko te będą widoczne */
+        /* Kropki statusu */
         .status-indicator {
             width: 10px;
             height: 10px;
@@ -172,37 +168,44 @@
         }
 
         .status-indicator.active {
-            background: #4CAF50; /* Zielona */
+            background: #4CAF50;
         }
 
         .status-indicator.inactive {
-            background: #f44336; /* Czerwona */
+            background: #f44336;
         }
 
-        /* === MAŁY PODGLĄD LED - tylko canvas === */
-        .led-preview {
+        /* === PRAWA SEKCJA: LED PODGLĄD (1/5) === */
+        .led-panel {
+            flex: 1;
+            background: #1a1a1a;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 10px;
         }
 
         #led-canvas {
-            border: 2px solid #333;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1;
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #444;
             background: #000;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            width: 100px;
-            height: 100px;
         }
 
-        /* === INFO POD STATUSAMI === */
+        /* === STOPKA === */
         .footer-info {
-            width: 100%;
-            max-width: 800px;
+            padding: 5px 20px;
             text-align: center;
             font-size: 11px;
             color: #888;
-            margin-top: 5px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
         }
 
         .footer-info a {
@@ -210,51 +213,14 @@
             text-decoration: none;
         }
 
-        /* Ukryj te elementy całkowicie */
+        /* Ukryj nieużywane elementy */
         .led-preview-label,
         .led-preview-info,
         .display-status,
         .unofficial-notice,
-        .results-link {
-            display: none !important;
-        }
-
-        .unofficial-notice {
-            color: #FF8C00;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            text-align: center;
-            font-style: italic;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 3px;
-        }
-
-        .results-link {
-            color: #333;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 5px;
-            padding: 3px;
-            font-weight: normal;
-        }
-
-        .results-link a {
-            color: #FF8C00;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .results-link a:hover {
-            text-decoration: underline;
-        }
-        
+        .results-link,
         .led-info {
-            color: #888;
-            font-size: 12px;
-            margin-top: 15px;
+            display: none !important;
         }
         
         /* ADMIN SCREEN */
@@ -432,34 +398,35 @@
         <!-- DISPLAY SCREEN (for athletes) -->
         <div class="screen" id="display-screen">
 
-            <!-- GŁÓWNY ELEMENT: BIB Input -->
-            <div class="bib-main-panel">
-                <h2>Wprowadź numer startowy</h2>
-                <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
-                <button id="search-btn">ENTER ↵</button>
-                <div id="search-status" class="status-box"></div>
-            </div>
+            <!-- GŁÓWNY WIERSZ: BIB (4/5) | LED (1/5) -->
+            <div class="main-row">
 
-            <!-- STATUS + LED w jednej linii -->
-            <div class="bottom-section">
-                <div class="status-strip">
-                    <div class="connection-status">
-                        <span class="status-indicator" id="api-indicator"></span>
-                        <span id="api-status">API</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="led-indicator"></span>
-                        <span id="led-status">LED</span>
+                <!-- LEWA SEKCJA: Wprowadzanie numeru startowego -->
+                <div class="bib-main-panel">
+                    <h2>Wprowadź numer startowy</h2>
+                    <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
+                    <button id="search-btn">ENTER ↵</button>
+                    <div id="search-status" class="status-box"></div>
+                    <div class="status-strip">
+                        <div class="connection-status">
+                            <span class="status-indicator" id="api-indicator"></span>
+                            <span id="api-status">API</span>
+                        </div>
+                        <div class="connection-status">
+                            <span class="status-indicator" id="led-indicator"></span>
+                            <span id="led-status">LED</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- MAŁY PODGLĄD LED - tylko canvas -->
-                <div class="led-preview">
+                <!-- PRAWA SEKCJA: Podgląd LED -->
+                <div class="led-panel">
                     <canvas id="led-canvas" width="240" height="240"></canvas>
                 </div>
+
             </div>
 
-            <!-- INFO o wynikach pod statusami -->
+            <!-- STOPKA -->
             <div class="footer-info">
                 Wyniki nieoficjalne &nbsp;&nbsp;&nbsp; wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a>
             </div>
