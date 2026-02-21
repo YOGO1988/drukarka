@@ -1325,7 +1325,8 @@
                     console.log('Updated cached athletes with clubs');
                 }
 
-                updateIndicator('api-indicator', 'api-status', true, `API: ${cache.eventInfo.event_name}`);
+                const eventName = cache.eventInfo?.event_name || `Event ${config.api.eventId}`;
+                updateIndicator('api-indicator', 'api-status', true, `API: ${eventName}`);
                 return true;
             } catch (error) {
                 console.error(`Refresh all data error: ${error.message}`);
@@ -1891,7 +1892,9 @@
             ctx.fillText('Oczekiwanie na dane...', 120, 120);
 
             selectedAthlete = null;
-            ui.displayStatus.textContent = '';
+            if (ui.displayStatus) {
+                ui.displayStatus.textContent = '';
+            }
         }
 
         // =====================================
