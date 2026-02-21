@@ -811,6 +811,7 @@
 
                 const response = await fetch(url, {
                     method: 'GET',
+                    cache: 'no-store',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
@@ -1291,9 +1292,17 @@
             try {
                 updateIndicator('api-indicator', 'api-status', false, 'API: Odświeżanie...');
 
-                // Wyczyść cache zawodników żeby załadować świeże dane z bracket_positions
+                // Wyczyść CAŁY cache przed pobraniem świeżych danych
                 cache.athletes = {};
-                console.log('Cleared athletes cache for fresh data reload');
+                cache.openResults = [];
+                cache.sexResults = { M: [], F: [] };
+                cache.ageResults = {};
+                cache.customResults = {};
+                cache.clubs = {};
+                cache.tags = {};
+                cache.eventInfo = null;
+                cache.persistentData = { genderPlaces: {}, divisionPlaces: {} };
+                console.log(`[${config.api.eventId}] Cleared all cache - loading fresh data`);
 
                 await fetchEventInfo();
                 await refreshOpenResults();
