@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏃‍♂️ System YO&GO Events - Zarządzanie Wynikami</title>
+    <style>
+        :root {
+            --primary-color: #FF8C00;
+            --secondary-color: #FF7000;
+            --text-color: #24292e;
+            --bg-color: #ffffff;
+            --code-bg: #f6f8fa;
+            --border-color: #e1e4e8;
+            --link-color: #0366d6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 40px auto;
+            background-color: var(--bg-color);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .component-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .component-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+
+        .component-card ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .component-card li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .component-card li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        code {
+            padding: 3px 6px;
+            font-size: 85%;
+            background-color: var(--code-bg);
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: var(--code-bg);
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        pre code {
+            padding: 0;
+            background-color: transparent;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        table tr:nth-child(even) {
+            background-color: var(--code-bg);
+        }
+
+        .doc-links {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .doc-links h3 {
+            color: white;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .doc-links a {
+            display: inline-block;
+            background-color: white;
+            color: #764ba2;
+            padding: 12px 30px;
+            margin: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .doc-links a:hover {
+            transform: scale(1.05);
+            text-decoration: none;
+        }
+
+        footer {
+            background-color: var(--code-bg);
+            padding: 30px;
+            text-align: center;
+            margin-top: 40px;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        footer p {
+            margin: 5px 0;
+            color: #6a737d;
+        }
+
+        .feature-list {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏃‍♂️ System YO&GO Events</h1>
+        <p>Zarządzanie Wynikami w Czasie Rzeczywistym</p>
+    </header>
+
+    <div class="container">
+        <div class="doc-links">
+            <h3>📚 Dokumentacja</h3>
+            <a href="INSTRUKCJA_OBSLUGI.html">📋 Pełna Instrukcja Obsługi</a>
+            <a href="QUICK_START.html">⚡ Quick Start (5 min)</a>
+        </div>
+
+        <p style="font-size: 1.1em; text-align: center; margin: 20px 0;">
+            Kompleksowy system do zarządzania i wyświetlania wyników wydarzeń sportowych w czasie rzeczywistym.
+        </p>
+
+        <h2>📦 Komponenty Systemu</h2>
+
+        <div class="component-grid">
+            <div class="component-card">
+                <h3>🖨️ Drukarka Wyników</h3>
+                <p><code>drukarka_wynikowv2.html</code></p>
+                <p>Drukowanie wyników zawodników na drukarkach termicznych 80mm.</p>
+                <ul>
+                    <li>Obsługa WebUSB i Bluetooth</li>
+                    <li>Wiele kategorii</li>
+                    <li>Auto-drukowanie</li>
+                    <li>Personalizowane wydruki</li>
+                </ul>
+            </div>
+
+            <div class="component-card">
+                <h3>📺 LED Display</h3>
+                <p><code>led_display_v2.html</code></p>
+                <p>Wyświetlanie wyników na ekranach LED Huidu HD-A4L.</p>
+                <ul>
+                    <li>Real-time display</li>
+                    <li>Obsługa klawiatury</li>
+                    <li>Auto-refresh co 30s</li>
+                    <li>Konfigurowalna rozdzielczość</li>
+                </ul>
+            </div>
+
+            <div class="component-card">
+                <h3>🎤 System Spikera</h3>
+                <p><code>spiker_yogo.html</code></p>
+                <p>Panel informacyjny dla spikera z danymi zawodników.</p>
+                <ul>
+                    <li>Szczegółowe informacje</li>
+                    <li>Historia wyszukań</li>
+                    <li>Tryb hybrydowy</li>
+                    <li>Integracja z LED</li>
+                </ul>
+            </div>
+
+            <div class="component-card">
+                <h3>🌉 LED Bridge Server</h3>
+                <p><code>led-bridge-server.js</code></p>
+                <p>Serwer Node.js do komunikacji z kontrolerem LED.</p>
+                <ul>
+                    <li>HTTP → TCP bridge</li>
+                    <li>Protokół Huidu HD-A4L</li>
+                    <li>CORS support</li>
+                    <li>Debugowanie i logi</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>⏱️ Interwały Odświeżania Danych</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th>Interwał</th>
+                    <th>Opis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Drukarka Wyników</td>
+                    <td>90s</td>
+                    <td>Wszystkie kategorie</td>
+                </tr>
+                <tr>
+                    <td>LED Display</td>
+                    <td>30s</td>
+                    <td>Auto-refresh wyników</td>
+                </tr>
+                <tr>
+                    <td>Spiker (Quick)</td>
+                    <td>30s</td>
+                    <td>Czasy i miejsca (4x)</td>
+                </tr>
+                <tr>
+                    <td>Spiker (Full)</td>
+                    <td>2.5min</td>
+                    <td>Pełne dane (co 5. cykl)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🚀 Instalacja i Uruchomienie</h2>
+
+        <h3>1. Uruchom LED Bridge Server (jeśli używasz LED)</h3>
+        <pre><code>cd /home/user/drukarka
+node led-bridge-server.js</code></pre>
+
+        <p>Powinieneś zobaczyć:</p>
+        <pre><code>============================================================
+LED Bridge Server - Huidu HD-A4L Integration
+============================================================
+HTTP Server: http://localhost:3000
+LED IP/Port: Configured in HTML (dynamic)
+
+Endpoints:
+  POST /send-to-led - Send image to LED display
+  GET  /status - Check server status
+============================================================</code></pre>
+
+        <h3>2. Wybierz Odpowiedni System</h3>
+
+        <p>Otwórz wybrany plik HTML w przeglądarce Chrome lub Edge:</p>
+
+        <div class="feature-list">
+            <h4>🖨️ Drukarka Wyników</h4>
+            <p>Do drukowania wyników na drukarce termicznej</p>
+            <p><strong>Plik</strong>: <code>drukarka_wynikowv2.html</code></p>
+        </div>
+
+        <div class="feature-list">
+            <h4>📺 LED Display</h4>
+            <p>Do wyświetlania na ekranie LED (wymaga Bridge Server)</p>
+            <p><strong>Plik</strong>: <code>led_display_v2.html</code></p>
+        </div>
+
+        <div class="feature-list">
+            <h4>🎤 System Spikera</h4>
+            <p>Panel informacyjny dla spikera (opcjonalnie integracja z LED)</p>
+            <p><strong>Plik</strong>: <code>spiker_yogo.html</code></p>
+        </div>
+
+        <h3>3. Konfiguracja</h3>
+
+        <p>Każdy system wymaga podstawowej konfiguracji API:</p>
+
+        <ol>
+            <li>Otwórz <strong>Ustawienia</strong> (⚙️ lub zakładka Ustawienia)</li>
+            <li>Skonfiguruj <strong>API Chronotrack</strong>:
+                <ul>
+                    <li><strong>Club ID</strong>: Twoje ID klubu (np. 1234)</li>
+                    <li><strong>Event ID</strong>: ID wydarzenia (np. 5678)</li>
+                    <li><strong>API URL</strong>: <code>https://api.chronotrack.com</code> (domyślnie)</li>
+                </ul>
+            </li>
+            <li>Kliknij <strong>"Załaduj Dystanse i Kategorie"</strong></li>
+            <li><strong>Dla LED Display</strong>: Dodatkowo skonfiguruj LED (IP: 169.254.193.67, Port: 9527)</li>
+            <li><strong>Dla Drukarki</strong>: Połącz drukarkę (USB/Bluetooth)</li>
+        </ol>
+
+        <h2>🔌 Integracje</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Usługa</th>
+                    <th>Adres</th>
+                    <th>Port</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Chronotrack API</td>
+                    <td>api.chronotrack.com</td>
+                    <td>443 (HTTPS)</td>
+                </tr>
+                <tr>
+                    <td>LED Bridge HTTP</td>
+                    <td>localhost</td>
+                    <td>3000</td>
+                </tr>
+                <tr>
+                    <td>Kontroler LED</td>
+                    <td>169.254.193.67</td>
+                    <td>9527</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🔧 Troubleshooting</h2>
+
+        <h3>Bridge Server nie odpowiada</h3>
+        <pre><code># Sprawdź status
+curl http://localhost:3000/status
+
+# Restart
+killall node && node led-bridge-server.js</code></pre>
+
+        <h3>LED nie wyświetla</h3>
+        <ul>
+            <li>Sprawdź HDPlayer (tryb Asynchronous)</li>
+            <li>Sprawdź połączenie: <code>ping 169.254.193.67</code></li>
+            <li>Sprawdź logi Bridge Server</li>
+        </ul>
+
+        <h3>Drukarka nie drukuje</h3>
+        <ul>
+            <li>Użyj Chrome/Edge (nie Firefox)</li>
+            <li>Sprawdź połączenie USB</li>
+            <li>Połącz ponownie w ustawieniach</li>
+        </ul>
+
+        <h2>📁 Struktura Projektu</h2>
+
+        <pre><code>drukarka/
+├── drukarka_wynikowv2.html       # Drukarka wyników
+├── led_display_v2.html           # System LED
+├── spiker_yogo.html              # Panel spikera
+├── led-bridge-server.js          # Bridge server
+├── package.json                  # Konfiguracja npm
+├── README.html                   # Ten plik
+├── INSTRUKCJA_OBSLUGI.html       # Pełna instrukcja
+├── QUICK_START.html              # Szybki start
+└── temp_images/                  # Obrazy LED (generowane)</code></pre>
+
+        <h2>🎯 Quick Commands</h2>
+
+        <pre><code># Uruchom Bridge Server
+node led-bridge-server.js
+
+# Sprawdź status
+curl http://localhost:3000/status
+
+# Test LED
+ping 169.254.193.67
+
+# Restart wszystkiego
+killall node
+node led-bridge-server.js
+# Następnie odśwież przeglądarki (Ctrl+F5)</code></pre>
+
+    </div>
+
+    <footer>
+        <h2 style="color: var(--primary-color);">Miłego użytkowania! 🏃‍♂️🏃‍♀️</h2>
+        <p>YO&GO Events © 2024-2026</p>
+        <p style="margin-top: 15px;">
+            <strong>Dokumentacja:</strong>
+            <a href="INSTRUKCJA_OBSLUGI.html">Pełna Instrukcja</a> |
+            <a href="QUICK_START.html">Quick Start</a>
+        </p>
+    </footer>
+
+</body>
+</html>

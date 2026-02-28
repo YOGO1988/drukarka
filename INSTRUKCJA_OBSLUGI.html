@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 INSTRUKCJA OBSŁUGI - System YO&GO Events</title>
+    <style>
+        :root {
+            --primary-color: #FF8C00;
+            --secondary-color: #FF7000;
+            --text-color: #24292e;
+            --bg-color: #ffffff;
+            --code-bg: #f6f8fa;
+            --border-color: #e1e4e8;
+            --link-color: #0366d6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding: 20px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3, h4 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        h1 {
+            font-size: 2em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 1.25em;
+        }
+
+        h4 {
+            font-size: 1em;
+        }
+
+        p {
+            margin-bottom: 16px;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        code {
+            padding: 3px 6px;
+            font-size: 85%;
+            background-color: var(--code-bg);
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: var(--code-bg);
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        pre code {
+            padding: 0;
+            background-color: transparent;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        table th,
+        table td {
+            padding: 8px 13px;
+            border: 1px solid var(--border-color);
+        }
+
+        table th {
+            background-color: var(--code-bg);
+            font-weight: 600;
+        }
+
+        table tr:nth-child(even) {
+            background-color: var(--code-bg);
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 32px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        blockquote {
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 4px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        hr {
+            height: 2px;
+            padding: 0;
+            margin: 24px 0;
+            background-color: var(--border-color);
+            border: 0;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .toc {
+            background-color: var(--code-bg);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 8px;
+        }
+
+        @media print {
+            body {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 INSTRUKCJA OBSŁUGI - System YO&GO Events</h1>
+
+    <div class="toc">
+        <h2>🎯 Spis Treści</h2>
+        <ol>
+            <li><a href="#przeglad-systemu">Przegląd Systemu</a></li>
+            <li><a href="#drukarka-wynikow">Drukarka Wyników</a></li>
+            <li><a href="#system-led-display">System LED Display</a></li>
+            <li><a href="#system-spikera">System Spikera</a></li>
+            <li><a href="#led-bridge-server">LED Bridge Server</a></li>
+            <li><a href="#interwaly-odswiezania">Interwały Odświeżania Danych</a></li>
+            <li><a href="#rozwiazywanie-problemow">Rozwiązywanie Problemów</a></li>
+        </ol>
+    </div>
+
+    <hr>
+
+    <h2 id="przeglad-systemu">Przegląd Systemu</h2>
+
+    <p>System YO&GO Events składa się z 4 głównych komponentów do obsługi wydarzeń sportowych:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Komponent</th>
+                <th>Plik</th>
+                <th>Przeznaczenie</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Drukarka Wyników</strong></td>
+                <td><code>drukarka_wynikowv2.html</code></td>
+                <td>Drukowanie wyników na drukarce termicznej 80mm</td>
+            </tr>
+            <tr>
+                <td><strong>LED Display</strong></td>
+                <td><code>led_display_v2.html</code></td>
+                <td>Wyświetlanie wyników na ekranie LED</td>
+            </tr>
+            <tr>
+                <td><strong>System Spikera</strong></td>
+                <td><code>spiker_yogo.html</code></td>
+                <td>Panel dla spikera z informacjami o zawodnikach</td>
+            </tr>
+            <tr>
+                <td><strong>Bridge Server</strong></td>
+                <td><code>led-bridge-server.js</code></td>
+                <td>Serwer do komunikacji z kontrolerem LED</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>🔌 API i Integracje</h3>
+    <ul>
+        <li><strong>Chronotrack API</strong>: <code>https://api.chronotrack.com</code></li>
+        <li><strong>LED Bridge</strong>: <code>http://localhost:3000</code> (WebSocket bridge)</li>
+        <li><strong>Kontroler LED</strong>: Huidu HD-A4L (169.254.193.67:9527)</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="drukarka-wynikow">1. DRUKARKA WYNIKÓW (drukarka_wynikowv2.html)</h2>
+
+    <h3>📝 Opis</h3>
+    <p>System do drukowania wyników zawodników na drukarce termicznej 80mm. Obsługuje różne kategorie i dystanse.</p>
+
+    <h3>🎨 Wersja</h3>
+    <p><strong>v2.2 - KATEGORIE+</strong></p>
+
+    <h3>⚙️ Wymagania</h3>
+    <ul>
+        <li>Przeglądarka: Chrome/Edge (obsługa WebUSB)</li>
+        <li>Drukarka: Drukarka termiczna ESC/POS (80mm)</li>
+        <li>Połączenie: USB lub Bluetooth</li>
+    </ul>
+
+    <h3>🚀 Uruchomienie</h3>
+
+    <h4>Krok 1: Konfiguracja Drukarki</h4>
+    <ol>
+        <li>Otwórz plik <code>drukarka_wynikowv2.html</code> w przeglądarce</li>
+        <li>Kliknij <strong>"Ustawienia"</strong> w dolnej nawigacji</li>
+        <li>W sekcji <strong>"Konfiguracja Drukarki"</strong>:
+            <ul>
+                <li>Wybierz typ drukarki: <strong>USB</strong> lub <strong>Bluetooth</strong></li>
+                <li>Kliknij <strong>"Połącz z drukarką"</strong></li>
+                <li>Wybierz drukarkę z listy urządzeń</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Krok 2: Konfiguracja API</h4>
+    <ol>
+        <li>W zakładce <strong>"Ustawienia"</strong> &gt; <strong>"Konfiguracja API"</strong>:
+            <ul>
+                <li><strong>Club ID</strong>: Wprowadź ID klubu (np. <code>1234</code>)</li>
+                <li><strong>Event ID</strong>: Wprowadź ID wydarzenia (np. <code>5678</code>)</li>
+                <li>Pozostaw API URL: <code>https://api.chronotrack.com</code></li>
+            </ul>
+        </li>
+        <li>Kliknij <strong>"Zapisz Konfigurację API"</strong></li>
+        <li>Kliknij <strong>"Załaduj Dystanse i Kategorie"</strong></li>
+    </ol>
+
+    <h4>Krok 3: Drukowanie Wyników</h4>
+    <ol>
+        <li>Przejdź do zakładki <strong>"Wyszukaj"</strong></li>
+        <li>Wprowadź numer startowy zawodnika</li>
+        <li>Kliknij <strong>"Szukaj"</strong> lub naciśnij ENTER</li>
+        <li>Sprawdź podgląd wydruku</li>
+        <li>Kliknij <strong>"Drukuj"</strong></li>
+    </ol>
+
+    <h3>📊 Funkcje</h3>
+
+    <h4>✅ Kategorie Wyników</h4>
+    <ul>
+        <li><strong>Kategoria Otwarta</strong> - Klasyfikacja generalna</li>
+        <li><strong>Kategoria Płeć</strong> - Osobno M/K</li>
+        <li><strong>Kategoria Wiekowa</strong> - Grupy wiekowe (np. M20-29)</li>
+        <li><strong>Kategorie Własne</strong> - Custom categories</li>
+    </ul>
+
+    <h4>🔄 Auto-Drukowanie</h4>
+    <ul>
+        <li>Automatyczne drukowanie po wyszukaniu</li>
+        <li>Można wyłączyć w ustawieniach</li>
+    </ul>
+
+    <h4>📱 Skróty Klawiszowe</h4>
+    <ul>
+        <li><strong>ENTER</strong> - Szukaj po wpisaniu numeru</li>
+        <li><strong>ESC</strong> - Anuluj podgląd</li>
+        <li><strong>F1</strong> - Wyszukaj</li>
+        <li><strong>F2</strong> - Ustawienia</li>
+    </ul>
+
+    <h3>🎨 Personalizacja Wydruku</h3>
+    <p>W zakładce <strong>"Ustawienia"</strong> &gt; <strong>"Wiadomości Niestandardowe"</strong>:</p>
+    <pre><code>Nagłówek: GRATULACJE!
+Podtytuł: Dziękujemy za udział
+Stopka: www.yogo.pl</code></pre>
+
+    <h3>⏱️ Odświeżanie Danych</h3>
+    <ul>
+        <li><strong>Kategoria Otwarta</strong>: 90 sekund</li>
+        <li><strong>Kategoria Płeć</strong>: 90 sekund</li>
+        <li><strong>Kategoria Wiekowa</strong>: 90 sekund</li>
+    </ul>
+
+    <h3>🔧 Rozwiązywanie Problemów</h3>
+
+    <h4>Problem: Drukarka nie łączy się</h4>
+    <div class="warning">
+        <strong>Rozwiązanie:</strong>
+        <ul>
+            <li>Sprawdź czy drukarka jest włączona</li>
+            <li>Sprawdź połączenie USB/Bluetooth</li>
+            <li>Odśwież przeglądarkę i spróbuj ponownie</li>
+            <li>Użyj Chrome lub Edge (Firefox nie obsługuje WebUSB)</li>
+        </ul>
+    </div>
+
+    <h4>Problem: Brak wyników zawodnika</h4>
+    <div class="warning">
+        <strong>Rozwiązanie:</strong>
+        <ul>
+            <li>Sprawdź poprawność Club ID i Event ID</li>
+            <li>Sprawdź czy zawodnik ukończył zawody</li>
+            <li>Poczekaj na odświeżenie danych (90s)</li>
+        </ul>
+    </div>
+
+    <h4>Problem: Polskie znaki nie drukują się</h4>
+    <div class="warning">
+        <strong>Rozwiązanie:</strong>
+        <ul>
+            <li>System automatycznie konwertuje polskie znaki</li>
+            <li>Jeśli problem nadal występuje, sprawdź kodowanie drukarki (PC850/CP852)</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <h2 id="system-led-display">2. SYSTEM LED DISPLAY (led_display_v2.html)</h2>
+
+    <h3>📝 Opis</h3>
+    <p>System wyświetlania wyników na ekranie LED Huidu HD-A4L. Generuje obrazy i wysyła je do kontrolera LED.</p>
+
+    <h3>🎨 Wersja</h3>
+    <p><strong>v2.0</strong></p>
+
+    <h3>⚙️ Wymagania</h3>
+    <ul>
+        <li>Kontroler LED: Huidu HD-A4L</li>
+        <li>LED Bridge Server uruchomiony na localhost:3000</li>
+        <li>Rozdzielczość LED: Konfigurowalna (domyślnie 128x64)</li>
+    </ul>
+
+    <h3>🚀 Uruchomienie</h3>
+
+    <h4>Krok 1: Uruchom LED Bridge Server</h4>
+    <pre><code>cd /home/user/drukarka
+node led-bridge-server.js</code></pre>
+
+    <h4>Krok 2: Konfiguracja LED Display</h4>
+    <ol>
+        <li>Otwórz plik <code>led_display_v2.html</code> w przeglądarce</li>
+        <li>Kliknij ikonę <strong>"⚙️"</strong> (Ustawienia)</li>
+        <li>W zakładce <strong>"API Configuration"</strong>:
+            <ul>
+                <li><strong>Club ID</strong>: Wprowadź ID klubu</li>
+                <li><strong>Event ID</strong>: Wprowadź ID wydarzenia</li>
+                <li>Kliknij <strong>"Load Distances & Categories"</strong></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Krok 3: Konfiguracja LED</h4>
+    <ol>
+        <li>W zakładce <strong>"LED Configuration"</strong>:
+            <ul>
+                <li><strong>LED IP</strong>: <code>169.254.193.67</code></li>
+                <li><strong>LED Port</strong>: <code>9527</code></li>
+                <li><strong>Bridge URL</strong>: <code>http://localhost:3000</code></li>
+                <li><strong>Rozdzielczość</strong>: <code>128 x 64</code> (lub inna)</li>
+                <li>Kliknij <strong>"Test LED Connection"</strong></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Krok 4: Wyświetlanie Zawodnika</h4>
+    <ol>
+        <li>Użyj klawiatury numerycznej do wprowadzenia numeru startowego</li>
+        <li>Naciśnij <strong>ENTER</strong> lub kliknij <strong>"Send to LED"</strong></li>
+        <li>Obraz zostanie automatycznie wysłany na LED</li>
+    </ol>
+
+    <h3>📊 Funkcje</h3>
+
+    <h4>🎯 Tryby Wyświetlania</h4>
+    <ul>
+        <li><strong>Single Runner</strong> - Jeden zawodnik</li>
+        <li><strong>Multi Runner</strong> - Wielu zawodników (lista)</li>
+        <li><strong>Custom Message</strong> - Własna wiadomość</li>
+    </ul>
+
+    <h4>⌨️ Obsługa Klawiatury</h4>
+    <ul>
+        <li><strong>0-9</strong> - Wprowadzanie numeru</li>
+        <li><strong>ENTER</strong> - Wyślij na LED</li>
+        <li><strong>BACKSPACE</strong> - Usuń ostatnią cyfrę</li>
+        <li><strong>ESC</strong> - Wyczyść input</li>
+        <li><strong>F11</strong> - Pełny ekran</li>
+    </ul>
+
+    <h3>⏱️ Auto-Refresh</h3>
+    <ul>
+        <li><strong>Odświeżanie wyników</strong>: 30 sekund</li>
+        <li>Aktualizuje wszystkie kategorie automatycznie</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="system-spikera">3. SYSTEM SPIKERA (spiker_yogo.html)</h2>
+
+    <h3>📝 Opis</h3>
+    <p>Panel informacyjny dla spikera wydarzenia. Wyświetla szczegółowe informacje o zawodnikach na mecie.</p>
+
+    <h3>⏱️ Interwały Odświeżania</h3>
+    <ul>
+        <li><strong>Quick Refresh</strong>: 30 sekund (lekkie)</li>
+        <li><strong>Full Refresh</strong>: 2,5 minuty (pełne)</li>
+    </ul>
+
+    <h4>🔄 Auto-Refresh (Tryb Hybrydowy)</h4>
+    <p>System automatycznie odświeża dane w inteligentny sposób:</p>
+
+    <div class="success">
+        <strong>Tryb Quick Refresh</strong> (pierwsze 4 cykle):
+        <ul>
+            <li>Co <strong>30 sekund</strong></li>
+            <li>Aktualizuje tylko czasy i miejsca</li>
+            <li>Minimalne obciążenie API</li>
+        </ul>
+    </div>
+
+    <div class="success">
+        <strong>Tryb Full Refresh</strong> (co 5. cykl):
+        <ul>
+            <li>Co <strong>2,5 minuty</strong></li>
+            <li>Pełne przeładowanie wszystkich danych</li>
+            <li>Reset licznika do trybu Quick</li>
+        </ul>
+    </div>
+
+    <pre><code>Cykl 1:  [0:30]  Quick Refresh → Tylko czasy/miejsca
+Cykl 2:  [1:00]  Quick Refresh → Tylko czasy/miejsca
+Cykl 3:  [1:30]  Quick Refresh → Tylko czasy/miejsca
+Cykl 4:  [2:00]  Quick Refresh → Tylko czasy/miejsca
+Cykl 5:  [2:30]  FULL Refresh  → Wszystkie dane + RESET
+[Powtórz od początku]</code></pre>
+
+    <hr>
+
+    <h2 id="led-bridge-server">4. LED BRIDGE SERVER (led-bridge-server.js)</h2>
+
+    <h3>📝 Opis</h3>
+    <p>Serwer Node.js do komunikacji między przeglądarką a kontrolerem LED Huidu HD-A4L.</p>
+
+    <h3>🚀 Uruchomienie</h3>
+    <pre><code>cd /home/user/drukarka
+node led-bridge-server.js</code></pre>
+
+    <h3>📊 API Endpoints</h3>
+
+    <h4>1. POST /send-to-led</h4>
+    <p>Wysyła obraz na kontroler LED.</p>
+    <pre><code>{
+  "image": "data:image/png;base64,iVBORw0KGg...",
+  "ledIP": "169.254.193.67",
+  "ledPort": 9527
+}</code></pre>
+
+    <h4>2. GET /status</h4>
+    <p>Sprawdza status serwera.</p>
+    <pre><code>{
+  "status": "running",
+  "message": "Bridge server ready. LED IP/Port configured in HTML."
+}</code></pre>
+
+    <hr>
+
+    <h2 id="interwaly-odswiezania">⏱️ Interwały Odświeżania Danych</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>System</th>
+                <th>Typ Danych</th>
+                <th>Interwał</th>
+                <th>Uwagi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Drukarka Wyników</strong></td>
+                <td>Wszystkie kategorie</td>
+                <td>90 sekund</td>
+                <td>Stały interwał</td>
+            </tr>
+            <tr>
+                <td><strong>LED Display</strong></td>
+                <td>Wszystkie wyniki</td>
+                <td>30 sekund</td>
+                <td>Auto-refresh</td>
+            </tr>
+            <tr>
+                <td><strong>Spiker - Quick</strong></td>
+                <td>Czasy i miejsca</td>
+                <td>30 sekund</td>
+                <td>4 pierwsze cykle</td>
+            </tr>
+            <tr>
+                <td><strong>Spiker - Full</strong></td>
+                <td>Wszystkie dane</td>
+                <td>2,5 minuty</td>
+                <td>Co 5. cykl</td>
+            </tr>
+            <tr>
+                <td><strong>LED Bridge</strong></td>
+                <td>Real-time</td>
+                <td>Natychmiastowe</td>
+                <td>WebSocket</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="rozwiazywanie-problemow">🔧 Rozwiązywanie Problemów</h2>
+
+    <h3>Problem: API nie odpowiada</h3>
+    <div class="error">
+        <strong>Objawy:</strong>
+        <ul>
+            <li>Brak wyników</li>
+            <li>Timeout errors</li>
+            <li>"Failed to fetch"</li>
+        </ul>
+    </div>
+
+    <div class="success">
+        <strong>Rozwiązanie:</strong>
+        <pre><code># 1. Sprawdź połączenie internetowe
+ping api.chronotrack.com
+
+# 2. Sprawdź konsolę przeglądarki (F12)
+#    Szukaj błędów CORS lub Network
+
+# 3. Sprawdź Club ID i Event ID
+#    Muszą być poprawne i aktywne</code></pre>
+    </div>
+
+    <h3>🆘 Awaryjne Komendy</h3>
+    <pre><code># Restart Bridge Server
+killall node
+node led-bridge-server.js
+
+# Sprawdź status Bridge
+curl http://localhost:3000/status
+
+# Test połączenia LED
+ping 169.254.193.67
+
+# Reset konfiguracji w przeglądarce
+# F12 → Console → wpisz:
+localStorage.clear(); location.reload();</code></pre>
+
+    <hr>
+
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border-color);">
+        <p><strong>Powodzenia podczas eventu! 🏃‍♂️🏃‍♀️🎉</strong></p>
+        <p style="color: #6a737d; font-size: 0.9em;">YO&GO Events © 2024-2026</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ QUICK START - System YO&GO Events</title>
+    <style>
+        :root {
+            --primary-color: #FF8C00;
+            --secondary-color: #FF7000;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --text-color: #24292e;
+            --bg-color: #ffffff;
+            --code-bg: #f6f8fa;
+            --border-color: #e1e4e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .step-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-card h3 {
+            color: white;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .step-card ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .step-card li {
+            margin-bottom: 8px;
+        }
+
+        .step-card code {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        table tr:nth-child(even) {
+            background-color: var(--code-bg);
+        }
+
+        .checklist {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-color);
+            margin-bottom: 20px;
+        }
+
+        .checklist h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .checklist ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 5px 0;
+        }
+
+        .checklist li:before {
+            content: "☐ ";
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .shortcuts {
+            background-color: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--success-color);
+            margin-bottom: 20px;
+        }
+
+        .shortcuts h3 {
+            color: #155724;
+            margin-top: 0;
+        }
+
+        .emergency {
+            background-color: #f8d7da;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .emergency h3 {
+            color: #721c24;
+            margin-top: 0;
+        }
+
+        .important {
+            background-color: #cfe2ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #084298;
+            margin: 15px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+            color: #6a737d;
+        }
+
+        .emoji {
+            font-size: 1.3em;
+        }
+
+        hr {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ QUICK START - System YO&GO Events</h1>
+        <p style="text-align: center; font-size: 1.2em; color: #6a737d; margin-bottom: 30px;">
+            <strong>Uruchomienie w 5 minut!</strong>
+        </p>
+
+        <hr>
+
+        <h2>🚀 Szybki Start</h2>
+
+        <div class="step-card">
+            <h3>1️⃣ LED Bridge Server</h3>
+            <pre><code>cd /home/user/drukarka
+node led-bridge-server.js</code></pre>
+            <p>✅ Serwer powinien wyświetlić: <code>HTTP Server: http://localhost:3000</code></p>
+        </div>
+
+        <div class="step-card">
+            <h3>2️⃣ Drukarka Wyników</h3>
+            <ol>
+                <li><strong>Otwórz</strong>: <code>drukarka_wynikowv2.html</code></li>
+                <li><strong>Połącz drukarkę</strong>: Ustawienia → Połącz z drukarką → Wybierz USB</li>
+                <li><strong>Konfiguruj API</strong>:
+                    <ul>
+                        <li>Club ID: <code>____</code> (Twoje ID)</li>
+                        <li>Event ID: <code>____</code> (Twoje ID)</li>
+                        <li>Załaduj Dystanse i Kategorie</li>
+                    </ul>
+                </li>
+                <li><strong>Gotowe!</strong> Wpisz numer startowy i drukuj</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h3>3️⃣ LED Display</h3>
+            <ol>
+                <li><strong>Otwórz</strong>: <code>led_display_v2.html</code></li>
+                <li><strong>Konfiguruj API</strong>: ⚙️ → API Configuration
+                    <ul>
+                        <li>Club ID: <code>____</code></li>
+                        <li>Event ID: <code>____</code></li>
+                        <li>Load Distances & Categories</li>
+                    </ul>
+                </li>
+                <li><strong>Konfiguruj LED</strong>: LED Configuration
+                    <ul>
+                        <li>LED IP: <code>169.254.193.67</code></li>
+                        <li>LED Port: <code>9527</code></li>
+                        <li>Test LED Connection</li>
+                    </ul>
+                </li>
+                <li><strong>Gotowe!</strong> Wpisz numer → ENTER</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <h3>4️⃣ System Spikera</h3>
+            <ol>
+                <li><strong>Otwórz</strong>: <code>spiker_yogo.html</code></li>
+                <li><strong>Konfiguruj API</strong>: ⚙️ USTAWIENIA
+                    <ul>
+                        <li>Club ID: <code>____</code></li>
+                        <li>Event ID: <code>____</code></li>
+                        <li>💾 Załaduj Dystanse i Kategorie</li>
+                    </ul>
+                </li>
+                <li><strong>Opcjonalnie - LED</strong>: Konfiguracja LED Bridge → Połącz z Bridge</li>
+                <li><strong>Gotowe!</strong> Wpisz numer → 🔍 Szukaj</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h2>📋 Checklist Przed Eventem</h2>
+
+        <div class="checklist">
+            <h3>Dzień Przed</h3>
+            <ul>
+                <li>Sprawdź połączenie z API (Club ID, Event ID)</li>
+                <li>Przetestuj drukarkę (wydruk testowy)</li>
+                <li>Sprawdź połączenie z kontrolerem LED (ping + test)</li>
+                <li>Uruchom Bridge Server i sprawdź status</li>
+                <li>Zapisz wszystkie konfiguracje</li>
+            </ul>
+        </div>
+
+        <div class="checklist">
+            <h3>1 Godzinę Przed</h3>
+            <ul>
+                <li>Uruchom wszystkie systemy</li>
+                <li>Sprawdź auto-refresh (czy działa)</li>
+                <li>Test końcowy wszystkich komponentów</li>
+                <li>Przygotuj plan awaryjny</li>
+            </ul>
+        </div>
+
+        <div class="checklist">
+            <h3>Podczas Eventu</h3>
+            <ul>
+                <li>Monitoruj logi w konsoli (F12)</li>
+                <li>Sprawdzaj status połączenia z LED</li>
+                <li>Upewnij się że auto-refresh działa</li>
+                <li>Miej otwartą instrukcję INSTRUKCJA_OBSLUGI.html</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>🔥 Najważniejsze Skróty</h2>
+
+        <div class="shortcuts">
+            <h3>Drukarka</h3>
+            <ul>
+                <li><strong>ENTER</strong> = Szukaj</li>
+                <li><strong>F1</strong> = Wyszukaj</li>
+                <li><strong>F2</strong> = Ustawienia</li>
+            </ul>
+        </div>
+
+        <div class="shortcuts">
+            <h3>LED Display</h3>
+            <ul>
+                <li><strong>0-9</strong> = Numer startowy</li>
+                <li><strong>ENTER</strong> = Wyślij na LED</li>
+                <li><strong>BACKSPACE</strong> = Usuń cyfrę</li>
+                <li><strong>ESC</strong> = Wyczyść</li>
+                <li><strong>F11</strong> = Pełny ekran</li>
+            </ul>
+        </div>
+
+        <div class="shortcuts">
+            <h3>Spiker</h3>
+            <ul>
+                <li><strong>ENTER</strong> = Szukaj</li>
+                <li><strong>F1</strong> = Wyszukaj</li>
+                <li><strong>F2</strong> = Ustawienia</li>
+                <li><strong>F5</strong> = Force refresh</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>⚡ Błyskawiczne Rozwiązania</h2>
+
+        <div class="emergency">
+            <h3>Problem: API nie zwraca danych</h3>
+            <pre><code># Sprawdź Club ID i Event ID
+# Sprawdź konsolę (F12) → szukaj błędów
+# Odśwież stronę (Ctrl+F5)</code></pre>
+        </div>
+
+        <div class="emergency">
+            <h3>Problem: Drukarka nie drukuje</h3>
+            <pre><code># Sprawdź połączenie USB
+# Użyj Chrome/Edge (nie Firefox)
+# Połącz ponownie w ustawieniach</code></pre>
+        </div>
+
+        <div class="emergency">
+            <h3>Problem: LED nie wyświetla</h3>
+            <pre><code># Sprawdź Bridge Server (node led-bridge-server.js)
+# Test: curl http://localhost:3000/status
+# Sprawdź ping: ping 169.254.193.67
+# HDPlayer → tryb Asynchronous</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>📊 Interwały Odświeżania (na szybko)</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th>Interwał</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Drukarka</td>
+                    <td>90s</td>
+                </tr>
+                <tr>
+                    <td>LED Display</td>
+                    <td>30s</td>
+                </tr>
+                <tr>
+                    <td>Spiker Quick</td>
+                    <td>30s</td>
+                </tr>
+                <tr>
+                    <td>Spiker Full</td>
+                    <td>2.5min</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h2>🆘 Awaryjne Komendy</h2>
+
+        <pre><code># Restart Bridge Server
+killall node
+node led-bridge-server.js
+
+# Sprawdź status Bridge
+curl http://localhost:3000/status
+
+# Test połączenia LED
+ping 169.254.193.67
+
+# Reset konfiguracji w przeglądarce
+# F12 → Console → wpisz:
+localStorage.clear(); location.reload();</code></pre>
+
+        <hr>
+
+        <div class="important">
+            <h3>📞 Ważne Adresy</h3>
+            <ul>
+                <li><strong>API</strong>: <code>https://api.chronotrack.com</code></li>
+                <li><strong>Bridge</strong>: <code>http://localhost:3000</code></li>
+                <li><strong>LED</strong>: <code>169.254.193.67:9527</code></li>
+            </ul>
+        </div>
+
+        <div class="important">
+            <p><strong>Szczegółowa instrukcja</strong>: Otwórz <code>INSTRUKCJA_OBSLUGI.html</code> w przeglądarce</p>
+        </div>
+
+        <footer>
+            <h2 style="color: var(--success-color);">Good luck! 🏃‍♂️💨</h2>
+            <p style="margin-top: 10px;">YO&GO Events © 2024-2026</p>
+        </footer>
+    </div>
+</body>
+</html>
