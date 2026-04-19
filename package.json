@@ -1,0 +1,19 @@
+{
+  "name": "drukarka",
+  "version": "1.0.0",
+  "description": "",
+  "main": "12.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:23788/git/YOGO1988/drukarka"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}
