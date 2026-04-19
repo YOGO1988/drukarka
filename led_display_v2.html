@@ -205,6 +205,28 @@
         .results-link a:hover {
             text-decoration: underline;
         }
+
+        /* Stream window overlay (for #stream hash mode) */
+        body.stream-window-mode > * {
+            display: none !important;
+        }
+        body.stream-window-mode #stream-overlay {
+            display: flex !important;
+        }
+        #stream-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+        #stream-output-canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: block;
+        }
         
         .led-info {
             color: #888;
@@ -501,8 +523,45 @@
                     <button id="save-led-btn" class="btn-full">Zapisz połączenie</button>
                     <button id="test-led-btn" class="btn-full secondary">Test połączenia</button>
                 </div>
+
+                <!-- Streaming / Drugi ekran -->
+                <div class="panel" style="grid-column: span 2;">
+                    <h2>📺 Streaming / Drugi ekran (HD show → Huidu A4L)</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+                        <div>
+                            <div class="form-group">
+                                <label>Skala okna streamingu:</label>
+                                <select id="stream-scale">
+                                    <option value="2">2× – 480×480 px</option>
+                                    <option value="3">3× – 720×720 px</option>
+                                    <option value="4" selected>4× – 960×960 px</option>
+                                    <option value="5">5× – 1200×1200 px</option>
+                                </select>
+                            </div>
+                            <button id="open-stream-btn" class="btn-full">📺 Otwórz okno streamingu</button>
+                            <button id="refresh-stream-btn" class="btn-full secondary" style="margin-top:8px;">🔄 Wyślij aktualny kadr</button>
+                        </div>
+                        <div>
+                            <div class="connection-status">
+                                <span class="status-indicator" id="stream-indicator"></span>
+                                <span id="stream-status">Streaming: nieaktywny</span>
+                            </div>
+                            <p style="font-size: 12px; color: #666; margin-top: 12px; line-height: 1.7;">
+                                1. Kliknij <strong>Otwórz okno streamingu</strong><br>
+                                2. Przesuń okno na drugi monitor, naciśnij <strong>F11</strong><br>
+                                3. W <strong>HD show</strong> wybierz to okno jako źródło (Screen Capture)<br>
+                                4. HD show prześle obraz do kontrolera <strong>Huidu A4L</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Stream window overlay (aktywowany przez #stream w URL) -->
+    <div id="stream-overlay">
+        <canvas id="stream-output-canvas"></canvas>
     </div>
 
     <!-- Password Modal -->
@@ -525,6 +584,15 @@
      * Wersja 2.0
      */
     document.addEventListener('DOMContentLoaded', function() {
+
+        // =====================================
+        // STREAM WINDOW MODE (#stream in URL)
+        // =====================================
+        if (window.location.hash === '#stream') {
+            initStreamWindow();
+            return;
+        }
+
         // =====================================
         // CONFIGURATION
         // =====================================
@@ -656,6 +724,23 @@
         let refreshTimer = null;
         let selectedAthlete = null;
 
+        // BroadcastChannel dla okna streamingu
+        let streamChannel = null;
+        let streamWindowRef = null;
+        try {
+            streamChannel = new BroadcastChannel('yogo-led-stream');
+            streamChannel.addEventListener('message', (event) => {
+                if (event.data.type === 'stream-ready') {
+                    updateIndicator('stream-indicator', 'stream-status', true, 'Streaming: aktywny');
+                    broadcastCurrentCanvas();
+                } else if (event.data.type === 'request-canvas') {
+                    broadcastCurrentCanvas();
+                }
+            });
+        } catch (e) {
+            console.warn('BroadcastChannel nie jest obsługiwany:', e);
+        }
+
         // =====================================
         // UTILITY FUNCTIONS
         // =====================================
@@ -714,6 +799,128 @@
                 return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
             } catch (error) {
                 return timestamp;
+            }
+        }
+
+        // =====================================
+        // STREAM WINDOW FUNCTIONS
+        // =====================================
+
+        function initStreamWindow() {
+            document.title = 'LED Stream – YO&GO';
+            document.body.classList.add('stream-window-mode');
+
+            const overlay = document.getElementById('stream-overlay');
+            const canvas = document.getElementById('stream-output-canvas');
+            const ctx = canvas.getContext('2d');
+            let lastImage = null;
+
+            function drawWaiting() {
+                const size = Math.min(window.innerWidth, window.innerHeight);
+                canvas.width = size;
+                canvas.height = size;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = '#444';
+                ctx.font = `${Math.floor(size * 0.05)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText('Oczekiwanie na dane...', size / 2, size * 0.48);
+                ctx.fillStyle = '#FF8C00';
+                ctx.font = `bold ${Math.floor(size * 0.06)}px Arial`;
+                ctx.fillText('YO&GO LED Display', size / 2, size * 0.55);
+            }
+
+            function drawImage(img) {
+                const size = Math.min(window.innerWidth, window.innerHeight);
+                canvas.width = size;
+                canvas.height = size;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, size, size);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, 0, 0, size, size);
+            }
+
+            function handleResize() {
+                if (lastImage) {
+                    drawImage(lastImage);
+                } else {
+                    drawWaiting();
+                }
+            }
+
+            window.addEventListener('resize', handleResize);
+            drawWaiting();
+
+            // Słuchaj kanału broadcast z głównego okna
+            let ch = null;
+            try {
+                ch = new BroadcastChannel('yogo-led-stream');
+                ch.addEventListener('message', (event) => {
+                    if (event.data.type === 'canvas-update') {
+                        const img = new Image();
+                        img.onload = () => { lastImage = img; drawImage(img); };
+                        img.src = event.data.imageData;
+                    }
+                });
+                // Powiadom główne okno że jesteśmy gotowi
+                ch.postMessage({ type: 'stream-ready' });
+                // Po chwili poproś o aktualny kadr (na wypadek gdy główne okno jeszcze nie odpowiedziało)
+                setTimeout(() => ch.postMessage({ type: 'request-canvas' }), 1500);
+            } catch (e) {
+                console.warn('BroadcastChannel error:', e);
+            }
+
+            // F11 = pełny ekran
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    } else {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                }
+            });
+        }
+
+        function broadcastCurrentCanvas() {
+            if (!streamChannel) return;
+            try {
+                const imageData = ui.ledCanvas.toDataURL('image/png');
+                streamChannel.postMessage({ type: 'canvas-update', imageData });
+            } catch (e) {
+                console.error('Błąd broadcast canvas:', e);
+            }
+        }
+
+        function openStreamWindow() {
+            const scale = parseInt(document.getElementById('stream-scale').value || '4');
+            const size = 240 * scale;
+            const url = window.location.href.split('?')[0].split('#')[0] + '#stream';
+
+            if (streamWindowRef && !streamWindowRef.closed) {
+                streamWindowRef.focus();
+                broadcastCurrentCanvas();
+                return;
+            }
+
+            streamWindowRef = window.open(
+                url,
+                'yogo-led-stream',
+                `width=${size},height=${size},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+            );
+
+            if (streamWindowRef) {
+                updateIndicator('stream-indicator', 'stream-status', false, 'Streaming: otwieranie...');
+                // Fallback – wyślij kadr jeśli stream-ready nie dotrze
+                setTimeout(() => {
+                    broadcastCurrentCanvas();
+                    if (!streamWindowRef.closed) {
+                        updateIndicator('stream-indicator', 'stream-status', true, 'Streaming: aktywny');
+                    }
+                }, 2500);
+            } else {
+                alert('Nie można otworzyć okna streamingu.\nSprawdź ustawienia blokady pop-upów w przeglądarce.');
             }
         }
 
@@ -1320,8 +1527,7 @@
             refreshTimer = setInterval(async () => {
                 console.log('Auto-refresh: Updating results (times and places)...');
                 await refreshOpenResults();
-                await refreshSexResults('M');
-                await refreshSexResults('F');
+                await refreshSexResults();  // fetches both M and F internally
                 await refreshAgeResults();
                 await refreshCustomResults();
             }, 30000); // 30 seconds
@@ -1617,6 +1823,9 @@
 
             // Send to LED if configured
             sendToLED();
+
+            // Broadcast canvas to stream window
+            broadcastCurrentCanvas();
         }
 
         function clearLEDDisplay() {
@@ -1880,11 +2089,20 @@
                 return;
             }
 
-            // Check if eventId has changed - if so, clear all cached data
-            if (config.api.eventId && config.api.eventId !== eventId) {
+            const eventChanged = config.api.eventId && config.api.eventId !== eventId;
+
+            if (eventChanged) {
                 console.log('EventId changed from', config.api.eventId, 'to', eventId, '- clearing cache');
 
-                // Clear all cached data
+                // Natychmiast zatrzymaj timer aby uniknąć race condition
+                if (refreshTimer) {
+                    clearInterval(refreshTimer);
+                    refreshTimer = null;
+                }
+
+                // Wyczyść cały cache - najpierw zmień eventId aby kolejne async operacje nie refillowały starymi danymi
+                config.api.eventId = eventId;
+
                 cache.athletes = {};
                 cache.openResults = [];
                 cache.sexResults = { M: [], F: [] };
@@ -1896,17 +2114,16 @@
                 cache.persistentData.genderPlaces = {};
                 cache.persistentData.divisionPlaces = {};
 
-                // Clear selected athlete
                 selectedAthlete = null;
                 clearLEDDisplay();
 
-                showStatus('api-save-status', 'Zmieniono wydarzenie - czyszczenie cache...', 'success');
+                showStatus('api-save-status', `Wydarzenie zmienione na ${eventId} – wyczyszczono cache. Ładowanie...`, 'success');
+            } else {
+                config.api.eventId = eventId;
+                showStatus('api-save-status', 'Zapisano. Łączę z API...', 'success');
             }
 
-            config.api.eventId = eventId;
             localStorage.setItem('led-event-id', eventId);
-
-            showStatus('api-save-status', 'Zapisano. Łączę z API...', 'success');
 
             // Connect to API and refresh data
             initializeApi();
@@ -2077,6 +2294,9 @@
         ui.saveLedBtn.addEventListener('click', saveLedConfig);
         ui.testLedBtn.addEventListener('click', testLedConnection);
         ui.connectRfidBtn.addEventListener('click', connectRFID);
+
+        document.getElementById('open-stream-btn').addEventListener('click', openStreamWindow);
+        document.getElementById('refresh-stream-btn').addEventListener('click', broadcastCurrentCanvas);
 
         ui.ledConnectionType.addEventListener('change', updateLedConnectionUI);
         ui.rfidPower.addEventListener('input', updateRfidPowerLabel);
