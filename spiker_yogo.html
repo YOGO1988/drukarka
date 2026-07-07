@@ -191,6 +191,10 @@
             color: #fdcb6e;
         }
 
+        .stats-value.dnf-dsq {
+            color: #ff7675;
+        }
+
         .stats-total {
             background: var(--primary-color);
             padding: 4px 12px;
@@ -1591,34 +1595,36 @@
                         response.event_results.forEach(result => {
                             const bib = result.results_bib;
                             const existingResult = cache.results.get(bib);
-                            
+
                             if (!results.has(bib)) {
                                 const newResult = {
                                     bib: bib,
                                     firstName: result.results_first_name,
                                     lastName: result.results_last_name,
-                                    overallPlace: result.results_rank,
-                                    categoryPlace: result.results_bracket_rank || result.results_division_rank || '',
-                                    genderPlace: result.results_sex_rank || '',
-                                    netTime: formatTime(result.results_time),
-                                    gunTime: formatTime(result.results_gun_time),
+                                    overallPlace: '',
+                                    categoryPlace: '',
+                                    genderPlace: '',
+                                    // netTime i gunTime ustawiane dopiero gdy natrafimy na rekord mety (Full Course/Finish)
+                                    netTime: null,
+                                    gunTime: null,
                                     startTime: result.results_start_time || result.results_begin_chip_time || null,
-                                    pace: result.results_pace,
+                                    pace: null,
                                     distance: result.results_race_name,
                                     category: result.results_primary_bracket_name,
                                     city: result.results_hometown || '',
                                     club: '',
+                                    // status z API: 'DNF', 'DSQ', 'DQ', '' itp.
+                                    status: (result.results_status || '').toUpperCase(),
                                     checkpoints: [],
                                     lastUpdated: Date.now()
                                 };
 
                                 results.set(bib, newResult);
-                                
+
                                 if (!existingResult) {
                                     newResultsCount++;
                                 } else {
-                                    // Porównaj czy są zmiany w kluczowych polach
-                                    if (existingResult.netTime !== newResult.netTime || 
+                                    if (existingResult.netTime !== newResult.netTime ||
                                         existingResult.overallPlace !== newResult.overallPlace ||
                                         existingResult.checkpoints.length !== newResult.checkpoints.length) {
                                         updatedResultsCount++;
@@ -1627,7 +1633,19 @@
                             }
 
                             const intervalName = result.results_interval_name;
-                            if (intervalName && intervalName !== 'Full Course' && intervalName !== 'Finish') {
+                            const isFinishInterval = intervalName === 'Full Course' || intervalName === 'Finish';
+
+                            if (isFinishInterval) {
+                                // Aktualizuj dane mety – zawsze nadpisuj, żeby mieć pewność
+                                // że netTime pochodzi z rekordu mety, nie checkpointu
+                                const r = results.get(bib);
+                                r.netTime = formatTime(result.results_time);
+                                r.gunTime = formatTime(result.results_gun_time);
+                                r.overallPlace = result.results_rank;
+                                r.categoryPlace = result.results_bracket_rank || result.results_division_rank || '';
+                                r.genderPlace = result.results_sex_rank || '';
+                                r.pace = result.results_pace;
+                            } else if (intervalName) {
                                 const coursePoint = cache.courseData.get(intervalName);
                                 const checkpoint = {
                                     name: intervalName,
@@ -1635,7 +1653,6 @@
                                     place: result.results_rank,
                                     distance_km: coursePoint ? coursePoint.distance_km : null
                                 };
-                                
                                 results.get(bib).checkpoints.push(checkpoint);
                                 totalCheckpointsFound++;
                             }
@@ -2529,42 +2546,49 @@
             const stats = {};
             let totalStarted = 0;
             let totalFinished = 0;
+            let totalDnfDsq = 0;
 
-            // Policz wystartowanych i ukończonych z cache.results
-            // Wystartowani = ci którzy mają startTime (czas startu z chipa)
-            //                LUB mają netTime (jeśli ktoś jest na mecie, to na pewno wystartował - nawet bez czasu startu)
-            // Ukończeni = ci którzy mają netTime (czas netto na mecie)
             cache.results.forEach(result => {
                 const athlete = cache.athletes.get(result.bib);
                 const distance = athlete?.distance || result.distance || 'Nieznany';
 
                 if (!stats[distance]) {
-                    stats[distance] = { started: 0, finished: 0, onCourse: 0 };
+                    stats[distance] = { started: 0, finished: 0, onCourse: 0, dnfDsq: 0 };
                 }
 
-                // Sprawdź czy ma czas startu
+                const status = (result.status || '').toUpperCase();
+                const isDnfDsq = status === 'DNF' || status === 'DSQ' || status === 'DQ';
                 const hasStartTime = result.startTime && result.startTime !== null;
+                // netTime pochodzi wyłącznie z rekordu mety (Full Course/Finish)
                 const hasNetTime = result.netTime && result.netTime !== '-' && result.netTime !== '';
 
-                // Ktoś wystartował jeśli ma czas startu LUB czas mety (jeśli jest na mecie to na pewno wystartował)
-                if (hasStartTime || hasNetTime) {
-                    stats[distance].started++;
-                    totalStarted++;
-                }
-
-                // Ukończył jeśli ma netTime
-                if (hasNetTime) {
-                    stats[distance].finished++;
-                    totalFinished++;
+                if (isDnfDsq) {
+                    // DNF/DSQ: zalicza się do wystartowanych ale osobna kategoria,
+                    // NIE wchodzi do finished ani onCourse
+                    stats[distance].dnfDsq++;
+                    totalDnfDsq++;
+                    if (hasStartTime || hasNetTime) {
+                        stats[distance].started++;
+                        totalStarted++;
+                    }
+                } else {
+                    if (hasStartTime || hasNetTime) {
+                        stats[distance].started++;
+                        totalStarted++;
+                    }
+                    if (hasNetTime) {
+                        stats[distance].finished++;
+                        totalFinished++;
+                    }
                 }
             });
 
-            // Oblicz na trasie dla każdego dystansu
+            // Na trasie = wystartowali - ukończyli - DNF/DSQ
             for (const distance in stats) {
-                stats[distance].onCourse = Math.max(0, stats[distance].started - stats[distance].finished);
+                stats[distance].onCourse = Math.max(0, stats[distance].started - stats[distance].finished - stats[distance].dnfDsq);
             }
 
-            const totalOnCourse = Math.max(0, totalStarted - totalFinished);
+            const totalOnCourse = Math.max(0, totalStarted - totalFinished - totalDnfDsq);
 
             // Buduj HTML
             let html = '';
@@ -2579,6 +2603,12 @@
                 html += '<div class="stats-distances-row">';
                 sortedDistances.forEach(distance => {
                     const s = stats[distance];
+                    const dnfHtml = s.dnfDsq > 0
+                        ? `<div class="stats-item">
+                                <span class="stats-label">DNF/DSQ:</span>
+                                <span class="stats-value dnf-dsq">${s.dnfDsq}</span>
+                            </div>`
+                        : '';
                     html += `
                         <div class="stats-distance-group">
                             <span class="stats-distance-name">${distance}</span>
@@ -2594,15 +2624,17 @@
                                 <span class="stats-label">Trasa:</span>
                                 <span class="stats-value on-course">${s.onCourse}</span>
                             </div>
+                            ${dnfHtml}
                         </div>
                     `;
                 });
                 html += '</div>';
 
                 // Podsumowanie na dole
+                const dnfSummary = totalDnfDsq > 0 ? ` | ${totalDnfDsq} DNF/DSQ` : '';
                 html += `
                     <div class="stats-total">
-                        RAZEM: ${totalStarted} start | ${totalFinished} meta | ${totalOnCourse} trasa
+                        RAZEM: ${totalStarted} start | ${totalFinished} meta | ${totalOnCourse} trasa${dnfSummary}
                     </div>
                 `;
             }
