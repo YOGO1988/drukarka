@@ -65,215 +65,188 @@
 
         /* DISPLAY SCREEN - Simple for athletes */
         #display-screen {
-            padding: 10px;
             background: #fff;
+            height: 100vh;
+            box-sizing: border-box;
             overflow: hidden;
         }
 
         #display-screen.active {
             display: flex !important;
-            flex-direction: row;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            align-items: stretch;
         }
-        
-        .search-panel {
-            flex: 0 0 400px;
+
+        /* === GŁÓWNY WIERSZ: BIB (4/5) + LED (1/5) === */
+        .main-row {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* === LEWA SEKCJA: BIB INPUT (4/5) === */
+        .bib-main-panel {
+            flex: 4;
+            background: #f8f8f8;
+            border-right: 2px solid #ddd;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
 
-        .social-banner {
-            background: linear-gradient(135deg, #FF8C00, #FF6000);
-            border-radius: 10px;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 3px 12px rgba(255,140,0,0.35);
-        }
-
-        .social-banner-icon {
-            font-size: 38px;
-            line-height: 1;
+        .promo-banner {
+            width: 100%;
+            background: #f8f8f8;
+            padding: 26px 40px 12px 40px;
+            text-align: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #222;
+            letter-spacing: 0.6px;
+            line-height: 1.4;
             flex-shrink: 0;
         }
 
-        .social-banner-text {
+        .promo-banner span {
+            color: #FF8C00;
+            font-weight: 700;
+        }
+
+        .bib-form-center {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            color: #fff;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px 40px 25px 40px;
         }
 
-        .social-banner-text strong {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-        }
-
-        .social-banner-text span {
-            font-size: 14px;
-            opacity: 0.93;
-        }
-
-        .social-banner-text em {
-            font-style: normal;
-            font-weight: 700;
-            background: rgba(255,255,255,0.25);
-            padding: 1px 6px;
-            border-radius: 4px;
-        }
-        
-        .search-box {
-            background: #f8f8f8;
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-        }
-        
-        .search-box h2 {
+        .bib-main-panel h2 {
             color: #FF8C00;
-            margin-bottom: 20px;
             font-size: 20px;
+            margin: 0;
         }
-        
+
         #search-input {
             width: 100%;
-            padding: 20px;
-            font-size: 32px;
+            box-sizing: border-box;
+            padding: 15px 15px;
+            font-size: 72px;
             font-weight: bold;
             text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            letter-spacing: 12px;
+            color: #333;
+            background: #fff;
         }
-        
+
+        #search-input:focus {
+            border-color: #FF8C00;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+        }
+
         #search-btn {
             width: 100%;
-            padding: 20px;
-            font-size: 20px;
+            padding: 14px;
+            font-size: 18px;
             font-weight: bold;
+            letter-spacing: 4px;
             background: #FF8C00;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
         }
-        
+
         #search-btn:hover { background: #FF7000; }
-        
+
         .status-box {
-            background: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            padding: 15px;
-            border-radius: 4px;
-            display: none;
+            display: none !important;
         }
-        
-        .status-box.error {
-            background: #ffe7e7;
-            border-color: #f44336;
-        }
-        
-        .status-box.success {
-            background: #e7ffe7;
-            border-color: #4CAF50;
-        }
-        
-        .led-preview {
-            flex: 1;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
+
+        /* Statusy w lewym panelu */
+        .status-strip {
             display: flex;
-            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-strip .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            min-width: 60px;
+        }
+
+        /* Kropki statusu */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .status-indicator.active {
+            background: #4CAF50;
+        }
+
+        .status-indicator.inactive {
+            background: #f44336;
+        }
+
+        /* === PRAWA SEKCJA: LED PODGLĄD (1/5) === */
+        .led-panel {
+            flex: 1;
+            background: #1a1a1a;
+            display: flex;
             align-items: center;
             justify-content: center;
+            padding: 10px;
         }
 
         #led-canvas {
-            border: 2px solid #333;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1;
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #444;
             background: #000;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
 
-        .display-status {
-            color: #FF3333;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
+        /* === STOPKA === */
+        .footer-info {
+            padding: 5px 20px;
             text-align: center;
-            min-height: 20px;
-            padding: 8px 16px;
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            box-shadow: 0 2px 8px rgba(255, 51, 51, 0.3);
-        }
-
-        .unofficial-notice {
-            color: #FF8C00;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            text-align: center;
-            font-style: italic;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 3px;
-        }
-
-        .results-link {
-            color: #333;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 5px;
-            padding: 3px;
-            font-weight: normal;
-        }
-
-        .results-link a {
-            color: #FF8C00;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .results-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Stream window overlay (for #stream hash mode) */
-        body.stream-window-mode > * {
-            display: none !important;
-        }
-        body.stream-window-mode #stream-overlay {
-            display: flex !important;
-        }
-        #stream-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #000;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-        }
-        #stream-output-canvas {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            display: block;
-        }
-        
-        .led-info {
+            font-size: 11px;
             color: #888;
-            font-size: 12px;
-            margin-top: 15px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .footer-info a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+
+        /* Ukryj nieużywane elementy */
+        .led-preview-label,
+        .led-preview-info,
+        .display-status,
+        .unofficial-notice,
+        .results-link,
+        .led-info {
+            display: none !important;
         }
         
         /* ADMIN SCREEN */
@@ -439,49 +412,56 @@
     <div class="container">
         <header>
             <h1>🖥️ YO&GO LED Display System</h1>
-            <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="lock-cursor-checkbox" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span>🔒 Blokuj kursor</span>
+                </label>
+                <button class="mode-toggle" id="mode-toggle" style="font-size: 12px; padding: 8px 16px;">👁️ Wyświetl</button>
+            </div>
         </header>
 
         <!-- DISPLAY SCREEN (for athletes) -->
         <div class="screen" id="display-screen">
-            <div class="search-panel">
-                <div class="social-banner">
-                    <span class="social-banner-icon">💪</span>
-                    <div class="social-banner-text">
-                        <strong id="social-banner-title">Pochwal się wynikiem!</strong>
-                        <span id="social-banner-subtitle">Oznacz <em>#yogoevents</em> – udostępnimy najlepsze!</span>
+
+            <!-- GŁÓWNY WIERSZ: BIB (4/5) | LED (1/5) -->
+            <div class="main-row">
+
+                <!-- LEWA SEKCJA: Wprowadzanie numeru startowego -->
+                <div class="bib-main-panel">
+                    <div class="promo-banner">
+                        Pochwal się wynikiem 💪&nbsp; Oznacz <span>#yogoevents</span> – udostępnimy najlepsze!
                     </div>
-                </div>
-                <div class="search-box">
-                    <h2 id="display-enter-bib">Wprowadź numer startowy</h2>
-                    <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
-                    <button id="search-btn" class="btn-full">WYŚWIETL</button>
-                    <div id="search-status" class="status-box"></div>
+                    <div class="bib-form-center">
+                        <h2 id="display-enter-bib">Wprowadź numer startowy</h2>
+                        <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
+                        <button id="search-btn">ENTER ↵</button>
+                        <div id="search-status" class="status-box"></div>
+                        <div class="status-strip">
+                            <div class="connection-status">
+                                <span class="status-indicator" id="api-indicator"></span>
+                                <span id="api-status">API</span>
+                            </div>
+                            <div class="connection-status">
+                                <span class="status-indicator" id="led-indicator"></span>
+                                <span id="led-status">LED</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="search-box">
-                    <h2 id="display-system-status">📊 Status systemu</h2>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="api-indicator"></span>
-                        <span id="api-status">API: nie połączono</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="rfid-indicator"></span>
-                        <span id="rfid-status">RFID: nie aktywny</span>
-                    </div>
-                    <div class="connection-status">
-                        <span class="status-indicator" id="led-indicator"></span>
-                        <span id="led-status">LED: gotowy</span>
-                    </div>
+                <!-- PRAWA SEKCJA: Podgląd LED -->
+                <div class="led-panel">
+                    <canvas id="led-canvas" width="240" height="240"></canvas>
                 </div>
+
             </div>
-            
-            <div class="led-preview">
-                <div class="display-status" id="display-status"></div>
-                <canvas id="led-canvas" width="240" height="240"></canvas>
-                <div class="unofficial-notice" id="unofficial-notice">Wyniki nieoficjalne</div>
-                <div class="results-link"><span id="results-link-text">wyniki</span> <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+
+            <!-- STOPKA -->
+            <div class="footer-info">
+                <span id="unofficial-notice">Wyniki nieoficjalne</span> &nbsp;&nbsp;&nbsp; wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a>
             </div>
+
         </div>
 
         <!-- ADMIN SCREEN -->
@@ -527,8 +507,8 @@
                     <input type="text" id="custom-footer-text" placeholder="wpisz tekst" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <p style="font-size: 11px; color: #888; margin: 3px 0 10px 0;">Zostaw puste aby wyświetlić tylko YO&GO Events</p>
 
-                    <label style="font-weight: bold; margin: 15px 0 8px 0; display: block;">Język wyświetlacza:</label>
-                    <select id="display-language" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+                    <label style="font-weight: bold; margin: 15px 0 5px 0; display: block;">Język wyświetlacza:</label>
+                    <select id="display-language" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
                         <option value="pl">🇵🇱 Polski</option>
                         <option value="en">🇬🇧 English</option>
                     </select>
@@ -538,17 +518,23 @@
 
                 <!-- RFID Config -->
                 <div class="panel">
-                    <h2>📡 RFID Czytnik</h2>
+                    <h2>📡 RFID Czytnik (Keyboard Mode)</h2>
                     <div class="connection-status">
-                        <span class="status-indicator" id="admin-rfid-indicator"></span>
-                        <span id="admin-rfid-status">Czytnik: nie podłączony</span>
+                        <span class="status-indicator active" id="admin-rfid-indicator"></span>
+                        <span id="admin-rfid-status">Gotowy: Podłącz czytnik USB</span>
                     </div>
-                    <button id="connect-rfid-btn" class="btn-full">🔌 Połącz czytnik USB</button>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>Zasięg czytnika:</label>
-                        <input type="range" id="rfid-power" min="1" max="10" value="3">
-                        <span id="rfid-power-label">~15cm</span>
+                    <div class="info-box" style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #4CAF50;">
+                        <strong>📋 Instrukcja:</strong><br>
+                        1. Podłącz czytnik USB RFID do komputera<br>
+                        2. Kliknij w pole wyszukiwania na ekranie LED<br>
+                        3. Zbliż chipującą opaskę - wynik pojawi się automatycznie<br>
+                        <br>
+                        <strong>✅ Kompatybilność:</strong> Działa z większością czytników USB (tryb HID/klawiatura)
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ostatnio odczytany TAG:</label>
+                        <input type="text" id="last-rfid-tag" readonly placeholder="Oczekiwanie na TAG..." style="background: #f5f5f5;">
                     </div>
                 </div>
 
@@ -560,6 +546,7 @@
                         <select id="led-connection-type">
                             <option value="none">Brak (tylko podgląd)</option>
                             <option value="hdmi">HDMI (F11 fullscreen)</option>
+                            <option value="hdshow">HD Show → Hudi A4 (streaming zdalny)</option>
                             <option value="ethernet">Ethernet / HTTP</option>
                         </select>
                     </div>
@@ -577,46 +564,22 @@
                     
                     <button id="save-led-btn" class="btn-full">Zapisz połączenie</button>
                     <button id="test-led-btn" class="btn-full secondary">Test połączenia</button>
-                </div>
+                    <button id="open-led-window-btn" class="btn-full" style="background: #00AA00; margin-top: 15px;">🖥️ Otwórz okno LED</button>
+                    <p style="font-size: 11px; color: #888; margin-top: 5px;">Otwiera osobne okno LED. Dla HDMI: przesuń na drugi monitor i naciśnij F11. Dla HD Show: przechwyć to okno w aplikacji HD Show.</p>
 
-                <!-- Streaming / Drugi ekran -->
-                <div class="panel" style="grid-column: span 2;">
-                    <h2>📺 Streaming / Drugi ekran (HD show → Huidu A4L)</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-                        <div>
-                            <div class="form-group">
-                                <label>Skala okna streamingu:</label>
-                                <select id="stream-scale">
-                                    <option value="2">2× – 480×480 px</option>
-                                    <option value="3">3× – 720×720 px</option>
-                                    <option value="4" selected>4× – 960×960 px</option>
-                                    <option value="5">5× – 1200×1200 px</option>
-                                </select>
-                            </div>
-                            <button id="open-stream-btn" class="btn-full">📺 Otwórz okno streamingu</button>
-                            <button id="refresh-stream-btn" class="btn-full secondary" style="margin-top:8px;">🔄 Wyślij aktualny kadr</button>
-                        </div>
-                        <div>
-                            <div class="connection-status">
-                                <span class="status-indicator" id="stream-indicator"></span>
-                                <span id="stream-status">Streaming: nieaktywny</span>
-                            </div>
-                            <p style="font-size: 12px; color: #666; margin-top: 12px; line-height: 1.7;">
-                                1. Kliknij <strong>Otwórz okno streamingu</strong><br>
-                                2. Przesuń okno na drugi monitor, naciśnij <strong>F11</strong><br>
-                                3. W <strong>HD show</strong> wybierz to okno jako źródło (Screen Capture)<br>
-                                4. HD show prześle obraz do kontrolera <strong>Huidu A4L</strong>
-                            </p>
-                        </div>
+                    <div id="hdshow-info" class="hidden" style="margin-top: 15px; background: #e8f4fd; border-left: 4px solid #2196F3; padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.7;">
+                        <strong>📡 Instrukcja HD Show → Hudi A4:</strong><br>
+                        1. Kliknij <em>Otwórz okno LED</em> – pojawi się czarne okno 240×240px<br>
+                        2. W aplikacji <strong>HD Show</strong> wybierz źródło: <em>Okno</em> → <em>LED Display</em><br>
+                        3. Uruchom transmisję – obraz trafi do odbiornika <strong>Hudi A4</strong><br>
+                        4. Hudi A4 podłącz do wejścia wideo tablicy LED<br>
+                        5. Wynik pojawi się na tablicy automatycznie po każdym wyszukaniu<br>
+                        <br>
+                        <strong>💡 Wskazówka:</strong> Okno LED odświeża się przy każdym wyszukaniu zawodnika – brak potrzeby ręcznego odświeżania.
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Stream window overlay (aktywowany przez #stream w URL) -->
-    <div id="stream-overlay">
-        <canvas id="stream-output-canvas"></canvas>
     </div>
 
     <!-- Password Modal -->
@@ -639,15 +602,6 @@
      * Wersja 2.0
      */
     document.addEventListener('DOMContentLoaded', function() {
-
-        // =====================================
-        // STREAM WINDOW MODE (#stream in URL)
-        // =====================================
-        if (window.location.hash === '#stream') {
-            initStreamWindow();
-            return;
-        }
-
         // =====================================
         // CONFIGURATION
         // =====================================
@@ -678,9 +632,7 @@
                 port: localStorage.getItem('led-port') || '80'
             },
             rfid: {
-                connected: false,
-                device: null,
-                power: parseInt(localStorage.getItem('led-rfid-power') || '3')
+                connected: false  // Keyboard mode - always ready when initialized
             },
             refreshInterval: 90000  // 90 seconds
         };
@@ -724,6 +676,7 @@
             searchStatus: document.getElementById('search-status'),
             ledCanvas: document.getElementById('led-canvas'),
             displayStatus: document.getElementById('display-status'),
+            lockCursorCheckbox: document.getElementById('lock-cursor-checkbox'),
 
             // Status indicators
             apiIndicator: document.getElementById('api-indicator'),
@@ -750,13 +703,9 @@
             showAge: document.getElementById('show-age'),
             showCustom: document.getElementById('show-custom'),
             customFooterText: document.getElementById('custom-footer-text'),
-            displayLanguage: document.getElementById('display-language'),
             saveDisplayBtn: document.getElementById('save-display-btn'),
 
             // Admin screen - RFID
-            connectRfidBtn: document.getElementById('connect-rfid-btn'),
-            rfidPower: document.getElementById('rfid-power'),
-            rfidPowerLabel: document.getElementById('rfid-power-label'),
             adminRfidIndicator: document.getElementById('admin-rfid-indicator'),
             adminRfidStatus: document.getElementById('admin-rfid-status'),
 
@@ -767,6 +716,10 @@
             ledPort: document.getElementById('led-port'),
             saveLedBtn: document.getElementById('save-led-btn'),
             testLedBtn: document.getElementById('test-led-btn'),
+            openLedWindowBtn: document.getElementById('open-led-window-btn'),
+
+            // Admin screen - Display language
+            displayLanguage: document.getElementById('display-language'),
 
             // Password modal
             passwordModal: document.getElementById('password-modal'),
@@ -780,23 +733,7 @@
         let currentMode = 'admin';  // 'display' or 'admin'
         let refreshTimer = null;
         let selectedAthlete = null;
-
-        // BroadcastChannel dla okna streamingu
-        let streamChannel = null;
-        let streamWindowRef = null;
-        try {
-            streamChannel = new BroadcastChannel('yogo-led-stream');
-            streamChannel.addEventListener('message', (event) => {
-                if (event.data.type === 'stream-ready') {
-                    updateIndicator('stream-indicator', 'stream-status', true, 'Streaming: aktywny');
-                    broadcastCurrentCanvas();
-                } else if (event.data.type === 'request-canvas') {
-                    broadcastCurrentCanvas();
-                }
-            });
-        } catch (e) {
-            console.warn('BroadcastChannel nie jest obsługiwany:', e);
-        }
+        let ledWindow = null;
 
         // =====================================
         // UTILITY FUNCTIONS
@@ -860,195 +797,49 @@
         }
 
         // =====================================
-        // STREAM WINDOW FUNCTIONS
-        // =====================================
-
-        function initStreamWindow() {
-            document.title = 'LED Stream – YO&GO';
-            document.body.classList.add('stream-window-mode');
-
-            const overlay = document.getElementById('stream-overlay');
-            const canvas = document.getElementById('stream-output-canvas');
-            const ctx = canvas.getContext('2d');
-            let lastImage = null;
-
-            function drawWaiting() {
-                const size = Math.min(window.innerWidth, window.innerHeight);
-                canvas.width = size;
-                canvas.height = size;
-                ctx.fillStyle = '#000';
-                ctx.fillRect(0, 0, size, size);
-                ctx.fillStyle = '#444';
-                ctx.font = `${Math.floor(size * 0.05)}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('Oczekiwanie na dane...', size / 2, size * 0.48);
-                ctx.fillStyle = '#FF8C00';
-                ctx.font = `bold ${Math.floor(size * 0.06)}px Arial`;
-                ctx.fillText('YO&GO LED Display', size / 2, size * 0.55);
-            }
-
-            function drawImage(img) {
-                const size = Math.min(window.innerWidth, window.innerHeight);
-                canvas.width = size;
-                canvas.height = size;
-                ctx.fillStyle = '#000';
-                ctx.fillRect(0, 0, size, size);
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(img, 0, 0, size, size);
-            }
-
-            function handleResize() {
-                if (lastImage) {
-                    drawImage(lastImage);
-                } else {
-                    drawWaiting();
-                }
-            }
-
-            window.addEventListener('resize', handleResize);
-            drawWaiting();
-
-            // Słuchaj kanału broadcast z głównego okna
-            let ch = null;
-            try {
-                ch = new BroadcastChannel('yogo-led-stream');
-                ch.addEventListener('message', (event) => {
-                    if (event.data.type === 'canvas-update') {
-                        const img = new Image();
-                        img.onload = () => { lastImage = img; drawImage(img); };
-                        img.src = event.data.imageData;
-                    }
-                });
-                // Powiadom główne okno że jesteśmy gotowi
-                ch.postMessage({ type: 'stream-ready' });
-                // Po chwili poproś o aktualny kadr (na wypadek gdy główne okno jeszcze nie odpowiedziało)
-                setTimeout(() => ch.postMessage({ type: 'request-canvas' }), 1500);
-            } catch (e) {
-                console.warn('BroadcastChannel error:', e);
-            }
-
-            // F11 = pełny ekran
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'F11') {
-                    e.preventDefault();
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(() => {});
-                    } else {
-                        document.exitFullscreen().catch(() => {});
-                    }
-                }
-            });
-        }
-
-        function broadcastCurrentCanvas() {
-            if (!streamChannel) return;
-            try {
-                const imageData = ui.ledCanvas.toDataURL('image/png');
-                streamChannel.postMessage({ type: 'canvas-update', imageData });
-            } catch (e) {
-                console.error('Błąd broadcast canvas:', e);
-            }
-        }
-
-        function openStreamWindow() {
-            const scale = parseInt(document.getElementById('stream-scale').value || '4');
-            const size = 240 * scale;
-            const url = window.location.href.split('?')[0].split('#')[0] + '#stream';
-
-            if (streamWindowRef && !streamWindowRef.closed) {
-                streamWindowRef.focus();
-                broadcastCurrentCanvas();
-                return;
-            }
-
-            streamWindowRef = window.open(
-                url,
-                'yogo-led-stream',
-                `width=${size},height=${size},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
-            );
-
-            if (streamWindowRef) {
-                updateIndicator('stream-indicator', 'stream-status', false, 'Streaming: otwieranie...');
-                // Fallback – wyślij kadr jeśli stream-ready nie dotrze
-                setTimeout(() => {
-                    broadcastCurrentCanvas();
-                    if (!streamWindowRef.closed) {
-                        updateIndicator('stream-indicator', 'stream-status', true, 'Streaming: aktywny');
-                    }
-                }, 2500);
-            } else {
-                alert('Nie można otworzyć okna streamingu.\nSprawdź ustawienia blokady pop-upów w przeglądarce.');
-            }
-        }
-
-        // =====================================
-        // LANGUAGE & BIB NORMALIZATION
+        // TRANSLATIONS & LANGUAGE
         // =====================================
 
         const translations = {
             pl: {
-                enterBib:          'Wprowadź numer startowy',
-                searchBtn:         'WYŚWIETL',
-                systemStatus:      '📊 Status systemu',
-                unofficialResults: 'Wyniki nieoficjalne',
-                resultsLink:       'wyniki',
-                socialTitle:       'Pochwal się wynikiem!',
-                socialSubtitle:    'Oznacz <em>#yogoevents</em> – udostępnimy najlepsze!',
-                searching:         'Szukam...',
-                found:             'Znaleziono',
-                notFound:          'Nie znaleziono zawodnika',
-                waitingForData:    'Oczekiwanie na dane...',
-                result:            'WYNIK',
-                net:               'NETTO',
-                men:               'MĘŻCZYŹNI',
-                women:             'KOBIETY',
-                apiNotConnected:   'API: Brak konfiguracji',
-                rfidNotConnected:  'RFID: Nie podłączony',
-                ledReady:          'LED: Gotowy',
+                enterBib: 'Wprowadź numer startowy',
+                waitingForData: 'Oczekiwanie na dane...',
+                result: 'WYNIK',
+                net: 'NETTO',
+                men: 'MĘŻCZYŹNI',
+                women: 'KOBIETY',
+                unofficialResults: 'Wyniki nieoficjalne'
             },
             en: {
-                enterBib:          'Enter your bib number',
-                searchBtn:         'SEARCH',
-                systemStatus:      '📊 System status',
-                unofficialResults: 'Unofficial results',
-                resultsLink:       'results',
-                socialTitle:       'Show off your result!',
-                socialSubtitle:    'Tag <em>#yogoevents</em> – we\'ll share the best!',
-                searching:         'Searching...',
-                found:             'Found',
-                notFound:          'Athlete not found',
-                waitingForData:    'Waiting for data...',
-                result:            'RESULT',
-                net:               'NET',
-                men:               'MEN',
-                women:             'WOMEN',
-                apiNotConnected:   'API: Not configured',
-                rfidNotConnected:  'RFID: Not connected',
-                ledReady:          'LED: Ready',
+                enterBib: 'Enter bib number',
+                waitingForData: 'Waiting for data...',
+                result: 'RESULT',
+                net: 'NET',
+                men: 'MEN',
+                women: 'WOMEN',
+                unofficialResults: 'Unofficial results'
             }
         };
 
         function t(key) {
             const lang = config.display.language || 'pl';
-            return (translations[lang] && translations[lang][key]) || translations.pl[key] || key;
-        }
-
-        // Strip leading zeros: "019" → "19", "001" → "1", "007" → "7"
-        function normalizeBib(bib) {
-            const stripped = String(bib).replace(/^0+/, '');
-            return stripped || '0';
+            return (translations[lang] && translations[lang][key]) || translations['pl'][key] || key;
         }
 
         function applyLanguage() {
-            const el = (id) => document.getElementById(id);
+            const enterBibEl = document.getElementById('display-enter-bib');
+            if (enterBibEl) enterBibEl.textContent = t('enterBib');
+            const noticeEl = document.getElementById('unofficial-notice');
+            if (noticeEl) noticeEl.textContent = t('unofficialResults');
+        }
 
-            el('display-enter-bib').textContent    = t('enterBib');
-            el('search-btn').textContent           = t('searchBtn');
-            el('display-system-status').textContent = t('systemStatus');
-            el('unofficial-notice').textContent    = t('unofficialResults');
-            el('results-link-text').textContent    = t('resultsLink');
-            el('social-banner-title').textContent  = t('socialTitle');
-            el('social-banner-subtitle').innerHTML = t('socialSubtitle');
+        // =====================================
+        // BIB NORMALIZATION
+        // =====================================
+
+        function normalizeBib(bib) {
+            const stripped = String(bib).replace(/^0+/, '');
+            return stripped || '0';
         }
 
         // =====================================
@@ -1119,6 +910,7 @@
 
                 const response = await fetch(url, {
                     method: 'GET',
+                    cache: 'no-store',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
@@ -1213,6 +1005,7 @@
                     try {
                         mapped.bracket_positions = JSON.parse(result.bracket_positions);
                     } catch (e) {
+                        console.warn(`Failed to parse bracket_positions for BIB ${result.results_bib}:`, e);
                         mapped.bracket_positions = result.bracket_positions;
                     }
                 } else {
@@ -1237,40 +1030,20 @@
 
         async function refreshOpenResults() {
             try {
-                const params = { size: 100 };  // BEZ include_all_fields!
+                const params = {
+                    size: 100,
+                    include_all_fields: '1'
+                };
                 console.log("Fetching OPEN results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                 if (allResults.length > 0) {
                     const mappedResults = allResults.map(mapAthleteData);
+
+                    // TYLKO cache.openResults - NIE mieszamy w cache.athletes!
                     cache.openResults = mappedResults;
                     cache.lastUpdate.open = new Date();
-
-                    // Aktualizuj cache zawodników
-                    mappedResults.forEach(athlete => {
-                        if (athlete.entry_bib) {
-                            // Sprawdź czy mamy zapisane dane o kategorii i płci
-                            const savedDivisionPlace = cache.persistentData.divisionPlaces[athlete.entry_bib];
-                            const savedGenderPlace = cache.persistentData.genderPlaces[athlete.entry_bib];
-
-                            const athleteData = {
-                                ...cache.athletes[athlete.entry_bib],
-                                ...athlete
-                            };
-
-                            // Przywróć dane o kategorii i płci, jeśli zostały zapisane
-                            if (savedDivisionPlace) {
-                                athleteData.division_place = savedDivisionPlace;
-                            }
-
-                            if (savedGenderPlace) {
-                                athleteData.gender_place = savedGenderPlace;
-                            }
-
-                            cache.athletes[athlete.entry_bib] = athleteData;
-                        }
-                    });
 
                     console.log(`OPEN results updated: ${mappedResults.length} athletes`);
                     return mappedResults;
@@ -1288,37 +1061,46 @@
                 const results = { M: [], F: [] };
 
                 for (const sexType of sexTypes) {
-                    const params = { size: 100, bracket: 'sex', sex: sexType };  // BEZ include_all_fields!
+                    const params = {
+                        size: 100,
+                        bracket: 'sex',
+                        sex: sexType
+                    };
                     console.log(`Fetching ${sexType} results...`);
 
                     const genderResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                     if (genderResults.length > 0) {
-                        const mappedResults = genderResults.map(mapAthleteData);
-                        results[sexType] = mappedResults;
+                        const mappedResults = genderResults.map(result => {
+                            const mapped = {
+                                entry_bib: result.results_bib,
+                                athlete_first_name: result.results_first_name,
+                                athlete_last_name: result.results_last_name,
+                                athlete_sex: result.results_sex,
+                                entry_race_age: result.results_age,
+                                bracket_name: result.results_primary_bracket_name,
+                                race_distance: result.results_race_name,
+                                net_time: result.results_time,
+                                gun_time: result.results_gun_time,
+                                overall_place: result.results_rank,
+                                gender_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
+                                pace: result.results_pace,
+                                formatted_net_time: formatTime(result.results_time),
+                                formatted_gun_time: formatTime(result.results_gun_time)
+                            };
 
-                        // Aktualizuj cache zawodników z poprawionym miejscem w płci
-                        mappedResults.forEach(athlete => {
-                            if (athlete.entry_bib) {
-                                // Zapisz miejsce w płci do trwałego cache
-                                cache.persistentData.genderPlaces[athlete.entry_bib] = athlete.gender_place;
-
-                                if (cache.athletes[athlete.entry_bib]) {
-                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w płci
-                                    cache.athletes[athlete.entry_bib].gender_place = athlete.gender_place;
-                                    // Zapisz bracket_positions jeśli dostępne
-                                    if (athlete.bracket_positions) {
-                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                    }
-                                } else {
-                                    // Dodaj nowego zawodnika do cache
-                                    cache.athletes[athlete.entry_bib] = athlete;
-                                }
+                            if (cache.clubs && cache.clubs[mapped.entry_bib]) {
+                                mapped.club = cache.clubs[mapped.entry_bib];
                             }
+
+                            return mapped;
                         });
+
+                        results[sexType] = mappedResults;
                     }
                 }
 
+                // TYLKO cache.sexResults - NIE mieszamy w cache.athletes!
                 cache.sexResults = results;
                 cache.lastUpdate.sex = new Date();
                 console.log(`SEX results updated: M=${results.M.length}, F=${results.F.length}`);
@@ -1331,36 +1113,44 @@
 
         async function refreshAgeResults() {
             try {
-                const params = { size: 100, bracket: 'age' };  // BEZ include_all_fields!
+                const params = {
+                    size: 100,
+                    bracket: 'age'
+                };
                 console.log("Fetching AGE results...");
 
                 const allResults = await fetchAllResultPages(`/api/event/${config.api.eventId}/results`, params);
 
                 if (allResults.length > 0) {
                     const ageCategories = {};
-                    const mappedResults = allResults.map(mapAthleteData);
+
+                    const mappedResults = allResults.map(result => {
+                        const mapped = {
+                            entry_bib: result.results_bib,
+                            athlete_first_name: result.results_first_name,
+                            athlete_last_name: result.results_last_name,
+                            athlete_sex: result.results_sex,
+                            entry_race_age: result.results_age,
+                            bracket_name: result.results_primary_bracket_name,
+                            race_distance: result.results_race_name,
+                            net_time: result.results_time,
+                            gun_time: result.results_gun_time,
+                            overall_place: result.results_rank,
+                            division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
+                            pace: result.results_pace,
+                            formatted_net_time: formatTime(result.results_time),
+                            formatted_gun_time: formatTime(result.results_gun_time)
+                        };
+
+                        if (cache.clubs && cache.clubs[mapped.entry_bib]) {
+                            mapped.club = cache.clubs[mapped.entry_bib];
+                        }
+
+                        return mapped;
+                    });
 
                     // Grupuj według kategorii wiekowej
                     mappedResults.forEach(athlete => {
-                        if (athlete.entry_bib) {
-                            // Zapisz miejsce w kategorii do trwałego cache
-                            if (athlete.division_place) {
-                                cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
-                            }
-
-                            if (cache.athletes[athlete.entry_bib]) {
-                                // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
-                                cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                                // Zapisz bracket_positions jeśli dostępne
-                                if (athlete.bracket_positions) {
-                                    cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                }
-                            } else {
-                                // Dodaj nowego zawodnika do cache
-                                cache.athletes[athlete.entry_bib] = athlete;
-                            }
-                        }
-
                         if (athlete.bracket_name) {
                             if (!ageCategories[athlete.bracket_name]) {
                                 ageCategories[athlete.bracket_name] = [];
@@ -1369,6 +1159,7 @@
                         }
                     });
 
+                    // TYLKO cache.ageResults - NIE mieszamy w cache.athletes!
                     cache.ageResults = ageCategories;
                     cache.lastUpdate.age = new Date();
                     console.log(`AGE results updated: ${Object.keys(ageCategories).length} categories`);
@@ -1411,48 +1202,32 @@
 
                     if (categoryResults.length > 0) {
                         const mappedResults = categoryResults.map(result => {
-                            const mapped = mapAthleteData(result);
+                            const mapped = {
+                                entry_bib: result.results_bib,
+                                athlete_first_name: result.results_first_name,
+                                athlete_last_name: result.results_last_name,
+                                athlete_sex: result.results_sex,
+                                entry_race_age: result.results_age,
+                                bracket_name: result.results_primary_bracket_name,
+                                race_distance: result.results_race_name,
+                                net_time: result.results_time,
+                                gun_time: result.results_gun_time,
+                                overall_place: result.results_rank,
+                                division_place: result.results_rank_in_bracket || result.results_bracket_rank || result.results_rank,
+                                pace: result.results_pace,
+                                formatted_net_time: formatTime(result.results_time),
+                                formatted_gun_time: formatTime(result.results_gun_time)
+                            };
 
-                            if (result.bracket_positions) {
-                                try {
-                                    const positions = typeof result.bracket_positions === 'string'
-                                        ? JSON.parse(result.bracket_positions)
-                                        : result.bracket_positions;
-
-                                    if (positions[categoryName]) {
-                                        mapped.division_place = positions[categoryName];
-                                    }
-                                } catch (e) {
-                                    console.warn(`Cannot parse bracket_positions for ${result.results_bib}:`, e);
-                                }
+                            if (cache.clubs && cache.clubs[mapped.entry_bib]) {
+                                mapped.club = cache.clubs[mapped.entry_bib];
                             }
 
                             return mapped;
                         });
 
+                        // TYLKO cache.customResults - NIE mieszamy w cache.athletes!
                         allCustomResults[categoryName] = mappedResults;
-
-                        // Aktualizuj cache zawodników z miejscem w kategorii custom
-                        mappedResults.forEach(athlete => {
-                            if (athlete.entry_bib) {
-                                // Zapisz miejsce w kategorii customowej do trwałego cache
-                                if (athlete.division_place) {
-                                    cache.persistentData.divisionPlaces[athlete.entry_bib] = athlete.division_place;
-                                }
-
-                                if (cache.athletes[athlete.entry_bib]) {
-                                    // Zachowaj istniejące dane, ale zaktualizuj miejsce w kategorii
-                                    cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
-                                    // Zapisz bracket_positions jeśli dostępne
-                                    if (athlete.bracket_positions) {
-                                        cache.athletes[athlete.entry_bib].bracket_positions = athlete.bracket_positions;
-                                    }
-                                } else {
-                                    // Dodaj nowego zawodnika do cache
-                                    cache.athletes[athlete.entry_bib] = athlete;
-                                }
-                            }
-                        });
 
                         console.log(`Category ${categoryName}: ${mappedResults.length} athletes`);
                     }
@@ -1616,6 +1391,18 @@
             try {
                 updateIndicator('api-indicator', 'api-status', false, 'API: Odświeżanie...');
 
+                // Wyczyść CAŁY cache przed pobraniem świeżych danych
+                cache.athletes = {};
+                cache.openResults = [];
+                cache.sexResults = { M: [], F: [] };
+                cache.ageResults = {};
+                cache.customResults = {};
+                cache.clubs = {};
+                cache.tags = {};
+                cache.eventInfo = null;
+                cache.persistentData = { genderPlaces: {}, divisionPlaces: {} };
+                console.log(`[${config.api.eventId}] Cleared all cache - loading fresh data`);
+
                 await fetchEventInfo();
                 await refreshOpenResults();
 
@@ -1637,7 +1424,8 @@
                     console.log('Updated cached athletes with clubs');
                 }
 
-                updateIndicator('api-indicator', 'api-status', true, `API: ${cache.eventInfo.event_name}`);
+                const eventName = cache.eventInfo?.event_name || `Event ${config.api.eventId}`;
+                updateIndicator('api-indicator', 'api-status', true, `API: ${eventName}`);
                 return true;
             } catch (error) {
                 console.error(`Refresh all data error: ${error.message}`);
@@ -1652,41 +1440,224 @@
             // Co 30 sekund odświeżaj TYLKO wyniki (czasy i miejsca w kategoriach)
             // Klub i event info się nie zmienia - pobieramy tylko raz na starcie
             refreshTimer = setInterval(async () => {
+                if (!config.api.eventId) return;
                 console.log('Auto-refresh: Updating results (times and places)...');
                 await refreshOpenResults();
-                await refreshSexResults();  // fetches both M and F internally
+                await refreshSexResults();
                 await refreshAgeResults();
                 await refreshCustomResults();
             }, 30000); // 30 seconds
         }
 
-        async function findAthleteByBib(bib) {
-            // Check cache first
-            if (cache.athletes[bib]) {
-                console.log(`Found athlete in cache: ${bib}`);
-                return cache.athletes[bib];
-            }
+        /**
+         * Próbuje pobrać dane o miejscu zawodnika w kategorii (wiekowej, dodatkowej, płci)
+         * WZOROWANE NA drukarka_wynikowv2.html - DZIAŁAJĄCY PROGRAM!
+         */
+        async function getAthleteAgeGroupResult(athlete) {
+            if (!athlete || !athlete.bracket_name || !athlete.entry_bib) return;
 
-            // Fetch from API
             try {
-                const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, { bib });
-
-                if (response && response.event_results && response.event_results.length > 0) {
-                    const athlete = response.event_results.find(result =>
-                        result.results_bib === bib || String(result.results_bib) === String(bib)
+                // Sprawdź najpierw w cache ageResults
+                if (cache.ageResults && cache.ageResults[athlete.bracket_name]) {
+                    const matchingAthlete = cache.ageResults[athlete.bracket_name].find(
+                        a => a.entry_bib === athlete.entry_bib
                     );
 
-                    if (athlete) {
-                        const mappedAthlete = mapAthleteData(athlete);
-                        cache.athletes[mappedAthlete.entry_bib] = mappedAthlete;
-                        return mappedAthlete;
+                    if (matchingAthlete && matchingAthlete.division_place) {
+                        athlete.division_place = matchingAthlete.division_place;
+                        console.log(`Znaleziono miejsce w kategorii w cache (age): ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
+                        return;
                     }
                 }
-                return null;
+
+                // Sprawdź w cache customResults
+                if (cache.customResults && cache.customResults[athlete.bracket_name]) {
+                    const matchingAthlete = cache.customResults[athlete.bracket_name].find(
+                        a => a.entry_bib === athlete.entry_bib
+                    );
+
+                    if (matchingAthlete && matchingAthlete.division_place) {
+                        athlete.division_place = matchingAthlete.division_place;
+                        console.log(`Znaleziono miejsce w kategorii w cache (custom): ${athlete.entry_bib}, miejsce: ${athlete.division_place}`);
+                        return;
+                    }
+                }
+
+                // Wykryj typ kategorii i użyj odpowiedniego parametru bracket
+                let bracketType;
+                if (isAgeBracket(athlete.bracket_name)) {
+                    bracketType = 'age';
+                } else if (isSexBracket(athlete.bracket_name)) {
+                    bracketType = 'sex';
+                } else {
+                    // Dla kategorii dodatkowych (custom) użyj nazwy kategorii jako bracket
+                    bracketType = athlete.bracket_name;
+                }
+
+                // Jeśli nie ma w cache, spróbuj pobrać bezpośrednio z API
+                const params = {
+                    bracket: bracketType,
+                    bib: athlete.entry_bib
+                };
+
+                console.log(`Pobieranie miejsca w kategorii dla zawodnika ${athlete.entry_bib} z kategorii ${athlete.bracket_name} (typ: ${bracketType})`);
+                const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, params);
+
+                if (response && response.event_results && response.event_results.length > 0) {
+                    const result = response.event_results[0];
+                    console.log("Otrzymane dane kategorii z API:", result);
+
+                    if (result.results_rank_in_bracket) {
+                        athlete.division_place = result.results_rank_in_bracket;
+                        console.log(`Zaktualizowano miejsce w kategorii: ${athlete.division_place}`);
+                    } else if (result.results_bracket_rank) {
+                        athlete.division_place = result.results_bracket_rank;
+                        console.log(`Zaktualizowano miejsce w kategorii (bracket_rank): ${athlete.division_place}`);
+                    } else if (result.results_division_rank) {
+                        athlete.division_place = result.results_division_rank;
+                        console.log(`Zaktualizowano miejsce w kategorii (division_rank): ${athlete.division_place}`);
+                    }
+
+                    // Aktualizuj również cache
+                    if (athlete.division_place && cache.athletes[athlete.entry_bib]) {
+                        cache.athletes[athlete.entry_bib].division_place = athlete.division_place;
+                    }
+                } else {
+                    console.log(`Brak wyników kategorii dla zawodnika ${athlete.entry_bib}`);
+                }
             } catch (error) {
-                console.error(`Find athlete error: ${error.message}`);
+                console.error(`Błąd pobierania miejsca w kategorii: ${error.message}`);
+            }
+        }
+
+        async function findAthleteByBib(bib) {
+            console.log(`Finding athlete BIB: ${bib}`);
+
+            // KROK 1: Szukaj w cache.openResults (czasy, overall_place)
+            let athlete = cache.openResults.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+
+            if (!athlete) {
+                // Nie ma w cache - pobierz z API
+                console.log(`BIB ${bib} nie ma w cache.openResults, pobieranie z API...`);
+                try {
+                    const response = await makeApiRequest(`/api/event/${config.api.eventId}/results`, { bib });
+                    if (response && response.event_results && response.event_results.length > 0) {
+                        const result = response.event_results.find(r =>
+                            r.results_bib === bib || String(r.results_bib) === String(bib)
+                        );
+                        if (result) {
+                            athlete = mapAthleteData(result);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Błąd API dla BIB ${bib}:`, error);
+                    return null;
+                }
+            }
+
+            if (!athlete) {
+                console.log(`BIB ${bib} nie znaleziony`);
                 return null;
             }
+
+            // Mamy podstawowe dane - teraz zbieramy miejsca w kategoriach
+            const finalAthlete = { ...athlete };
+
+            // KROK 2: Pobierz division_place z odpowiedniego cache
+            if (finalAthlete.bracket_name) {
+                if (isAgeBracket(finalAthlete.bracket_name)) {
+                    // Kategoria wiekowa (M30, K40, etc.)
+                    const ageCategory = cache.ageResults[finalAthlete.bracket_name];
+                    if (ageCategory) {
+                        const athleteInAge = ageCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                        if (athleteInAge && athleteInAge.division_place) {
+                            finalAthlete.division_place = athleteInAge.division_place;
+                            console.log(`✅ Division place z cache.ageResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+                        }
+                    } else {
+                        // Brak w cache - wywołaj getAthleteAgeGroupResult
+                        console.log(`Kategoria ${finalAthlete.bracket_name} nie w cache.ageResults, wywołuję getAthleteAgeGroupResult...`);
+                        await getAthleteAgeGroupResult(finalAthlete);
+                    }
+                } else if (!isSexBracket(finalAthlete.bracket_name)) {
+                    // Kategoria custom (WOJSKO, POLICJA, Konin-M, etc.)
+                    const customCategory = cache.customResults[finalAthlete.bracket_name];
+                    if (customCategory) {
+                        const athleteInCustom = customCategory.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                        if (athleteInCustom && athleteInCustom.division_place) {
+                            finalAthlete.division_place = athleteInCustom.division_place;
+                            console.log(`✅ Division place z cache.customResults[${finalAthlete.bracket_name}]: ${finalAthlete.division_place}`);
+                        }
+                    } else {
+                        // Brak w cache - wywołaj getAthleteAgeGroupResult (obsługuje też custom)
+                        console.log(`Kategoria custom ${finalAthlete.bracket_name} nie w cache.customResults, wywołuję getAthleteAgeGroupResult...`);
+                        await getAthleteAgeGroupResult(finalAthlete);
+                    }
+                }
+            }
+
+            // KROK 3: Pobierz gender_place z cache.sexResults
+            if (finalAthlete.athlete_sex && (finalAthlete.athlete_sex === 'M' || finalAthlete.athlete_sex === 'F')) {
+                const sexResults = cache.sexResults[finalAthlete.athlete_sex];
+                if (sexResults) {
+                    const athleteInSex = sexResults.find(a => a.entry_bib === bib || String(a.entry_bib) === String(bib));
+                    if (athleteInSex && athleteInSex.gender_place) {
+                        finalAthlete.gender_place = athleteInSex.gender_place;
+                        console.log(`✅ Gender place z cache.sexResults[${finalAthlete.athlete_sex}]: ${finalAthlete.gender_place}`);
+                    }
+                }
+            }
+
+            // KROK 4: Pobierz klub - jeśli nie ma w cache.clubs, zapytaj API bezpośrednio
+            // (fetchCustomQuestions() jest wolne bo pobiera wszystkich - nie czekamy na nie)
+            if (cache.clubs && cache.clubs[bib]) {
+                finalAthlete.club = cache.clubs[bib];
+                console.log(`✅ Klub z cache.clubs: ${finalAthlete.club}`);
+            } else {
+                // cache.clubs jeszcze nie gotowy - pobierz bezpośrednio dla tego BIBu
+                try {
+                    const entryResponse = await makeApiRequest(`/api/event/${config.api.eventId}/entry`, {
+                        bib,
+                        include_all_fields: 'true',
+                        elide_json: 'false'
+                    });
+                    const entries = entryResponse?.event_entry || entryResponse?.entries || [];
+                    const entry = entries.find(e => e.entry_bib === bib || String(e.entry_bib) === String(bib));
+                    if (entry) {
+                        let club = '';
+                        if (entry.club && entry.club !== 'Tak') club = entry.club;
+                        else if (entry.athlete_club && entry.athlete_club !== 'Tak') club = entry.athlete_club;
+                        else {
+                            for (const [key, value] of Object.entries(entry)) {
+                                if (key.startsWith('custom_element') && value && value !== 'Tak') {
+                                    club = value;
+                                    break;
+                                }
+                            }
+                        }
+                        if (club) {
+                            finalAthlete.club = club.toString().trim();
+                            // Zapisz do cache na przyszłość
+                            if (!cache.clubs) cache.clubs = {};
+                            cache.clubs[bib] = finalAthlete.club;
+                            console.log(`✅ Klub z bezpośredniego API: ${finalAthlete.club}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Nie udało się pobrać klubu dla BIB ${bib}:`, e);
+                }
+            }
+
+            console.log(`Final athlete data:`, {
+                bib: finalAthlete.entry_bib,
+                overall_place: finalAthlete.overall_place,
+                bracket_name: finalAthlete.bracket_name,
+                division_place: finalAthlete.division_place,
+                gender_place: finalAthlete.gender_place,
+                club: finalAthlete.club
+            });
+
+            return finalAthlete;
         }
 
         // =====================================
@@ -1738,23 +1709,41 @@
 
             // Policz ile kategorii będzie wyświetlanych
             const categoriesToShow = [];
+            console.log('🔍 CATEGORY DEBUG for BIB', athlete.bib_num);
+            console.log('bracket_positions:', athlete.bracket_positions);
+            console.log('config.display.showAge:', config.display.showAge);
+            console.log('config.display.showCustom:', config.display.showCustom);
+
             if (athlete.bracket_positions && typeof athlete.bracket_positions === 'object') {
                 for (const [bracketName, position] of Object.entries(athlete.bracket_positions)) {
                     if (!position || position <= 0) continue;
                     const isAge = isAgeBracket(bracketName);
                     const isSex = isSexBracket(bracketName);
-                    if (isSex) continue;
+                    console.log(`  Category "${bracketName}": position=${position}, isAge=${isAge}, isSex=${isSex}`);
+
+                    if (isSex) {
+                        console.log(`    ❌ Skipped (sex bracket)`);
+                        continue;
+                    }
                     if ((isAge && config.display.showAge) || (!isAge && !isSex && config.display.showCustom)) {
+                        console.log(`    ✅ Added to display`);
                         categoriesToShow.push({ name: bracketName, place: position });
+                    } else {
+                        console.log(`    ❌ Not added (showAge=${config.display.showAge}, showCustom=${config.display.showCustom})`);
                     }
                 }
             } else if (athlete.bracket_name && athlete.division_place) {
                 const isAge = isAgeBracket(athlete.bracket_name);
                 const isSex = isSexBracket(athlete.bracket_name);
+                console.log(`  Single category "${athlete.bracket_name}": isAge=${isAge}, isSex=${isSex}`);
                 if (!isSex && ((isAge && config.display.showAge) || (!isAge && config.display.showCustom))) {
+                    console.log(`    ✅ Added to display`);
                     categoriesToShow.push({ name: athlete.bracket_name, place: athlete.division_place });
+                } else {
+                    console.log(`    ❌ Not added`);
                 }
             }
+            console.log('📊 Final categoriesToShow:', categoriesToShow);
 
             // Ustal większe stałe rozmiary czcionek
             const fontSize = {
@@ -1767,15 +1756,15 @@
                 category: 16
             };
 
-            const maxTextWidth = 230; // Canvas width minus margins
+            const maxTextWidth = 238; // Canvas width (240px) minus small margins
 
             // Sprawdź wrapping z tymi rozmiarami - zmniejsz czcionkę gdy za długa
             let eventNameLines = 1;
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 let lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
-                // Jeśli nazwa zajmuje > 3 linie, zmniejsz czcionkę
-                while (lines.length > 3 && fontSize.event > 12) {
+                // Jeśli nazwa zajmuje > 2 linie, zmniejsz czcionkę (preferujemy 2 linie max)
+                while (lines.length > 2 && fontSize.event > 10) {
                     fontSize.event -= 1;
                     ctx.font = `bold ${fontSize.event}px Arial`;
                     lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
@@ -1808,41 +1797,55 @@
 
             // Footer zajmuje więcej miejsca gdy jest custom text
             const hasCustomFooter = config.display.customFooterText && config.display.customFooterText.trim();
-            const footerHeight = hasCustomFooter ? 20 : 12; // 2 linie vs 1 linia
+            const footerHeight = hasCustomFooter ? 35 : 30; // 3 linie + custom vs 2 linie (YO&GO + wyniki)
 
             // Oblicz lineHeight aby wszystko się zmieściło
             const topMargin = 20; // Wystarczający margines dla największej czcionki
             const availableHeight = 240 - footerHeight - topMargin; // Canvas height minus footer and top margin
             let lineHeight = Math.floor(availableHeight / lineCount);
 
+            // POPRAWKA: 0.85 dla polskich znaków diakrytycznych (ż,ź,ć,ę,ą)
+            // Kreska nad Ż/Ź/Ć i ogonek Ę/Ą wymagają więcej przestrzeni
+            lineHeight = Math.floor(lineHeight * 0.85);
+
+            // STAŁY lineHeight dla nazwy biegu (nie zależy od długości imienia)
+            const eventLineHeight = 19; // Zwiększony z 16 aby uniknąć nachodzenia przy 3-liniowej nazwie
+
             // Jeśli lineHeight wychodzi za mały, proporcjonalnie zmniejsz czcionki
-            if (lineHeight < 18) {
-                const scale = lineHeight / 18;
-                fontSize.event = Math.max(12, Math.floor(fontSize.event * scale));
-                fontSize.location = Math.max(9, Math.floor(fontSize.location * scale));
-                fontSize.distance = Math.max(9, Math.floor(fontSize.distance * scale));
-                fontSize.name = Math.max(14, Math.floor(fontSize.name * scale));
-                fontSize.club = Math.max(10, Math.floor(fontSize.club * scale));
-                fontSize.time = Math.max(12, Math.floor(fontSize.time * scale));
-                fontSize.category = Math.max(11, Math.floor(fontSize.category * scale));
+            // UWAGA: NIE skalujemy fontSize.event - nazwa biegu zawsze tego samego rozmiaru
+            if (lineHeight < 14) {
+                const scale = lineHeight / 14;
+                // fontSize.event NIE skalowany - zawsze 14px
+                fontSize.location = Math.max(8, Math.floor(fontSize.location * scale));
+                fontSize.distance = Math.max(8, Math.floor(fontSize.distance * scale));
+                fontSize.name = Math.max(12, Math.floor(fontSize.name * scale));
+                fontSize.club = Math.max(9, Math.floor(fontSize.club * scale));
+                fontSize.time = Math.max(10, Math.floor(fontSize.time * scale));
+                fontSize.category = Math.max(9, Math.floor(fontSize.category * scale));
                 lineHeight = Math.max(12, lineHeight);
             }
 
             // Cap at reasonable maximum
-            if (lineHeight > 26) lineHeight = 26;
+            if (lineHeight > 20) lineHeight = 20;
 
             let y = topMargin; // Start z prawidłowym marginesem
 
-            // 1. Event name (nazwa biegu) - with wrapping
+            // 1. Event name (nazwa biegu) - with wrapping, STAŁY lineHeight
             if (cache.eventInfo && cache.eventInfo.event_name) {
                 ctx.font = `bold ${fontSize.event}px Arial`;
                 ctx.fillStyle = '#FFD700'; // Złoty
                 const lines = wrapText(ctx, cache.eventInfo.event_name, maxTextWidth);
                 lines.forEach(line => {
                     ctx.fillText(line, 120, y);
-                    y += lineHeight;
+                    y += eventLineHeight; // Użyj stałego eventLineHeight zamiast dynamicznego lineHeight
                 });
-                y += 3; // Mały odstęp po nazwie biegu
+
+                // Dodaj odstęp po nazwie biegu TYLKO gdy NIE MA dystansu/miejscowości
+                const hasDistanceOrLocation = (config.display.showDistance && athlete.race_distance) ||
+                                             (config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city);
+                if (!hasDistanceOrLocation) {
+                    y += 2; // Mały odstęp między nazwą biegu a nazwiskiem
+                }
             }
 
             // 2. Distance (dystans) - DRUGA POZYCJA jako opcja
@@ -1851,6 +1854,12 @@
                 ctx.fillStyle = '#FF0000'; // Czerwony
                 ctx.fillText(athlete.race_distance, 120, y);
                 y += lineHeight;
+
+                // Jeśli NIE MA miejscowości, dodaj odstęp (żeby nie nachodzić na nazwisko)
+                const hasLocation = config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city;
+                if (!hasLocation) {
+                    y += 5;
+                }
             }
 
             // 3. Location (miejscowość) - if configured
@@ -1859,6 +1868,7 @@
                 ctx.fillStyle = '#FFD700'; // Żółty
                 ctx.fillText(cache.eventInfo.location_city, 120, y);
                 y += lineHeight;
+                y += 5; // Większy odstęp po miejscowości (żeby nie nachodzić na nazwisko)
             }
 
             // 4. Imię nazwisko - with wrapping
@@ -1870,13 +1880,22 @@
                 y += lineHeight;
             });
 
+            // Warunkowy odstęp po nazwisku: większy gdy nazwisko na 2 liniach i jest klub
+            const hasClub = config.display.showClub && athlete.club;
+            const isNameWrapped = wrappedNameLines.length > 1;
+            if (isNameWrapped && hasClub) {
+                y += 6; // Większy odstęp dla 2-liniowego nazwiska z klubem
+            } else {
+                y += 4; // Standardowy odstęp
+            }
+
             // 5. Club (klub)
             if (config.display.showClub && athlete.club) {
                 ctx.font = `${fontSize.club}px Arial`;
-                ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepiej widoczny niż szary
+                ctx.fillStyle = '#00BFFF'; // Jasnoniebieski - lepszy widoczny niż szary
                 ctx.fillText(athlete.club, 120, y);
                 y += lineHeight;
-                y += 3; // Mały odstęp po klubie przed czasami
+                y += 5; // Większy odstęp po klubie przed czasami
             }
 
             // 6. Czasy - WYNIK (brutto) i NETTO
@@ -1890,6 +1909,7 @@
                 if (athlete.formatted_gun_time) {
                     ctx.fillText(`${t('result')}: ${athlete.formatted_gun_time}`, 120, y);
                     y += lineHeight;
+                    y += 3; // Większy odstęp między WYNIK i NETTO
                 }
                 if (athlete.formatted_net_time) {
                     ctx.fillText(`${t('net')}: ${athlete.formatted_net_time}`, 120, y);
@@ -1913,6 +1933,13 @@
             if (config.display.showOverall && athlete.overall_place) {
                 ctx.fillText(`OPEN: ${athlete.overall_place}`, 120, y);
                 y += lineHeight;
+
+                // Dodatkowy odstęp między OPEN a MĘŻCZYŹNI (tylko gdy są dystans i miejscowość)
+                const hasDistanceAndLocation = config.display.showDistance && athlete.race_distance &&
+                                              config.display.showLocation && cache.eventInfo && cache.eventInfo.location_city;
+                if (hasDistanceAndLocation) {
+                    y += 3;
+                }
             }
 
             // K/M place
@@ -1928,31 +1955,28 @@
                 y += lineHeight;
             });
 
-            // Footer - zawsze na dole
-            ctx.font = '10px Arial';
-
-            // Opcjonalny tekst nad YO&GO Events (np. sponsor lub adres strony)
+            // Footer - DUŻY i wypełnia pozostałe 15% ekranu
+            // Opcjonalny tekst użytkownika (jeśli jest)
             if (config.display.customFooterText && config.display.customFooterText.trim()) {
-                // Custom text białym kolorem
+                ctx.font = 'bold 11px Arial';
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillText(config.display.customFooterText, 120, 220);
-
-                // YO&GO Events pomarańczowym
-                ctx.fillStyle = '#FF8C00';
-                ctx.fillText('YO&GO Events', 120, 233);
-            } else {
-                // Samo YO&GO Events pomarańczowym
-                ctx.fillStyle = '#FF8C00';
-                ctx.fillText('YO&GO Events', 120, 233);
+                ctx.fillText(config.display.customFooterText, 120, 212);
             }
+
+            // YO&GO Events - pomiar czasu
+            ctx.font = 'bold 11px Arial';
+            ctx.fillStyle = '#FF8C00';
+            ctx.fillText('YO&GO Events - pomiar czasu', 120, 225);
+
+            // wyniki www.yogoevents.pl
+            ctx.font = '10px Arial';
+            ctx.fillStyle = '#FF8C00';
+            ctx.fillText('wyniki www.yogoevents.pl', 120, 237);
 
             selectedAthlete = athlete;
 
             // Send to LED if configured
             sendToLED();
-
-            // Broadcast canvas to stream window
-            broadcastCurrentCanvas();
         }
 
         function clearLEDDisplay() {
@@ -1967,7 +1991,138 @@
             ctx.fillText(t('waitingForData'), 120, 120);
 
             selectedAthlete = null;
-            ui.displayStatus.textContent = '';
+            if (ui.displayStatus) {
+                ui.displayStatus.textContent = '';
+            }
+        }
+
+        // =====================================
+        // LED WINDOW FOR HDMI DISPLAY - AUTOMATIC
+        // =====================================
+
+        async function openLEDWindow() {
+            // Jeśli okno już otwarte, zamknij stare
+            if (ledWindow && !ledWindow.closed) {
+                ledWindow.close();
+            }
+
+            try {
+                // Użyj Window Placement API aby wykryć drugi monitor
+                if ('getScreenDetails' in window) {
+                    const screens = await window.getScreenDetails();
+                    const secondScreen = screens.screens.length > 1 ? screens.screens[1] : screens.screens[0];
+
+                    // Otwórz fullscreen na drugim monitorze
+                    ledWindow = window.open(
+                        '',
+                        'LED_Display',
+                        `left=${secondScreen.left},top=${secondScreen.top},width=${secondScreen.width},height=${secondScreen.height},toolbar=no,location=no,status=no,menubar=no,scrollbars=no,fullscreen=yes`
+                    );
+                } else {
+                    // Fallback - otwórz po prawej stronie
+                    ledWindow = window.open(
+                        '',
+                        'LED_Display',
+                        `left=${window.screen.width},top=0,width=1024,height=768,toolbar=no,location=no,status=no,menubar=no,scrollbars=no`
+                    );
+                }
+            } catch (error) {
+                console.error('Could not use Window Placement API:', error);
+                // Fallback
+                ledWindow = window.open(
+                    '',
+                    'LED_Display',
+                    `left=${window.screen.width},top=0,width=1024,height=768,toolbar=no,location=no,status=no,menubar=no,scrollbars=no`
+                );
+            }
+
+            if (!ledWindow) {
+                alert('Nie można otworzyć okna LED. Sprawdź czy przeglądarka nie blokuje popup.');
+                return;
+            }
+
+            // Wygeneruj HTML dla okna LED - pełny ekran czarny, sam canvas
+            ledWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LED Display - 240×240px (96cm×96cm P4)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+        #led-canvas {
+            /* Pixelated rendering - ostre krawędzie jak fizyczna tablica LED P4 */
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+
+            /* Wypełnij cały dostępny ekran LED */
+            width: 100%;
+            height: 100%;
+
+            /* Rozciągnij do pełnego rozmiaru (tablica jest kwadratowa więc OK) */
+            object-fit: fill;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="led-canvas" width="240" height="240"></canvas>
+    <script>
+        // Auto fullscreen - maksymalizuje obraz LED
+        function enterFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen()
+                    .then(() => console.log('Fullscreen: ON - LED Display 240×240px scaled to full screen'))
+                    .catch(err => console.error('Fullscreen error:', err));
+            }
+        }
+
+        // Automatycznie fullscreen po 100ms
+        setTimeout(enterFullscreen, 100);
+
+        // Backup - kliknięcie też włącza fullscreen
+        document.addEventListener('click', enterFullscreen);
+
+        // Info dla developera
+        console.log('LED Display Window Ready');
+        console.log('Physical: 96cm × 96cm, P4 (4mm pitch)');
+        console.log('Resolution: 240 × 240 pixels');
+        console.log('Canvas scaled to full screen with pixelated rendering');
+    <\/script>
+</body>
+</html>
+            `);
+            ledWindow.document.close();
+
+            // Synchronizuj canvas
+            syncLEDWindow();
+
+            console.log('LED window opened automatically');
+        }
+
+        function syncLEDWindow() {
+            if (!ledWindow || ledWindow.closed) return;
+
+            try {
+                const sourceCanvas = ui.ledCanvas;
+                const targetCanvas = ledWindow.document.getElementById('led-canvas');
+
+                if (targetCanvas && sourceCanvas) {
+                    const targetCtx = targetCanvas.getContext('2d');
+                    targetCtx.drawImage(sourceCanvas, 0, 0);
+                }
+            } catch (error) {
+                console.error('LED window sync error:', error);
+            }
         }
 
         function sendToLED() {
@@ -1984,6 +2139,9 @@
                 ui.displayStatus.style.display = 'block';
             }
 
+            // Synchronizuj z oknem LED jeśli jest otwarte
+            syncLEDWindow();
+
             if (connectionType === 'none') {
                 // Only preview, no actual sending
                 updateIndicator('led-indicator', 'led-status', true, 'LED: Tylko podgląd');
@@ -1991,8 +2149,12 @@
             }
 
             if (connectionType === 'hdmi') {
-                // HDMI mode - canvas is already displayed, user should press F11 for fullscreen
                 updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI (naciśnij F11)');
+                return;
+            }
+
+            if (connectionType === 'hdshow') {
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HD Show → Hudi A4');
                 return;
             }
 
@@ -2007,110 +2169,117 @@
                 const canvas = ui.ledCanvas;
                 const imageData = canvas.toDataURL('image/png');
 
-                // Send image to LED controller
-                const response = await fetch(`http://${config.led.ip}:${config.led.port}/display`, {
+                // Send image to Node.js bridge server (which forwards to LED via TCP)
+                // Bridge server must be running: node led-bridge-server.js
+                const response = await fetch('http://localhost:3000/send-to-led', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: imageData })
+                    body: JSON.stringify({
+                        image: imageData,
+                        ledIP: config.led.ip,
+                        ledPort: parseInt(config.led.port)
+                    })
                 });
 
                 if (response.ok) {
-                    updateIndicator('led-indicator', 'led-status', true, 'LED: Wysłano przez Ethernet');
+                    const result = await response.json();
+                    console.log('LED response:', result);
+                    updateIndicator('led-indicator', 'led-status', true, 'LED: Wysłano przez TCP');
                 } else {
-                    throw new Error('HTTP Error: ' + response.status);
+                    const error = await response.json();
+                    throw new Error(error.error || 'HTTP Error: ' + response.status);
                 }
             } catch (error) {
                 console.error('Send to LED error:', error);
-                updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd wysyłania');
+                updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd - ' + error.message);
             }
         }
 
         // =====================================
-        // RFID FUNCTIONS
+        // RFID FUNCTIONS (KEYBOARD EMULATION MODE)
         // =====================================
+        // Czytniki USB RFID w trybie HID zachowują się jak klawiatura:
+        // 1. Klikasz w pole input
+        // 2. Zbliżasz opaskę do czytnika
+        // 3. Czytnik "wpisuje" TAG i naciska Enter
+        // 4. Aplikacja łapie Enter i wyświetla wynik
 
-        async function connectRFID() {
-            try {
-                if (!navigator.usb) {
-                    throw new Error('Web USB API nie jest obsługiwane w tej przeglądarce');
+        let rfidBuffer = '';
+        let rfidTimeout = null;
+
+        function initRFIDKeyboardMode() {
+            console.log('RFID Keyboard Mode: Initialized');
+
+            // Status jako gotowy
+            config.rfid.connected = true;
+            updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
+            updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG');
+
+            // Nasłuchuj na klawiaturę gdy focus na search input
+            ui.searchInput.addEventListener('keydown', handleRFIDKeydown);
+
+            // Nasłuchuj na input (zbiera TAG znak po znaku)
+            ui.searchInput.addEventListener('input', handleRFIDInput);
+        }
+
+        function handleRFIDKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputValue = ui.searchInput.value.trim();
+
+                if (inputValue.length > 0) {
+                    console.log(`🔍 Input detected (Enter pressed): ${inputValue}`);
+                    // Sprawdź czy to TAG z cache.tags, czy bezpośredni numer BIB
+                    handleRFIDTag(inputValue);
                 }
-
-                const device = await navigator.usb.requestDevice({
-                    filters: [
-                        { vendorId: 0xffff },  // Common RFID reader vendor ID
-                        { vendorId: 0x08ff }   // Another common one
-                    ]
-                });
-
-                console.log("RFID device detected:", device);
-
-                await device.open();
-                if (device.configuration === null) {
-                    await device.selectConfiguration(1);
-                }
-                await device.claimInterface(0);
-
-                config.rfid.device = device;
-                config.rfid.connected = true;
-
-                updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Połączony');
-                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Czytnik: Połączony');
-
-                // Start reading RFID tags
-                startRFIDReading();
-
-                return true;
-            } catch (error) {
-                console.error('RFID connection error:', error);
-                updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Błąd połączenia');
-                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', false, 'Czytnik: Błąd');
-                return false;
             }
         }
 
-        function startRFIDReading() {
-            if (!config.rfid.device || !config.rfid.connected) return;
+        function handleRFIDInput(e) {
+            // Czytnik USB wpisuje TAG bardzo szybko (< 100ms)
+            // Człowiek pisze wolniej - możemy to rozpoznać
+            clearTimeout(rfidTimeout);
 
-            // Read RFID tags continuously
-            const readLoop = async () => {
-                try {
-                    const result = await config.rfid.device.transferIn(1, 64);
-
-                    if (result.data && result.data.byteLength > 0) {
-                        const decoder = new TextDecoder();
-                        const tagId = decoder.decode(result.data).trim();
-
-                        if (tagId) {
-                            console.log(`RFID tag read: ${tagId}`);
-                            handleRFIDTag(tagId);
-                        }
-                    }
-
-                    if (config.rfid.connected) {
-                        setTimeout(readLoop, 100);
-                    }
-                } catch (error) {
-                    console.error('RFID read error:', error);
-                    config.rfid.connected = false;
-                    updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Rozłączony');
+            rfidTimeout = setTimeout(() => {
+                // Jeśli input jest dłuższy niż 8 znaków i był wpisany szybko,
+                // prawdopodobnie to RFID (nie człowiek)
+                const value = ui.searchInput.value.trim();
+                if (value.length >= 8) {
+                    console.log(`⚡ Fast input detected (likely RFID): ${value}`);
+                    // Możemy tu dodać auto-submit po wykryciu szybkiego inputu
                 }
-            };
-
-            readLoop();
+            }, 150);
         }
 
-        async function handleRFIDTag(tagId) {
-            // Find BIB for this TAG
-            const bib = cache.tags[tagId];
+        async function handleRFIDTag(inputValue) {
+            // Zapisz ostatnio odczytany TAG/BIB
+            const lastTagInput = document.getElementById('last-rfid-tag');
+            if (lastTagInput) {
+                lastTagInput.value = inputValue;
+            }
 
-            if (bib) {
-                console.log(`TAG ${tagId} -> BIB ${bib}`);
-                ui.searchInput.value = bib;
-                await searchAndDisplay(bib);
+            // Sprawdź czy input to TAG (w cache.tags), czy bezpośredni numer BIB
+            const bib = cache.tags[inputValue] || inputValue;
+
+            if (cache.tags[inputValue]) {
+                // Input był TAGiem - znaleziono mapowanie TAG -> BIB
+                console.log(`✅ TAG ${inputValue} -> BIB ${bib}`);
+                updateIndicator('rfid-indicator', 'rfid-status', true, `RFID: Odczytano TAG ${inputValue}`);
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, `Odczytano: ${inputValue} -> BIB ${bib}`);
             } else {
-                console.log(`TAG ${tagId} not found in cache`);
-                showStatus('search-status', `TAG ${tagId} nie znaleziony`, 'error');
+                // Input był bezpośrednio numerem BIB
+                console.log(`🔢 Bezpośredni numer BIB: ${bib}`);
+                updateIndicator('rfid-indicator', 'rfid-status', true, `Szukam BIB: ${bib}`);
             }
+
+            // Szukaj i wyświetl zawodnika po BIB
+            await searchAndDisplay(bib);
+
+            // Po 2 sekundach wróć do statusu "Gotowy"
+            setTimeout(() => {
+                updateIndicator('rfid-indicator', 'rfid-status', true, 'RFID: Gotowy');
+                updateIndicator('admin-rfid-indicator', 'admin-rfid-status', true, 'Gotowy: Oczekiwanie na TAG/BIB');
+            }, 2000);
         }
 
         // =====================================
@@ -2119,31 +2288,37 @@
 
         async function searchAndDisplay(bib) {
             if (!bib) {
-                showStatus('search-status', t('enterBib'), 'error');
+                showStatus('search-status', 'Wprowadź numer startowy', 'error');
                 return;
             }
 
-            // Strip leading zeros: "019" → "19", "001" → "1"
-            const normalizedBib = normalizeBib(bib);
-            if (normalizedBib !== bib) {
-                console.log(`BIB normalized: "${bib}" → "${normalizedBib}"`);
-            }
-
-            showStatus('search-status', t('searching'), '');
+            bib = normalizeBib(bib);
+            showStatus('search-status', 'Szukam...', '');
 
             try {
-                const athlete = await findAthleteByBib(normalizedBib);
+                // Szukaj po BIB (numerze startowym)
+                const athlete = await findAthleteByBib(bib);
 
                 if (athlete) {
-                    showStatus('search-status', `${t('found')}: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
+                    showStatus('search-status', `Znaleziono: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
                     renderLEDDisplay(athlete);
+
+                    // Wyczyść input po udanym wyszukiwaniu - gotowy na kolejny numer
+                    ui.searchInput.value = '';
+                    ui.searchInput.focus();
                 } else {
-                    showStatus('search-status', t('notFound'), 'error');
+                    showStatus('search-status', 'Nie znaleziono zawodnika o numerze BIB: ' + bib, 'error');
                     clearLEDDisplay();
+                    // Wyczyść input również przy błędzie
+                    ui.searchInput.value = '';
+                    ui.searchInput.focus();
                 }
             } catch (error) {
-                showStatus('search-status', `Error: ${error.message}`, 'error');
+                showStatus('search-status', `Błąd: ${error.message}`, 'error');
                 clearLEDDisplay();
+                // Wyczyść input również przy wyjątku
+                ui.searchInput.value = '';
+                ui.searchInput.focus();
             }
         }
 
@@ -2206,18 +2381,17 @@
             document.body.classList.add('display-mode');
             document.querySelector('.container').classList.add('display-mode');
 
+            applyLanguage();
+
             // Focus search input
             setTimeout(() => ui.searchInput.focus(), 100);
-
-            // Apply current language to display screen
-            applyLanguage();
         }
 
         // =====================================
         // CONFIGURATION SAVE/LOAD
         // =====================================
 
-        function saveApiConfig() {
+        async function saveApiConfig() {
             const eventId = ui.eventIdInput.value.trim();
 
             if (!eventId) {
@@ -2227,42 +2401,52 @@
 
             const eventChanged = config.api.eventId && config.api.eventId !== eventId;
 
-            if (eventChanged) {
-                console.log('EventId changed from', config.api.eventId, 'to', eventId, '- clearing cache');
-
-                // Natychmiast zatrzymaj timer aby uniknąć race condition
-                if (refreshTimer) {
-                    clearInterval(refreshTimer);
-                    refreshTimer = null;
-                }
-
-                // Wyczyść cały cache - najpierw zmień eventId aby kolejne async operacje nie refillowały starymi danymi
-                config.api.eventId = eventId;
-
-                cache.athletes = {};
-                cache.openResults = [];
-                cache.sexResults = { M: [], F: [] };
-                cache.ageResults = {};
-                cache.customResults = {};
-                cache.clubs = {};
-                cache.tags = {};
-                cache.eventInfo = null;
-                cache.persistentData.genderPlaces = {};
-                cache.persistentData.divisionPlaces = {};
-
-                selectedAthlete = null;
-                clearLEDDisplay();
-
-                showStatus('api-save-status', `Wydarzenie zmienione na ${eventId} – wyczyszczono cache. Ładowanie...`, 'success');
-            } else {
-                config.api.eventId = eventId;
-                showStatus('api-save-status', 'Zapisano. Łączę z API...', 'success');
+            // Stop refresh timer IMMEDIATELY - prevent old event from re-loading while we switch
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+                console.log('Stopped refresh timer before event switch');
             }
 
+            // Always clear ALL cached data (whether event changed or not - force fresh load)
+            cache.athletes = {};
+            cache.openResults = [];
+            cache.sexResults = { M: [], F: [] };
+            cache.ageResults = {};
+            cache.customResults = {};
+            cache.clubs = {};
+            cache.tags = {};
+            cache.eventInfo = null;
+            cache.persistentData.genderPlaces = {};
+            cache.persistentData.divisionPlaces = {};
+            selectedAthlete = null;
+            clearLEDDisplay();
+
+            if (eventChanged) {
+                console.log('EventId changed from', config.api.eventId, 'to', eventId, '- cache cleared');
+            }
+
+            config.api.eventId = eventId;
             localStorage.setItem('led-event-id', eventId);
 
-            // Connect to API and refresh data
-            initializeApi();
+            // Disable button during load to prevent double-click
+            ui.saveApiBtn.disabled = true;
+            ui.saveApiBtn.textContent = '⏳ Ładowanie...';
+            showStatus('api-save-status', eventChanged
+                ? `Zmieniono wydarzenie → ${eventId}. Pobieram dane...`
+                : `Pobieram dane dla wydarzenia ${eventId}...`, 'success');
+
+            const success = await initializeApi();
+
+            ui.saveApiBtn.disabled = false;
+            ui.saveApiBtn.textContent = 'Zapisz i połącz';
+
+            if (success) {
+                const name = cache.eventInfo?.event_name || eventId;
+                showStatus('api-save-status', `✅ Połączono: ${name}`, 'success');
+            } else {
+                showStatus('api-save-status', '❌ Błąd połączenia z API – sprawdź ID wydarzenia', 'error');
+            }
         }
 
         function saveDisplayConfig() {
@@ -2291,6 +2475,7 @@
             localStorage.setItem('led-language', config.display.language);
 
             applyLanguage();
+
             alert('Ustawienia wyświetlania zapisane');
 
             // Re-render current athlete if any
@@ -2315,29 +2500,37 @@
                 updateIndicator('led-indicator', 'led-status', true, 'LED: Tylko podgląd');
             } else if (config.led.connectionType === 'hdmi') {
                 updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI');
+            } else if (config.led.connectionType === 'hdshow') {
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HD Show → Hudi A4');
             } else if (config.led.connectionType === 'ethernet') {
                 updateIndicator('led-indicator', 'led-status', false, 'LED: Ethernet (niepołączony)');
             }
         }
 
-        function testLedConnection() {
+        async function testLedConnection() {
             if (config.led.connectionType === 'ethernet') {
-                // Test connection to LED controller
-                fetch(`http://${config.led.ip}:${config.led.port}/ping`)
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Połączenie z tablicą LED działa!');
-                            updateIndicator('led-indicator', 'led-status', true, 'LED: Ethernet połączony');
-                        } else {
-                            throw new Error('Connection failed');
-                        }
-                    })
-                    .catch(error => {
-                        alert('Nie można połączyć się z tablicą LED. Sprawdź adres IP i port.');
-                        updateIndicator('led-indicator', 'led-status', false, 'LED: Błąd połączenia');
-                    });
+                // Test connection to Node.js bridge server (not directly to LED!)
+                try {
+                    const response = await fetch('http://localhost:3000/status');
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert(`✅ Bridge server działa!\n\n${data.message}\n\nKonfiguracja:\nLED IP: ${config.led.ip}\nLED Port: ${config.led.port}\n\nTeraz wyświetl zawodnika aby przetestować połączenie TCP z tablicą.`);
+                        updateIndicator('led-indicator', 'led-status', true, 'LED: Bridge server gotowy');
+                    } else {
+                        throw new Error('Bridge server nie odpowiada');
+                    }
+                } catch (error) {
+                    alert(`❌ Nie można połączyć się z bridge serverem!\n\nUpewnij się że Node.js server działa:\n\nnode led-bridge-server.js\n\nBłąd: ${error.message}`);
+                    updateIndicator('led-indicator', 'led-status', false, 'LED: Bridge server offline');
+                }
+            } else if (config.led.connectionType === 'hdmi') {
+                alert('✅ Tryb HDMI aktywny\n\nWyświetl zawodnika i naciśnij F11 dla fullscreen');
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HDMI gotowy');
+            } else if (config.led.connectionType === 'hdshow') {
+                alert('✅ Tryb HD Show → Hudi A4\n\n1. Kliknij "Otwórz okno LED" – pojawi się okno z canvasem\n2. W HD Show wybierz źródło: Okno → LED Display\n3. Uruchom transmisję do Hudi A4\n4. Hudi A4 podłącz do wejścia wideo tablicy LED\n\nObraz odświeża się automatycznie po każdym wyszukaniu zawodnika.');
+                updateIndicator('led-indicator', 'led-status', true, 'LED: HD Show gotowy');
             } else {
-                alert('Test połączenia dostępny tylko dla trybu Ethernet');
+                alert('⚠️ Wybierz typ połączenia LED w konfiguracji');
             }
         }
 
@@ -2357,30 +2550,33 @@
             ui.showAge.checked = config.display.showAge;
             ui.showCustom.checked = config.display.showCustom;
             ui.customFooterText.value = config.display.customFooterText || '';
-            ui.displayLanguage.value = config.display.language || 'pl';
 
             ui.ledConnectionType.value = config.led.connectionType;
             ui.ledIp.value = config.led.ip;
             ui.ledPort.value = config.led.port;
-            ui.rfidPower.value = config.rfid.power;
 
-            updateRfidPowerLabel();
+            if (ui.displayLanguage) ui.displayLanguage.value = config.display.language;
+
             updateLedConnectionUI();
         }
 
         function updateLedConnectionUI() {
-            if (ui.ledConnectionType.value === 'ethernet') {
+            const type = ui.ledConnectionType.value;
+            if (type === 'ethernet') {
                 ui.ethernetConfig.classList.remove('hidden');
             } else {
                 ui.ethernetConfig.classList.add('hidden');
             }
+            const hdshowInfo = document.getElementById('hdshow-info');
+            if (hdshowInfo) {
+                if (type === 'hdshow') {
+                    hdshowInfo.classList.remove('hidden');
+                } else {
+                    hdshowInfo.classList.add('hidden');
+                }
+            }
         }
 
-        function updateRfidPowerLabel() {
-            const power = ui.rfidPower.value;
-            const distance = Math.round(power * 5);  // Rough estimation: power 3 = ~15cm
-            ui.rfidPowerLabel.textContent = `~${distance}cm`;
-        }
 
         // =====================================
         // API INITIALIZATION
@@ -2411,20 +2607,83 @@
         }
 
         // =====================================
+        // CURSOR LOCK (Bezobsługowe - blokada kursora)
+        // =====================================
+
+        let cursorLocked = false;
+
+        function lockCursor() {
+            if (!cursorLocked && ui.lockCursorCheckbox.checked) {
+                document.body.requestPointerLock();
+            }
+        }
+
+        function unlockCursor() {
+            if (document.pointerLockElement) {
+                document.exitPointerLock();
+            }
+        }
+
+        function updateCursorLockUI() {
+            cursorLocked = !!document.pointerLockElement;
+            ui.lockCursorCheckbox.checked = cursorLocked;
+
+            if (cursorLocked) {
+                console.log('🔒 Kursor zablokowany - nie można wyjechać na drugi ekran');
+                // Auto-focus na input po zablokowaniu - od razu gotowe do wpisywania
+                ui.searchInput.focus();
+            } else {
+                console.log('🔓 Kursor odblokowany');
+            }
+        }
+
+        // Nasłuchuj zmian pointer lock
+        document.addEventListener('pointerlockchange', updateCursorLockUI);
+        document.addEventListener('pointerlockerror', () => {
+            console.error('Nie można zablokować kursora');
+            ui.lockCursorCheckbox.checked = false;
+        });
+
+        // =====================================
         // EVENT LISTENERS
         // =====================================
 
         ui.modeToggle.addEventListener('click', toggleMode);
 
+        // Checkbox blokowania kursora
+        ui.lockCursorCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                lockCursor();
+            } else {
+                unlockCursor();
+            }
+        });
+
+        // Skrót klawiszowy: Ctrl+Alt+L = odblokuj kursor
+        document.addEventListener('keydown', (e) => {
+            // Użyj e.code zamiast e.key - działa niezależnie od Shift/CapsLock
+            if (e.ctrlKey && e.altKey && e.code === 'KeyL') {
+                e.preventDefault();
+                unlockCursor();
+                ui.lockCursorCheckbox.checked = false;
+                console.log('🔓 Kursor odblokowany przez skrót Ctrl+Alt+L');
+            }
+        });
+
         ui.searchBtn.addEventListener('click', () => {
             const bib = ui.searchInput.value.trim();
             searchAndDisplay(bib);
+            // Auto-kasowanie po wyświetleniu - kolejny zawodnik nie musi używać backspace
+            ui.searchInput.value = '';
+            ui.searchInput.focus(); // Przywróć focus do inputa
         });
 
         ui.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const bib = ui.searchInput.value.trim();
                 searchAndDisplay(bib);
+                // Auto-kasowanie po wyświetleniu - kolejny zawodnik nie musi używać backspace
+                ui.searchInput.value = '';
             }
         });
 
@@ -2433,13 +2692,9 @@
         ui.saveDisplayBtn.addEventListener('click', saveDisplayConfig);
         ui.saveLedBtn.addEventListener('click', saveLedConfig);
         ui.testLedBtn.addEventListener('click', testLedConnection);
-        ui.connectRfidBtn.addEventListener('click', connectRFID);
-
-        document.getElementById('open-stream-btn').addEventListener('click', openStreamWindow);
-        document.getElementById('refresh-stream-btn').addEventListener('click', broadcastCurrentCanvas);
+        ui.openLedWindowBtn.addEventListener('click', openLEDWindow);
 
         ui.ledConnectionType.addEventListener('change', updateLedConnectionUI);
-        ui.rfidPower.addEventListener('input', updateRfidPowerLabel);
 
         // Password modal
         ui.submitPasswordBtn.addEventListener('click', checkPassword);
@@ -2465,7 +2720,8 @@
             updateIndicator('api-indicator', 'api-status', false, 'API: Skonfiguruj ID wydarzenia');
         }
 
-        updateIndicator('rfid-indicator', 'rfid-status', false, 'RFID: Nie podłączony');
+        // Initialize RFID Keyboard Mode
+        initRFIDKeyboardMode();
         updateIndicator('led-indicator', 'led-status', true, 'LED: Gotowy');
 
         // Focus search input
