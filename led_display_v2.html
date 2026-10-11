@@ -448,19 +448,19 @@
                 <div class="social-banner">
                     <span class="social-banner-icon">💪</span>
                     <div class="social-banner-text">
-                        <strong>Pochwal się wynikiem!</strong>
-                        <span>Oznacz <em>#yogoevents</em> – udostępnimy najlepsze!</span>
+                        <strong id="social-banner-title">Pochwal się wynikiem!</strong>
+                        <span id="social-banner-subtitle">Oznacz <em>#yogoevents</em> – udostępnimy najlepsze!</span>
                     </div>
                 </div>
                 <div class="search-box">
-                    <h2>Wprowadź numer startowy</h2>
+                    <h2 id="display-enter-bib">Wprowadź numer startowy</h2>
                     <input type="text" id="search-input" placeholder="000" autofocus autocomplete="off">
                     <button id="search-btn" class="btn-full">WYŚWIETL</button>
                     <div id="search-status" class="status-box"></div>
                 </div>
-                
+
                 <div class="search-box">
-                    <h2>📊 Status systemu</h2>
+                    <h2 id="display-system-status">📊 Status systemu</h2>
                     <div class="connection-status">
                         <span class="status-indicator" id="api-indicator"></span>
                         <span id="api-status">API: nie połączono</span>
@@ -479,8 +479,8 @@
             <div class="led-preview">
                 <div class="display-status" id="display-status"></div>
                 <canvas id="led-canvas" width="240" height="240"></canvas>
-                <div class="unofficial-notice">Wyniki nieoficjalne</div>
-                <div class="results-link">wyniki <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
+                <div class="unofficial-notice" id="unofficial-notice">Wyniki nieoficjalne</div>
+                <div class="results-link"><span id="results-link-text">wyniki</span> <a href="https://www.yogoevents.pl" target="_blank">www.yogoevents.pl</a></div>
             </div>
         </div>
 
@@ -526,6 +526,12 @@
                     <label style="font-weight: bold; margin: 15px 0 5px 0; display: block;">Dodatkowy tekst (nad YO&GO Events):</label>
                     <input type="text" id="custom-footer-text" placeholder="wpisz tekst" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <p style="font-size: 11px; color: #888; margin: 3px 0 10px 0;">Zostaw puste aby wyświetlić tylko YO&GO Events</p>
+
+                    <label style="font-weight: bold; margin: 15px 0 8px 0; display: block;">Język wyświetlacza:</label>
+                    <select id="display-language" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+                        <option value="pl">🇵🇱 Polski</option>
+                        <option value="en">🇬🇧 English</option>
+                    </select>
 
                     <button id="save-display-btn" class="btn-full">Zapisz ustawienia</button>
                 </div>
@@ -663,7 +669,8 @@
                 showGender: localStorage.getItem('led-show-gender') !== 'false',
                 showAge: localStorage.getItem('led-show-age') !== 'false',
                 showCustom: localStorage.getItem('led-show-custom') !== 'false',
-                customFooterText: localStorage.getItem('led-custom-footer-text') || ''
+                customFooterText: localStorage.getItem('led-custom-footer-text') || '',
+                language: localStorage.getItem('led-language') || 'pl'
             },
             led: {
                 connectionType: localStorage.getItem('led-connection-type') || 'none',
@@ -743,6 +750,7 @@
             showAge: document.getElementById('show-age'),
             showCustom: document.getElementById('show-custom'),
             customFooterText: document.getElementById('custom-footer-text'),
+            displayLanguage: document.getElementById('display-language'),
             saveDisplayBtn: document.getElementById('save-display-btn'),
 
             // Admin screen - RFID
@@ -971,6 +979,76 @@
             } else {
                 alert('Nie można otworzyć okna streamingu.\nSprawdź ustawienia blokady pop-upów w przeglądarce.');
             }
+        }
+
+        // =====================================
+        // LANGUAGE & BIB NORMALIZATION
+        // =====================================
+
+        const translations = {
+            pl: {
+                enterBib:          'Wprowadź numer startowy',
+                searchBtn:         'WYŚWIETL',
+                systemStatus:      '📊 Status systemu',
+                unofficialResults: 'Wyniki nieoficjalne',
+                resultsLink:       'wyniki',
+                socialTitle:       'Pochwal się wynikiem!',
+                socialSubtitle:    'Oznacz <em>#yogoevents</em> – udostępnimy najlepsze!',
+                searching:         'Szukam...',
+                found:             'Znaleziono',
+                notFound:          'Nie znaleziono zawodnika',
+                waitingForData:    'Oczekiwanie na dane...',
+                result:            'WYNIK',
+                net:               'NETTO',
+                men:               'MĘŻCZYŹNI',
+                women:             'KOBIETY',
+                apiNotConnected:   'API: Brak konfiguracji',
+                rfidNotConnected:  'RFID: Nie podłączony',
+                ledReady:          'LED: Gotowy',
+            },
+            en: {
+                enterBib:          'Enter your bib number',
+                searchBtn:         'SEARCH',
+                systemStatus:      '📊 System status',
+                unofficialResults: 'Unofficial results',
+                resultsLink:       'results',
+                socialTitle:       'Show off your result!',
+                socialSubtitle:    'Tag <em>#yogoevents</em> – we\'ll share the best!',
+                searching:         'Searching...',
+                found:             'Found',
+                notFound:          'Athlete not found',
+                waitingForData:    'Waiting for data...',
+                result:            'RESULT',
+                net:               'NET',
+                men:               'MEN',
+                women:             'WOMEN',
+                apiNotConnected:   'API: Not configured',
+                rfidNotConnected:  'RFID: Not connected',
+                ledReady:          'LED: Ready',
+            }
+        };
+
+        function t(key) {
+            const lang = config.display.language || 'pl';
+            return (translations[lang] && translations[lang][key]) || translations.pl[key] || key;
+        }
+
+        // Strip leading zeros: "019" → "19", "001" → "1", "007" → "7"
+        function normalizeBib(bib) {
+            const stripped = String(bib).replace(/^0+/, '');
+            return stripped || '0';
+        }
+
+        function applyLanguage() {
+            const el = (id) => document.getElementById(id);
+
+            el('display-enter-bib').textContent    = t('enterBib');
+            el('search-btn').textContent           = t('searchBtn');
+            el('display-system-status').textContent = t('systemStatus');
+            el('unofficial-notice').textContent    = t('unofficialResults');
+            el('results-link-text').textContent    = t('resultsLink');
+            el('social-banner-title').textContent  = t('socialTitle');
+            el('social-banner-subtitle').innerHTML = t('socialSubtitle');
         }
 
         // =====================================
@@ -1810,20 +1888,20 @@
             if (showBothTimes) {
                 // Show WYNIK (brutto) and NETTO
                 if (athlete.formatted_gun_time) {
-                    ctx.fillText(`WYNIK: ${athlete.formatted_gun_time}`, 120, y);
+                    ctx.fillText(`${t('result')}: ${athlete.formatted_gun_time}`, 120, y);
                     y += lineHeight;
                 }
                 if (athlete.formatted_net_time) {
-                    ctx.fillText(`NETTO: ${athlete.formatted_net_time}`, 120, y);
+                    ctx.fillText(`${t('net')}: ${athlete.formatted_net_time}`, 120, y);
                     y += lineHeight;
                 }
             } else if (config.display.showNetTime && athlete.formatted_net_time) {
                 // Show only NETTO as WYNIK
-                ctx.fillText(`WYNIK: ${athlete.formatted_net_time}`, 120, y);
+                ctx.fillText(`${t('result')}: ${athlete.formatted_net_time}`, 120, y);
                 y += lineHeight;
             } else if (config.display.showGunTime && athlete.formatted_gun_time) {
                 // Show only BRUTTO as WYNIK
-                ctx.fillText(`WYNIK: ${athlete.formatted_gun_time}`, 120, y);
+                ctx.fillText(`${t('result')}: ${athlete.formatted_gun_time}`, 120, y);
                 y += lineHeight;
             }
 
@@ -1839,7 +1917,7 @@
 
             // K/M place
             if (config.display.showGender && athlete.gender_place) {
-                const genderLabel = athlete.athlete_sex === 'M' ? 'MĘŻCZYŹNI' : 'KOBIETY';
+                const genderLabel = athlete.athlete_sex === 'M' ? t('men') : t('women');
                 ctx.fillText(`${genderLabel}: ${athlete.gender_place}`, 120, y);
                 y += lineHeight;
             }
@@ -1886,7 +1964,7 @@
             ctx.fillStyle = '#888';
             ctx.font = '16px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('Oczekiwanie na dane...', 120, 120);
+            ctx.fillText(t('waitingForData'), 120, 120);
 
             selectedAthlete = null;
             ui.displayStatus.textContent = '';
@@ -2041,24 +2119,30 @@
 
         async function searchAndDisplay(bib) {
             if (!bib) {
-                showStatus('search-status', 'Wprowadź numer startowy', 'error');
+                showStatus('search-status', t('enterBib'), 'error');
                 return;
             }
 
-            showStatus('search-status', 'Szukam...', '');
+            // Strip leading zeros: "019" → "19", "001" → "1"
+            const normalizedBib = normalizeBib(bib);
+            if (normalizedBib !== bib) {
+                console.log(`BIB normalized: "${bib}" → "${normalizedBib}"`);
+            }
+
+            showStatus('search-status', t('searching'), '');
 
             try {
-                const athlete = await findAthleteByBib(bib);
+                const athlete = await findAthleteByBib(normalizedBib);
 
                 if (athlete) {
-                    showStatus('search-status', `Znaleziono: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
+                    showStatus('search-status', `${t('found')}: ${athlete.athlete_first_name} ${athlete.athlete_last_name}`, 'success');
                     renderLEDDisplay(athlete);
                 } else {
-                    showStatus('search-status', 'Nie znaleziono zawodnika', 'error');
+                    showStatus('search-status', t('notFound'), 'error');
                     clearLEDDisplay();
                 }
             } catch (error) {
-                showStatus('search-status', `Błąd: ${error.message}`, 'error');
+                showStatus('search-status', `Error: ${error.message}`, 'error');
                 clearLEDDisplay();
             }
         }
@@ -2124,6 +2208,9 @@
 
             // Focus search input
             setTimeout(() => ui.searchInput.focus(), 100);
+
+            // Apply current language to display screen
+            applyLanguage();
         }
 
         // =====================================
@@ -2189,6 +2276,7 @@
             config.display.showAge = ui.showAge.checked;
             config.display.showCustom = ui.showCustom.checked;
             config.display.customFooterText = ui.customFooterText.value.trim();
+            config.display.language = ui.displayLanguage.value;
 
             localStorage.setItem('led-show-location', config.display.showLocation);
             localStorage.setItem('led-show-distance', config.display.showDistance);
@@ -2200,7 +2288,9 @@
             localStorage.setItem('led-show-age', config.display.showAge);
             localStorage.setItem('led-show-custom', config.display.showCustom);
             localStorage.setItem('led-custom-footer-text', config.display.customFooterText);
+            localStorage.setItem('led-language', config.display.language);
 
+            applyLanguage();
             alert('Ustawienia wyświetlania zapisane');
 
             // Re-render current athlete if any
@@ -2267,6 +2357,7 @@
             ui.showAge.checked = config.display.showAge;
             ui.showCustom.checked = config.display.showCustom;
             ui.customFooterText.value = config.display.customFooterText || '';
+            ui.displayLanguage.value = config.display.language || 'pl';
 
             ui.ledConnectionType.value = config.led.connectionType;
             ui.ledIp.value = config.led.ip;
@@ -2364,6 +2455,7 @@
         console.log('LED Display System v2 - Initializing...');
 
         loadConfig();
+        applyLanguage();
         clearLEDDisplay();
 
         // Initialize API if configured
